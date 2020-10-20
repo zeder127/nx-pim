@@ -19,12 +19,7 @@
       "runner": "@nrwl/nx-cloud",
       "options": {
         "accessToken": "ZWFkMGEyNGQtN2NiYS00NmQ4LTkxNTQtNzFhNjQ1ODY2ZDNkfHJlYWQtd3JpdGU=",
-        "cacheableOperations": [
-          "build",
-          "test",
-          "lint",
-          "e2e"
-        ],
+        "cacheableOperations": ["build", "test", "lint", "e2e"],
         "canTrackAnalytics": false,
         "showUsageWarnings": true
       }
@@ -36,9 +31,13 @@
     },
     "pim-e2e": {
       "tags": [],
-      "implicitDependencies": [
-        "pim"
-      ]
+      "implicitDependencies": ["pim"]
+    },
+    "data": {
+      "tags": []
+    },
+    "api": {
+      "tags": []
     }
   }
 }
