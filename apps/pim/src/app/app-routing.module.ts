@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MsalGuard } from '@azure/msal-angular';
+
 // import { HomeComponent } from './core/home/home.component';
 // import { GalleryComponent } from './feature/gallery/gallery.component';
 // import { ProgressBoardComponent } from './feature/progress-board/progress-board.component';

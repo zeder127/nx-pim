@@ -1,17 +1,12 @@
-import { Injectable } from "@angular/core";
 import {
-    HttpRequest,
-    HttpHandler,
-    HttpEvent,
-    HttpInterceptor,
-    HttpErrorResponse
-} from "@angular/common/http";
-
-import { Observable, from } from "rxjs";
-import { mergeMap, tap } from "rxjs/operators";
-
-import { AuthResponse, ServerHashParamKeys } from "msal";
+  HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest
+} from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { BroadcastService, MsalService } from '@azure/msal-angular';
+
+import { AuthResponse, ServerHashParamKeys } from 'msal';
+import { from, Observable } from 'rxjs';
+import { mergeMap, tap } from 'rxjs/operators';
 
 @Injectable()
 export class MyMsalInterceptor implements HttpInterceptor {

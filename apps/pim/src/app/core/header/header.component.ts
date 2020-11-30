@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BroadcastService, MsalService } from '@azure/msal-angular';
+
 import { CryptoUtils, Logger } from 'msal';
 
 @Component({

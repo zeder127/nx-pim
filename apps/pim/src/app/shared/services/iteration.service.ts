@@ -1,8 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Iteration } from '@pim/data';
+
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+
 import { organization, project } from '../constants/auzre-endpoint';
 
 @Injectable({

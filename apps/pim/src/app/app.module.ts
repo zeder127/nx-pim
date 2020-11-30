@@ -1,20 +1,17 @@
-import { BrowserModule } from '@angular/platform-browser';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
+import {
+  MSAL_CONFIG, MSAL_CONFIG_ANGULAR, MsalAngularConfiguration, MsalInterceptor, MsalModule,
+  MsalService
+} from '@azure/msal-angular';
 
+import { Configuration } from 'msal';
+
+import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './core/header/header.component';
-import { RouterModule } from '@angular/router';
-import { AppRoutingModule } from './app-routing.module';
-import {
-  MsalModule,
-  MSAL_CONFIG,
-  MSAL_CONFIG_ANGULAR,
-  MsalService,
-  MsalAngularConfiguration,
-  MsalInterceptor
-} from '@azure/msal-angular';
-import { Configuration } from 'msal';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 export const protectedResourceMap: [string, string[]][] = [
   ['https://graph.microsoft.com/v1.0/me', ['user.read']],

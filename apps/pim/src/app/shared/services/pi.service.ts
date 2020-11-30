@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
+import { Iteration, PiConfiguration, Team } from '@pim/data';
+
 import { forkJoin, Observable, of } from 'rxjs';
-import { PiConfiguration, Team, Iteration } from '@pim/data';
-import { TeamService } from './team.service';
-import { IterationService } from './iteration.service';
 import { map, switchMap } from 'rxjs/operators';
+
+import { IterationService } from './iteration.service';
+import { TeamService } from './team.service';
 
 const piconfig: PiConfiguration = {
   name: 'demo pi',
