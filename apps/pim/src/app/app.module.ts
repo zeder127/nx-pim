@@ -5,11 +5,79 @@ import { AppComponent } from './app.component';
 import { HeaderComponent } from './core/header/header.component';
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
+import {
+  MsalModule,
+  MSAL_CONFIG,
+  MSAL_CONFIG_ANGULAR,
+  MsalService,
+  MsalAngularConfiguration,
+  MsalInterceptor
+} from '@azure/msal-angular';
+import { Configuration } from 'msal';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+
+export const protectedResourceMap: [string, string[]][] = [
+  ['https://graph.microsoft.com/v1.0/me', ['user.read']],
+  ['https://dev.azure.com', ['499b84ac-1321-427f-aa17-267ca6975798/user_impersonation']]
+];
+
+function MSALConfigFactory(): Configuration {
+  return {
+    auth: {
+      clientId: '554ef540-a01b-44f8-80a4-639b9caa910c',
+      authority: "https://login.microsoftonline.com/0d8f4db4-138f-4787-9039-288f464bdd15/",
+      validateAuthority: true,
+      redirectUri: "http://localhost:4200/",
+      postLogoutRedirectUri: "http://localhost:4200/",
+      navigateToLoginRequestUrl: true,
+    },
+    cache: {
+      cacheLocation: "localStorage",
+      storeAuthStateInCookie: false, // set to true for IE 11
+    },
+  };
+}
+
+function MSALAngularConfigFactory(): MsalAngularConfiguration {
+  return {
+    popUp: true,
+    consentScopes: [
+      "user.read",
+      "openid",
+      "profile",
+      "api://499b84ac-1321-427f-aa17-267ca6975798/user_impersonation"
+    ],
+    unprotectedResources: ["https://www.microsoft.com/en-us/"],
+    protectedResourceMap,
+    extraQueryParameters: {}
+  };
+}
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent],
-  imports: [BrowserModule, AppRoutingModule, RouterModule],
-  providers: [],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    RouterModule,
+    MsalModule
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: MsalInterceptor,
+      multi: true
+    },
+    {
+      provide: MSAL_CONFIG,
+      useFactory: MSALConfigFactory
+    },
+    {
+      provide: MSAL_CONFIG_ANGULAR,
+      useFactory: MSALAngularConfigFactory
+    },
+    MsalService
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
