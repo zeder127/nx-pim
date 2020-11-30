@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Iteration, PiConfiguration, Team } from '@pim/data';
+import { PiConfiguration } from '@pim/data';
 
 import { forkJoin, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
