@@ -14,7 +14,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'sync',
+    redirectTo: 'team/1',
     pathMatch: 'full',
   },
 ];
