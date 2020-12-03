@@ -1,7 +1,7 @@
+import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
 import {
   MSAL_CONFIG, MSAL_CONFIG_ANGULAR, MsalAngularConfiguration, MsalInterceptor, MsalModule,
   MsalService
@@ -11,7 +11,7 @@ import { Configuration } from 'msal';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HeaderComponent } from './core/header/header.component';
+import { CoreModule } from './core/core.module';
 
 export const protectedResourceMap: [string, string[]][] = [
   ['https://graph.microsoft.com/v1.0/me', ['user.read']],
@@ -51,13 +51,14 @@ function MSALAngularConfigFactory(): MsalAngularConfiguration {
 }
 
 @NgModule({
-  declarations: [AppComponent, HeaderComponent],
+  declarations: [AppComponent],
   imports: [
+    CommonModule,
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    RouterModule,
-    MsalModule
+    MsalModule,
+    CoreModule
   ],
   providers: [
     {

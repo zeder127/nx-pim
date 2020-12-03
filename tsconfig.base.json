@@ -16,7 +16,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@pim/data": ["libs/data/src/index.ts"]
+      "@pim/data": ["libs/data/src/index.ts"],
+      "@pim/ui": ["libs/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

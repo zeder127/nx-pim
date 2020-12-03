@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Iteration, Team } from '@pim/data';
 
 import { PiService } from '../../../shared/services/pi.service';
 
@@ -13,14 +14,17 @@ import { PiService } from '../../../shared/services/pi.service';
 })
 export class SyncBoardComponent implements OnInit {
 
-  public sprints = [];
+  public iterations: Iteration[] = [];
+  public teams: Team[] = [];
 
   constructor(private http: HttpClient, private piService: PiService) { }
 
   ngOnInit(): void {
-    // to be deleted
+
     this.piService.getPiConfiguration('test').subscribe(value => {
       console.log("🚀 ~ file: sync-board.component.ts ~ line 30 ~ SyncBoardComponent ~ this.piService.getPiConfiguration ~ value", value);
+      this.iterations = value.iterations;
+      this.teams = value.teams;
     });
   }
 

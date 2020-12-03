@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { UiModule } from '@pim/ui';
 
 import { TableModule } from 'primeng/table';
 
@@ -12,7 +13,8 @@ import { TeamBoardComponent } from './team-board/team-board.component';
   imports: [
     CommonModule,
     PlanningBoardRoutingModule,
-    TableModule
+    TableModule,
+    UiModule
   ]
 })
 export class PlanningBoardModule { }
