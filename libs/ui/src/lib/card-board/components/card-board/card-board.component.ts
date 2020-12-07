@@ -1,10 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Card, CardBoard, ColumnHeader, RowHeader } from '@pim/data';
+import { groupBy } from 'lodash';
 
-import * as _ from 'lodash';
-
-import {
-  Card, CardBoard, ColumnHeader, RowHeader
-} from '../../../../../../data/src/lib/card-board';
 
 export interface RowData {
   header: RowHeader;
@@ -43,7 +40,13 @@ const DemoBoard: CardBoard = {
   ],
   cards: [
     {
-      text: 'pbi 1-1',
+      text: 'pbi 1-1-1',
+      linkedWitId: 3,
+      x: 1,
+      y: 1,
+    },
+    {
+      text: 'pbi 1-1-2',
       linkedWitId: 3,
       x: 1,
       y: 1,
@@ -55,7 +58,13 @@ const DemoBoard: CardBoard = {
       y: 1,
     },
     {
-      text: 'pbi 2-1',
+      text: 'pbi 2-1-1',
+      linkedWitId: 5,
+      x: 1,
+      y: 2,
+    },
+    {
+      text: 'pbi 2-1-2',
       linkedWitId: 5,
       x: 1,
       y: 2,
@@ -90,7 +99,7 @@ export class CardBoardComponent implements OnInit {
     return board.rowHeaders.map((rHeader, rIndex) => {
       return {
         header: rHeader,
-        data: _.groupBy(
+        data: groupBy(
           board.cards.filter((card) => card.y === rIndex + 1),
           'x'
         ),

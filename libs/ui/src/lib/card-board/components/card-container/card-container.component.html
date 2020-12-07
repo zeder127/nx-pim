@@ -1,0 +1,14 @@
+<div
+  class="container"
+  cdkDropList
+
+  [cdkDropListData]="cards"
+
+  cdkDropListOrientation="horizontal"
+  (cdkDropListDropped)="drop($event)"
+>
+
+    <pim-card [card]="card" *ngFor="let card of cards" cdkDrag></pim-card>
+
+
+</div>
