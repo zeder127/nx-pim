@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
+
 import { SyncBoardComponent } from './sync-board/sync-board.component';
 import { TeamBoardComponent } from './team-board/team-board.component';
 

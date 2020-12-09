@@ -1,8 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Iteration, Team } from '@pim/data';
 
-const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';
-const ME ='https://graph.microsoft.com/v1.0/me';
+import { PiService } from '../../../shared/services/pi.service';
+
+// const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';
+// const ME ='https://graph.microsoft.com/v1.0/me';
 
 @Component({
   selector: 'pim-sync-board',
@@ -11,17 +14,18 @@ const ME ='https://graph.microsoft.com/v1.0/me';
 })
 export class SyncBoardComponent implements OnInit {
 
-  constructor(private http: HttpClient) { }
+  public iterations: Iteration[] = [];
+  public teams: Team[] = [];
+
+  constructor(private http: HttpClient, private piService: PiService) { }
 
   ngOnInit(): void {
-    this.http.get(API_WITS).subscribe(
-      wits => {
-        console.log("🚀 ~ file: sync-board.component.ts ~ line 17 ~ SyncBoardComponent ~ this.http.get ~ wits", wits);
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
+
+    this.piService.getPiConfiguration('test').subscribe(value => {
+      console.log("🚀 ~ file: sync-board.component.ts ~ line 30 ~ SyncBoardComponent ~ this.piService.getPiConfiguration ~ value", value);
+      this.iterations = value.iterations;
+      this.teams = value.teams;
+    });
   }
 
 }

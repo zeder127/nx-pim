@@ -22,7 +22,12 @@
             "tsConfig": "apps/pim/tsconfig.app.json",
             "aot": true,
             "assets": ["apps/pim/src/favicon.ico", "apps/pim/src/assets"],
-            "styles": ["apps/pim/src/styles.scss"],
+            "styles": [
+              "apps/pim/src/styles.scss",
+              "node_modules/primeicons/primeicons.css",
+              "node_modules/primeng/resources/themes/saga-blue/theme.css",
+              "node_modules/primeng/resources/primeng.min.css"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -183,6 +188,32 @@
             "jestConfig": "apps/api/jest.config.js",
             "passWithNoTests": true
           }
+        }
+      }
+    },
+    "ui": {
+      "projectType": "library",
+      "root": "libs/ui",
+      "sourceRoot": "libs/ui/src",
+      "prefix": "pim",
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/ui/src/**/*.ts"]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "libs/ui/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
         }
       }
     }
