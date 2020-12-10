@@ -21,13 +21,14 @@ export interface RowHeader extends Header {
 }
 
 export interface Card {
+  id?: string; // should be required
   linkedWitId: number;
   x: number;
   y: number;
-  text?: string;
+  text: string;
 }
 
 export interface Connection {
-  fromCardId: number;
-  toCardId: number;
+  startPointId: string;
+  endPointId: string;
 }
