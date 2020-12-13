@@ -1,45 +1,62 @@
-import { Injectable } from '@angular/core';
-import { Connection } from '@pim/data';
-import LeaderLine from 'leader-line-new';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-//declare const LeaderLine: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-//declare const AnimEvent: any;
+import { Injectable } from "@angular/core";
+import { Connection } from "@pim/data";
+import LeaderLine from "leader-line-new";
 
-type ConnectionRef = { connection: Connection; line: unknown };
+type ConnectionRef = { connection: Connection; line: LeaderLine };
 
 @Injectable()
 export class ConnectionBuilderService {
-  private connections: ConnectionRef[] = [];
+  private connectionStore: ConnectionRef[] = [];
 
-  constructor() {}
+  constructor() {
+    //
+  }
 
+  /**
+   * Draw lines based on given Connections.
+   * @param connections
+   */
   public create(connections: Connection[]) {
     connections?.forEach((connection) => {
-      this.createSingle(connection);
+      const line = this.drawLine(connection);
+      // add this connection in store
+      if (line) {
+        this.connectionStore.push({ connection, line });
+      }
     });
   }
 
-  public createSingle = (connection: Connection) => {
+  private drawLine(connection: Connection): LeaderLine {
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
-
     if (startPointElement && endPointElement) {
-      const leaderLine = new LeaderLine(startPointElement, endPointElement);
-
-      startPointElement.addEventListener(
-        'drag',
-        () => {
-          leaderLine.position();
-        },
-        false
-      );
-
-      this.connections.push({ connection, line: leaderLine });
+      // create a new line
+      return new LeaderLine(startPointElement, endPointElement, {
+        path: "magnet",
+      });
     }
-  };
+  }
 
-  public delete(connection: Connection) {
-    //
+  /**
+   * Re-draw lines that connect to an element. If elementId is undefined, re-draw all lines.
+   * @param elementId
+   */
+  public updateConnections(elementId?: string) {
+    this.getRelevantConnections(elementId).forEach(
+      (ref) => (ref.line = this.drawLine(ref.connection))
+    );
+  }
+
+  /**
+   * Get all ConnectionRefs relevant to a given element. If elementId is undefined, get all ConnectionRefs.
+   * @param elementId
+   */
+  public getRelevantConnections(elementId?: string): ConnectionRef[] {
+    if (!elementId) return this.connectionStore;
+    return this.connectionStore.filter(
+      (ref) =>
+        ref.connection.startPointId === elementId ||
+        ref.connection.endPointId === elementId
+    );
   }
 }
