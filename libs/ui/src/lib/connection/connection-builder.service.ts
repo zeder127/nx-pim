@@ -32,7 +32,9 @@ export class ConnectionBuilderService {
     if (startPointElement && endPointElement) {
       // create a new line
       return new LeaderLine(startPointElement, endPointElement, {
-        path: "magnet",
+        path: "arc",
+        startSocket: "bottom",
+        endSocket: "bottom",
       });
     }
   }
@@ -42,7 +44,7 @@ export class ConnectionBuilderService {
    * @param elementId
    */
   public updateConnections(elementId?: string) {
-    this.getRelevantConnections(elementId).forEach(
+    this.getRelatedConnections(elementId).forEach(
       (ref) => (ref.line = this.drawLine(ref.connection))
     );
   }
@@ -51,12 +53,22 @@ export class ConnectionBuilderService {
    * Get all ConnectionRefs relevant to a given element. If elementId is undefined, get all ConnectionRefs.
    * @param elementId
    */
-  public getRelevantConnections(elementId?: string): ConnectionRef[] {
+  public getRelatedConnections(elementId?: string): ConnectionRef[] {
     if (!elementId) return this.connectionStore;
     return this.connectionStore.filter(
       (ref) =>
         ref.connection.startPointId === elementId ||
         ref.connection.endPointId === elementId
+    );
+  }
+
+  public getNonRelatedConnections(elementId: string): ConnectionRef[] {
+    return this.connectionStore.filter(
+      (ref) =>
+        !(
+          ref.connection.startPointId === elementId ||
+          ref.connection.endPointId === elementId
+        )
     );
   }
 }

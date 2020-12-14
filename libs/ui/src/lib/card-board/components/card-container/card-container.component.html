@@ -12,6 +12,7 @@
     cdkDrag
     [cdkDragData]="card"
     (cdkDragStarted)="dragStart($event)"
+    (cdkDragMoved)="dragMove($event)"
     (cdkDragDropped)="dragDropped($event)"
   ></pim-card>
 </div>

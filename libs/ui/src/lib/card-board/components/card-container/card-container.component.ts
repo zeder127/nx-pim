@@ -1,5 +1,7 @@
 import {
   CdkDragDrop,
+  CdkDragMove,
+  CdkDragStart,
   moveItemInArray,
   transferArrayItem,
 } from "@angular/cdk/drag-drop";
@@ -13,6 +15,8 @@ import { ConnectionBuilderService } from "../../../connection/connection-builder
   styleUrls: ["./card-container.component.scss"],
 })
 export class CardContainerComponent implements OnInit {
+  private nonRelatedConnections: [];
+
   @Input() cards: Card[];
   constructor(private connectionBuilder: ConnectionBuilderService) {}
 
@@ -37,17 +41,35 @@ export class CardContainerComponent implements OnInit {
     }
   }
 
-  public dragStart() {
-    this.connectionBuilder.getRelevantConnections().forEach((ref) => {
-      ref.line.remove();
+  public dragStart(event: CdkDragStart<Card>) {
+    this.connectionBuilder
+      .getRelatedConnections(`${event.source.data.linkedWitId}`)
+      .forEach((ref) => {
+        ref.line.remove();
+      });
+    // reset nonRelatedConnections
+    this.nonRelatedConnections = undefined;
+  }
+
+  public dragMove(event: CdkDragMove<Card>) {
+    const nonRelatedConnection =
+      this.nonRelatedConnections ??
+      this.connectionBuilder.getNonRelatedConnections(
+        `${event.source.data.linkedWitId}`
+      );
+
+    nonRelatedConnection.forEach((ref) => {
+      ref.line.position(); // update position
     });
   }
 
-  public dragDropped() {
+  public dragDropped(event: CdkDragDrop<Card>) {
     // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
     // Without setTimeout, all lines will get wrong startPoint or endPoint.
     setTimeout(() => {
-      this.connectionBuilder.updateConnections(); // Re-draw all lines
+      this.connectionBuilder.updateConnections(
+        `${event.item.data.linkedWitId}`
+      ); // Re-draw all lines
     }, 0);
   }
 }
