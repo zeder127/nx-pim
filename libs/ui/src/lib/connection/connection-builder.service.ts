@@ -32,7 +32,6 @@ export class ConnectionBuilderService {
     if (startPointElement && endPointElement) {
       // create a new line
       return new LeaderLine(startPointElement, endPointElement, {
-        path: "arc",
         startSocket: "bottom",
         endSocket: "bottom",
       });
