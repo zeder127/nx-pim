@@ -8,7 +8,11 @@ import { Card } from '@pim/data';
 })
 export class CardComponent implements OnInit {
   @Input() card: Card;
-  constructor() {}
+  constructor() {
+    //
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    //
+  }
 }

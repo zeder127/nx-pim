@@ -18,7 +18,9 @@
     "paths": {
       "@pim/data": ["libs/data/src/index.ts"],
       "@pim/ui": ["libs/ui/src/index.ts"]
-    }
+    },
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules", "tmp"]
 }
