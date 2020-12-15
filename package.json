@@ -61,6 +61,7 @@
     "@angular/compiler-cli": "^10.1.0",
     "@angular/language-service": "^10.1.0",
     "@fluidframework/eslint-config-fluid": "^0.21.0",
+    "@fluidframework/get-session-storage-container": "^0.30.4",
     "@nestjs/schematics": "^7.0.0",
     "@nestjs/testing": "^7.0.0",
     "@nrwl/cli": "10.3.1",
