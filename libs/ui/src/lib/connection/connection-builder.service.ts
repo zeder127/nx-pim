@@ -1,8 +1,8 @@
-import { Injectable } from "@angular/core";
-import { Connection } from "@pim/data";
-import LeaderLine from "leader-line-new";
+import { Injectable } from '@angular/core';
+import { Connection } from '@pim/data';
+import LeaderLine from 'leader-line-new';
 
-type ConnectionRef = { connection: Connection; line: LeaderLine };
+export type ConnectionRef = { connection: Connection; line: LeaderLine };
 
 @Injectable()
 export class ConnectionBuilderService {
@@ -18,7 +18,7 @@ export class ConnectionBuilderService {
    */
   public create(connections: Connection[]) {
     connections?.forEach((connection) => {
-      const line = this.drawLine(connection);
+      const line = this.drawLineByConnection(connection);
       // add this connection in store
       if (line) {
         this.connectionStore.push({ connection, line });
@@ -26,14 +26,21 @@ export class ConnectionBuilderService {
     });
   }
 
-  private drawLine(connection: Connection): LeaderLine {
+  public drawLineByConnection(connection: Connection): LeaderLine {
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
+    return this.drawLine(startPointElement, endPointElement);
+  }
+
+  public drawLine(
+    startPointElement: HTMLElement,
+    endPointElement: HTMLElement
+  ): LeaderLine {
     if (startPointElement && endPointElement) {
       // create a new line
       return new LeaderLine(startPointElement, endPointElement, {
-        startSocket: "bottom",
-        endSocket: "bottom",
+        startSocket: 'bottom',
+        endSocket: 'bottom',
       });
     }
   }
@@ -44,7 +51,7 @@ export class ConnectionBuilderService {
    */
   public updateConnections(elementId?: string) {
     this.getRelatedConnections(elementId).forEach(
-      (ref) => (ref.line = this.drawLine(ref.connection))
+      (ref) => (ref.line = this.drawLineByConnection(ref.connection))
     );
   }
 
@@ -69,5 +76,10 @@ export class ConnectionBuilderService {
           ref.connection.endPointId === elementId
         )
     );
+  }
+
+  public clear() {
+    this.connectionStore.forEach((ref) => ref.line.remove());
+    this.connectionStore = [];
   }
 }
