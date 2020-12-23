@@ -1,4 +1,5 @@
 export interface CardBoard {
+  id: string;
   name: string;
   columnHeaders: ColumnHeader[];
   rowHeaders: RowHeader[];
