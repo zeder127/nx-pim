@@ -26,12 +26,21 @@ export class ConnectionBuilderService {
     });
   }
 
+  /**
+   * Draw a line base on the given connection
+   * @param connection
+   */
   public drawLineByConnection(connection: Connection): LeaderLine {
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
     return this.drawLine(startPointElement, endPointElement);
   }
 
+  /**
+   * Draw a line base on the given start and end elements
+   * @param startPointElement
+   * @param endPointElement
+   */
   public drawLine(
     startPointElement: HTMLElement,
     endPointElement: HTMLElement
@@ -41,6 +50,7 @@ export class ConnectionBuilderService {
       return new LeaderLine(startPointElement, endPointElement, {
         startSocket: 'bottom',
         endSocket: 'bottom',
+        size: 3,
       });
     }
   }
@@ -56,7 +66,7 @@ export class ConnectionBuilderService {
   }
 
   /**
-   * Get all ConnectionRefs relevant to a given element. If elementId is undefined, get all ConnectionRefs.
+   * Get all related ConnectionRefs of a given element. If elementId is undefined, get all ConnectionRefs.
    * @param elementId
    */
   public getRelatedConnections(elementId?: string): ConnectionRef[] {
@@ -68,6 +78,10 @@ export class ConnectionBuilderService {
     );
   }
 
+  /**
+   * Get all non-related ConnectionRefs of a given element.
+   * @param elementId
+   */
   public getNonRelatedConnections(elementId: string): ConnectionRef[] {
     return this.connectionStore.filter(
       (ref) =>
@@ -78,6 +92,9 @@ export class ConnectionBuilderService {
     );
   }
 
+  /**
+   * Remove all lines on board
+   */
   public clear() {
     this.connectionStore.forEach((ref) => ref.line.remove());
     this.connectionStore = [];
