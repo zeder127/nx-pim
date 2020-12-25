@@ -1,21 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { BroadcastService, MsalService } from '@azure/msal-angular';
-
 import { CryptoUtils, Logger } from 'msal';
 
 @Component({
   selector: 'pim-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
-
   loggedIn = false;
 
-  constructor(private broadcastService: BroadcastService, private authService: MsalService) { }
+  constructor(
+    private broadcastService: BroadcastService,
+    private authService: MsalService
+  ) {}
 
   ngOnInit(): void {
-
     this.checkoutAccount();
 
     this.broadcastService.subscribe('msal:loginSuccess', () => {
@@ -31,16 +31,23 @@ export class HeaderComponent implements OnInit {
       console.log('Redirect Success: ', response);
     });
 
-    this.authService.setLogger(new Logger((logLevel, message, piiEnabled) => {
-      console.log('MSAL Logging: ', message);
-    }, {
-      correlationId: CryptoUtils.createNewGuid(),
-      piiLoggingEnabled: false
-    }));
+    this.authService.setLogger(
+      new Logger(
+        (logLevel, message, piiEnabled) => {
+          console.log('MSAL Logging: ', message);
+        },
+        {
+          correlationId: CryptoUtils.createNewGuid(),
+          piiLoggingEnabled: false,
+        }
+      )
+    );
   }
 
   login() {
-    const isIE = window.navigator.userAgent.indexOf('MSIE ') > -1 || window.navigator.userAgent.indexOf('Trident/') > -1;
+    const isIE =
+      window.navigator.userAgent.indexOf('MSIE ') > -1 ||
+      window.navigator.userAgent.indexOf('Trident/') > -1;
 
     if (isIE) {
       this.authService.loginRedirect();
@@ -55,11 +62,13 @@ export class HeaderComponent implements OnInit {
 
   checkoutAccount() {
     this.loggedIn = !!this.authService.getAccount();
-    console.log("🚀 ~ file: app.component.ts ~ line 52 ~ AppComponent ~ checkoutAccount ~ this.authService.getAccount()", this.authService.getAccount())
+    console.log(
+      `🚀 ~ HeaderComponent ~ this.authService.getAccount()`,
+      this.authService.getAccount()
+    );
     // this.authService.acquireTokenSilent({scopes: ['499b84ac-1321-427f-aa17-267ca6975798/.default']}).then(response => {
     //   console.log("🚀 ~ file: app.component.ts ~ line 47 ~ AppComponent ~ checkoutAccount ~ token", response)
 
     // })
-
   }
 }

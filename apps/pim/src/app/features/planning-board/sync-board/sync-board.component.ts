@@ -24,10 +24,7 @@ export class SyncBoardComponent implements OnInit {
   ngOnInit(): void {
     this.piName = this.route.snapshot.paramMap.get('piName');
     this.piService.getPiByName(this.piName).subscribe((pi) => {
-      console.log(
-        '🚀 ~ file: sync-board.component.ts ~ line 27 ~ SyncBoardComponent ~ this.piService.getPiByName ~ pi',
-        pi
-      );
+      console.log(`🚀 ~ SyncBoardComponent ~ pi`, pi);
     });
   }
 }
