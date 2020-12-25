@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Iteration, Team } from '@pim/data';
 import { DemoBoard } from '../../../shared/models/demoBoard';
 import { PiService } from '../../../shared/services/pi.service';
@@ -17,16 +17,17 @@ export class SyncBoardComponent implements OnInit {
   public teams: Team[] = [];
   public cardBoard = DemoBoard;
 
-  constructor(private http: HttpClient, private piService: PiService) {}
+  private piName: string;
+
+  constructor(private route: ActivatedRoute, private piService: PiService) {}
 
   ngOnInit(): void {
-    this.piService.getPiConfiguration('test').subscribe((value) => {
+    this.piName = this.route.snapshot.paramMap.get('piName');
+    this.piService.getPiByName(this.piName).subscribe((pi) => {
       console.log(
-        '🚀 ~ file: sync-board.component.ts ~ line 30 ~ SyncBoardComponent ~ this.piService.getPiConfiguration ~ value',
-        value
+        '🚀 ~ file: sync-board.component.ts ~ line 27 ~ SyncBoardComponent ~ this.piService.getPiByName ~ pi',
+        pi
       );
-      this.iterations = value.iterations;
-      this.teams = value.teams;
     });
   }
 }
