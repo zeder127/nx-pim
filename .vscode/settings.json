@@ -5,5 +5,8 @@
   },
   "prettier.singleQuote": true,
   "prettier.stylelintIntegration": true,
-  "prettier.printWidth": 90
+  "prettier.printWidth": 90,
+  "turboConsoleLog.includeFileNameAndLineNum": false,
+  "turboConsoleLog.insertEnclosingFunction": false,
+  "turboConsoleLog.quote": "`"
 }

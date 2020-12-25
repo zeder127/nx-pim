@@ -1,6 +1,6 @@
-<a [routerLink]="['planning-board/sync']">Planning Board</a>
-
-<a [routerLink]="['planning-board/team/1']">Team1</a>
+<a [routerLink]="['dashboard']">Dashboard</a>
+<a [routerLink]="['planning/20Q1/programm-board']">Planning Board</a>
+<a [routerLink]="['planning/20Q1/team/1']">Team1</a>
 
 <button *ngIf="!loggedIn" (click)="login()">Login</button>
 <button *ngIf="loggedIn" (click)="logout()">Logout</button>

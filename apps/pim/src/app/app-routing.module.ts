@@ -1,32 +1,10 @@
-// import { HomeComponent } from './core/home/home.component';
-// import { GalleryComponent } from './feature/gallery/gallery.component';
-// import { ProgressBoardComponent } from './feature/progress-board/progress-board.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MsalGuard } from '@azure/msal-angular';
 
 const routes: Routes = [
-  // {
-  //   path: 'progress-board',
-  //   component: ProgressBoardComponent,
-  // },
-  // {
-  //   path: 'gallery',
-  //   component: GalleryComponent,
-  // },
-  // {
-  //   path: '',
-  //   component: HomeComponent,
-  // },
-  // {
-  //   path: 'settings',
-  //   loadChildren: () =>
-  //     import('./feature/administration/administration.module').then(
-  //       (m) => m.AdministrationModule
-  //     ),
-  // },
   {
-    path: 'planning-board',
+    path: 'planning',
     canActivate: [MsalGuard],
     loadChildren: () =>
       import('./features/planning-board/planning-board.module').then(
@@ -34,8 +12,13 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'dashboard',
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.module').then((m) => m.DashboardModule),
+  },
+  {
     path: '**',
-    redirectTo: 'planning-board',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
 ];

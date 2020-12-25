@@ -1,12 +1,12 @@
 export interface PiConfiguration {
-    name: string;
-    iterationIds: string[];
-    teamIds: string[];
-    witIds: string[];
+  id: string;
+  name: string;
+  iterationIds: string[];
+  teamIds: string[];
+  witIds: string[];
 
-    iterations?: Iteration[];
-    teams?: Team[];
-
+  iterations?: Iteration[];
+  teams?: Team[];
 }
 
 export interface Team {
@@ -21,5 +21,5 @@ export interface Iteration {
   attributes: {
     startDate: string;
     finishDate: string;
-  }
+  };
 }

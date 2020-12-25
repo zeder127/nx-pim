@@ -1,16 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { SyncBoardComponent } from './sync-board/sync-board.component';
 import { TeamBoardComponent } from './team-board/team-board.component';
 
 const routes: Routes = [
   {
-    path: 'sync',
+    path: ':piName/programm-board',
     component: SyncBoardComponent,
   },
   {
-    path: 'team/:teamName',
+    path: ':piName/team/:teamName',
     component: TeamBoardComponent,
   },
   {
@@ -22,6 +21,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class PlanningBoardRoutingModule { }
+export class PlanningBoardRoutingModule {}
