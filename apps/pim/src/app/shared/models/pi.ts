@@ -10,3 +10,18 @@ export interface Pi {
   programBoard?: CardBoard;
   teamBoards?: CardBoard[];
 }
+
+export interface PiChange {
+  /**
+   * id of PI
+   */
+  id: string;
+  /**
+   * key of property that has been changed
+   */
+  key: string;
+  /**
+   * new value after change
+   */
+  value: unknown;
+}

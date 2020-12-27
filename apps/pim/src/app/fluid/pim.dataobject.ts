@@ -1,6 +1,7 @@
 import { DataObject, DataObjectFactory } from '@fluidframework/aqueduct';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IDirectory, IDirectoryValueChanged, SharedMap } from '@fluidframework/map';
+import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
 import { Subject } from 'rxjs';
 import { Constants } from '../shared/constants/constants';
 import { Pi } from '../shared/models/pi';
@@ -13,10 +14,10 @@ const Key_Boards_Cards = 'cards';
 const Key_Boards_Connectons = 'connections';
 
 // prototype, to be changes in future
-export class PiDataObject extends DataObject {
-  private newProgramBoardId: string = window.location.hash;
-  private changeSubject$ = new Subject();
-  change$ = this.changeSubject$.asObservable();
+export class PimDataObject extends DataObject {
+  private pisChangeSubject$ = new Subject();
+  pisChange$ = this.pisChangeSubject$.asObservable();
+  private pisDir: IDirectory;
 
   protected async initializingFirstTime() {
     this.root.createSubDirectory(Key_Pis);
@@ -24,13 +25,44 @@ export class PiDataObject extends DataObject {
     this.root.set('users', users.handle);
   }
 
+  protected async hasInitialized() {
+    this.pisDir = this.root.getSubDirectory(Key_Pis);
+    if (!this.pisDir) {
+      alert(`FluidFramework: no such subdriectory -> ${Key_Pis}`);
+      console.error(`FluidFramework: no such subdriectory -> ${Key_Pis}`, this.root);
+      return;
+    }
+    [...this.pisDir.subdirectories()].forEach((v) => {
+      this.loadPi(v[1]);
+    });
+
+    this.root.on('valueChanged', (changed: IDirectoryValueChanged) => {
+      const result = [...this.pisDir.subdirectories()].find(
+        (v) => v[1].absolutePath === changed.path
+      );
+      if (result) {
+        this.pisChangeSubject$.next();
+      }
+    });
+
+    // work around for listening deleteSubDirectory event
+    this.root.on('op', (message: ISequencedDocumentMessage) => {
+      if (
+        message.contents.type === 'deleteSubDirectory' &&
+        message.contents.path === `/${Key_Pis}`
+      ) {
+        this.pisChangeSubject$.next();
+      }
+    });
+  }
+
   /**
    * Create a new PI DDS.
    * @param pi model of a new PI
    */
   public createPi(pi: Pi) {
-    const pisDir = this.root.getSubDirectory(Key_Pis);
-    const piDir = pisDir.createSubDirectory(pi.id);
+    console.log(`🚀 ~ createPi ~ pi`, pi);
+    const piDir = this.pisDir.createSubDirectory(pi.id);
     piDir.set('name', pi.name);
     piDir.set('programBoardId', pi.programBoardId);
     piDir.set('teamBoardIds', pi.teamBoardIds);
@@ -45,6 +77,23 @@ export class PiDataObject extends DataObject {
     this.createSharedMapInDirectory(Key_Boards_Connectons, programBoardDir);
   }
 
+  public removePi(id: string) {
+    this.pisDir.deleteSubDirectory(id);
+  }
+
+  public getPis(): Pi[] {
+    return [...this.pisDir.subdirectories()].map((v) => {
+      const piId = v[0];
+      const piDir = v[1];
+      return {
+        id: piId,
+        name: piDir.get('name'),
+        programBoardId: piDir.get('programBoardId'),
+        teamBoardIds: piDir.get('teamBoardIds'),
+      };
+    });
+  }
+
   /**
    * Creates a shared map with the provided id and insert it into a directory
    * @param id muss be unique
@@ -53,21 +102,8 @@ export class PiDataObject extends DataObject {
   private createSharedMapInDirectory(id: string, dir: IDirectory = this.root): void {
     const map = SharedMap.create(this.runtime);
     dir.set(id, map.handle);
-  }
 
-  protected async hasInitialized() {
-    const pisDir = this.root.getSubDirectory(Key_Pis);
-    if (!pisDir) {
-      alert(`FluidFramework: no such subdriectory -> ${Key_Pis}`);
-      console.error(`FluidFramework: no such subdriectory -> ${Key_Pis}`, this.root);
-      return;
-    }
-    [...pisDir.subdirectories()].forEach((v, i) => {
-      // const piId: string= v[0];
-      const piDir: IDirectory = v[1];
-      console.log(`🚀 ~ piDir index:${i}`, piDir);
-      this.loadPi(piDir);
-    });
+    this.createEventListenersForSharedMap(map);
   }
 
   private loadPi(piDir: IDirectory) {
@@ -98,8 +134,8 @@ export class PiDataObject extends DataObject {
    * Helper function to set up event listeners for SharedMap
    */
   private createEventListenersForSharedMap(map: SharedMap) {
-    map.on('valueChanged', () => {
-      // todo
+    map.on('valueChanged', (event) => {
+      console.log(`🚀 ~ PiDataObject ~ event`, event);
     });
   }
 
@@ -112,7 +148,7 @@ export class PiDataObject extends DataObject {
       if (changed.path === dir.absolutePath) {
         const newValue = dir.get(changed.key);
         console.log(newValue);
-        this.changeSubject$.next('valueChanged');
+        // this.changeSubject$.next('valueChanged');
       }
     });
 
@@ -134,7 +170,7 @@ export class PiDataObject extends DataObject {
 
 export const PiInstantiationFactory = new DataObjectFactory(
   'PiDataObject',
-  PiDataObject,
+  PimDataObject,
   [SharedMap.getFactory()],
   {}
 );
