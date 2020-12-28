@@ -5,10 +5,11 @@ export interface Pi {
   name: string;
   programBoardId: string;
   teamBoardIds: string[];
+}
 
-  // properties evaluated at runtime
-  programBoard?: CardBoard;
-  teamBoards?: CardBoard[];
+export interface PiWithDetails extends Pi {
+  programBoard: CardBoard;
+  teamBoards: CardBoard[];
 }
 
 export interface PiChange {

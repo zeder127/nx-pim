@@ -1,11 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AutoUnsubscriber } from '@pim/ui';
 import { v4 as uuidv4 } from 'uuid';
-import { DataObjectRefService } from '../../fluid/data-object-ref.service';
+import { PimDataObjectRefService } from '../../fluid/data-object-ref.service';
 import { PimDataObject } from '../../fluid/pim.dataobject';
 import { Pi } from '../../shared/models/pi';
 import { PiService } from '../../shared/services/pi.service';
-
 @Component({
   selector: 'pim-dashboard',
   templateUrl: './dashboard.component.html',
@@ -13,11 +12,10 @@ import { PiService } from '../../shared/services/pi.service';
 })
 export class DashboardComponent extends AutoUnsubscriber implements OnInit {
   private pimDO: PimDataObject;
-  // public pis$: Observable<Pi[]>;
   public pis: Pi[];
   constructor(
     private piService: PiService,
-    private dor: DataObjectRefService,
+    private dor: PimDataObjectRefService,
     private cdr: ChangeDetectorRef
   ) {
     super();
@@ -26,7 +24,6 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
   public newPiName: string;
   async ngOnInit() {
     this.pimDO = await this.dor.getInstanceAsync();
-    // this.pis$ = this.piService.getPis();
     this.pimDO.pisChange$.pipe(this.autoUnsubscribe()).subscribe(() => this.updatePis());
     this.updatePis();
   }

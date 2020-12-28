@@ -1,1 +1,2 @@
-<pim-card-board [model]="cardBoard"></pim-card-board>
+<code>{{cardBoard | json}}</code>
+<pim-card-board *ngIf="cardBoard" [model]="cardBoard"></pim-card-board>

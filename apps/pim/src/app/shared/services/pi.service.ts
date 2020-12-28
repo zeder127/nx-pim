@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Cacheable } from '@pim/ui';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { CardBoard } from '@pim/data';
+import { from, Observable, of } from 'rxjs';
+import { delay, map, switchMap } from 'rxjs/operators';
+import { PimDataObjectRefService } from '../../fluid/data-object-ref.service';
 import { Pi } from '../models/pi';
 import { IterationService } from './iteration.service';
 import { TeamService } from './team.service';
@@ -24,37 +25,18 @@ import { TeamService } from './team.service';
 //   witIds: []
 // }
 
-const DemoPis: Pi[] = [
-  {
-    id: '111',
-    name: '20Q1',
-    teamBoardIds: [],
-    programBoardId: '111-111',
-  },
-  {
-    id: '222',
-    name: '20Q 2',
-    teamBoardIds: [],
-    programBoardId: '222-222',
-  },
-  {
-    id: '333',
-    name: '20Q3',
-    teamBoardIds: [],
-    programBoardId: '333-333',
-  },
-];
-
+/**
+ * Apdapter between UI and DataObject
+ */
 @Injectable({
   providedIn: 'root',
 })
-export class PiService extends Cacheable<Pi> {
+export class PiService {
   constructor(
     private teamService: TeamService,
-    private iterationService: IterationService
-  ) {
-    super();
-  }
+    private iterationService: IterationService,
+    private pimDO: PimDataObjectRefService
+  ) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
   //   return of(piconfig).pipe(
@@ -66,16 +48,41 @@ export class PiService extends Cacheable<Pi> {
   //     })
   //   );
   // }
-
-  protected getAll(): Observable<Pi[]> {
-    return of(DemoPis).pipe(delay(100));
-  }
-
+  /**
+   * Get all PIs.
+   */
   public getPis(): Observable<Pi[]> {
-    return this.getCache();
+    return from(this.pimDO.getInstanceAsync()).pipe(
+      delay(0), // work-around to wait for resolve of all promises while loading DataObject
+      switchMap((pim) => {
+        return of(pim.getPis());
+      })
+    );
+  }
+  /**
+   * Get PI by its name.
+   */
+  public getPiByName(name: string): Observable<Pi> {
+    return this.getPis().pipe(map((pis) => pis.find((pi) => pi.name === name)));
   }
 
-  public getPiByName(name: string) {
-    return this.getSingleByKey('name', name);
+  /**
+   * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
+   * @param name Name of a PI
+   */
+  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
+    return this.getPiByName(name).pipe(
+      map((pi) => {
+        const boardDDS = this.pimDO.instance.boardRefsMap.get(pi.programBoardId);
+        return {
+          id: pi.programBoardId,
+          name: boardDDS.name,
+          rowHeaders: this.pimDO.transformSharedMapToArray(boardDDS.rows),
+          columnHeaders: this.pimDO.transformSharedMapToArray(boardDDS.cols),
+          cards: this.pimDO.transformSharedMapToArray(boardDDS.cards),
+          connections: this.pimDO.transformSharedMapToArray(boardDDS.connections),
+        };
+      })
+    );
   }
 }

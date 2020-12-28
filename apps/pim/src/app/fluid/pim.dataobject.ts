@@ -13,11 +13,20 @@ const Key_Boards_Cols = 'cols';
 const Key_Boards_Cards = 'cards';
 const Key_Boards_Connectons = 'connections';
 
+interface BoardDDS {
+  name: string;
+  rows: SharedMap;
+  cols: SharedMap;
+  cards: SharedMap;
+  connections: SharedMap;
+}
+
 // prototype, to be changes in future
 export class PimDataObject extends DataObject {
   private pisChangeSubject$ = new Subject();
   pisChange$ = this.pisChangeSubject$.asObservable();
   private pisDir: IDirectory;
+  public boardRefsMap = new Map<string, BoardDDS>();
 
   protected async initializingFirstTime() {
     this.root.createSubDirectory(Key_Pis);
@@ -32,8 +41,8 @@ export class PimDataObject extends DataObject {
       console.error(`FluidFramework: no such subdriectory -> ${Key_Pis}`, this.root);
       return;
     }
-    [...this.pisDir.subdirectories()].forEach((v) => {
-      this.loadPi(v[1]);
+    [...this.pisDir.subdirectories()].forEach(async (v) => {
+      await this.loadPi(v[1]);
     });
 
     this.root.on('valueChanged', (changed: IDirectoryValueChanged) => {
@@ -42,6 +51,7 @@ export class PimDataObject extends DataObject {
       );
       if (result) {
         this.pisChangeSubject$.next();
+        return;
       }
     });
 
@@ -71,13 +81,26 @@ export class PimDataObject extends DataObject {
       .createSubDirectory(Key_Boards)
       .createSubDirectory(pi.programBoardId);
     programBoardDir.set('name', Constants.Default_Programm_Board_Name);
-    this.createSharedMapInDirectory(Key_Boards_Rows, programBoardDir);
-    this.createSharedMapInDirectory(Key_Boards_Cols, programBoardDir);
-    this.createSharedMapInDirectory(Key_Boards_Cards, programBoardDir);
-    this.createSharedMapInDirectory(Key_Boards_Connectons, programBoardDir);
+    const rowsMap = this.createSharedMapInDirectory(Key_Boards_Rows, programBoardDir);
+    const colsMap = this.createSharedMapInDirectory(Key_Boards_Cols, programBoardDir);
+    const cardsMap = this.createSharedMapInDirectory(Key_Boards_Cards, programBoardDir);
+    const connectionsMap = this.createSharedMapInDirectory(
+      Key_Boards_Connectons,
+      programBoardDir
+    );
+
+    // insert
+    this.boardRefsMap.set(pi.programBoardId, {
+      name: Constants.Default_Programm_Board_Name,
+      rows: rowsMap,
+      cols: colsMap,
+      cards: cardsMap,
+      connections: connectionsMap,
+    });
   }
 
   public removePi(id: string) {
+    // todo: remove from boardDDS
     this.pisDir.deleteSubDirectory(id);
   }
 
@@ -99,35 +122,38 @@ export class PimDataObject extends DataObject {
    * @param id muss be unique
    * @param dir optional, default takes current root directory
    */
-  private createSharedMapInDirectory(id: string, dir: IDirectory = this.root): void {
+  private createSharedMapInDirectory(id: string, dir: IDirectory = this.root): SharedMap {
     const map = SharedMap.create(this.runtime);
     dir.set(id, map.handle);
-
     this.createEventListenersForSharedMap(map);
+    return map;
   }
 
-  private loadPi(piDir: IDirectory) {
+  private async loadPi(piDir: IDirectory) {
     const boardDirs = piDir.getSubDirectory(Key_Boards).subdirectories();
-    [...boardDirs].forEach((v, i) => {
-      // const boardId: string= v[0];
-      const boardDir: IDirectory = v[1];
-      console.log(`🚀 ~ boardDir index: ${i}`, boardDir);
-      this.loadBoard(boardDir);
+    [...boardDirs].forEach(async (v) => {
+      await this.loadBoard(v[0], v[1]);
     });
   }
 
-  private async loadBoard(boardDir: IDirectory) {
-    const rowsMap = await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Rows).get();
-    const colsMap = await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cols).get();
-    const cardsMap = await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cards).get();
-    const connectionsMap = await boardDir
-      .get<IFluidHandle<SharedMap>>(Key_Boards_Connectons)
-      .get();
+  private async loadBoard(id: string, boardDir: IDirectory) {
+    const boardDDS: BoardDDS = {
+      name: boardDir.get('name'),
+      rows: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Rows).get(),
+      cols: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cols).get(),
+      cards: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cards).get(),
+      connections: await boardDir
+        .get<IFluidHandle<SharedMap>>(Key_Boards_Connectons)
+        .get(),
+    };
 
-    this.createEventListenersForSharedMap(rowsMap);
-    this.createEventListenersForSharedMap(colsMap);
-    this.createEventListenersForSharedMap(cardsMap);
-    this.createEventListenersForSharedMap(connectionsMap);
+    this.createEventListenersForSharedMap(boardDDS.rows);
+    this.createEventListenersForSharedMap(boardDDS.cols);
+    this.createEventListenersForSharedMap(boardDDS.cards);
+    this.createEventListenersForSharedMap(boardDDS.connections);
+
+    // add in BoardRefsMap
+    this.boardRefsMap.set(id, boardDDS);
   }
 
   /**
