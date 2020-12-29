@@ -11,6 +11,7 @@ import { PiService } from '../../shared/services/pi.service';
 })
 export class DashboardComponent extends AutoUnsubscriber implements OnInit {
   public pis: Pi[];
+  public newPiName: string;
   constructor(
     private piService: PiService,
     private pimDORef: PimDataObjectRefService,
@@ -19,18 +20,10 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
     super();
   }
 
-  public newPiName: string;
   async ngOnInit() {
     const pimDO = await this.pimDORef.getInstanceAsync();
     pimDO.pisChange$.pipe(this.autoUnsubscribe()).subscribe(() => this.updatePis());
     this.updatePis();
-  }
-
-  private updatePis(): void {
-    this.pis = this.piService.getPis();
-
-    // Event is occuring outside of Angular so detecting changes
-    this.cdr.detectChanges();
   }
 
   public createPi(name: string) {
@@ -39,5 +32,12 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
 
   public removePi(id: string) {
     this.piService.remove(id);
+  }
+
+  private updatePis(): void {
+    this.pis = this.piService.getPis();
+
+    // Event is occuring outside of Angular so detecting changes
+    this.cdr.detectChanges();
   }
 }

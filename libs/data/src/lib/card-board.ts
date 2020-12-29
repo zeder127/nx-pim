@@ -1,35 +1,44 @@
-export interface CardBoard {
+export interface ICardBoard {
+  dds?: unknown;
   id: string;
   name: string;
-  columnHeaders: ColumnHeader[];
-  rowHeaders: RowHeader[];
-  cards: Card[];
-  connections: Connection[];
+  columnHeaders: IColumnHeader[];
+  rowHeaders: IRowHeader[];
+  cards: ICard[];
+  connections: IConnection[];
 }
 
-interface Header {
+interface IHeader {
   text: string;
   description: string;
   id: string;
 }
 
-export interface ColumnHeader extends Header {
+export interface IColumnHeader extends IHeader {
   linkedWitId: number;
 }
 
-export interface RowHeader extends Header {
+export interface IRowHeader extends IHeader {
   linkedIterationId: number;
 }
 
-export interface Card {
-  id?: string; // should be required
+export interface ICard {
+  id?: string;
   linkedWitId: number;
   x: number;
   y: number;
   text: string;
 }
 
-export interface Connection {
+export interface ICards {
+  id: string;
+  linkedWitId: number;
+  x: number;
+  y: number;
+  text: string;
+}
+
+export interface IConnection {
   startPointId: string;
   endPointId: string;
 }

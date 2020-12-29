@@ -1,4 +1,4 @@
-import { CardBoard } from '@pim/data';
+import { ICardBoard } from '@pim/data';
 
 export interface Pi {
   id: string;
@@ -8,8 +8,8 @@ export interface Pi {
 }
 
 export interface PiWithDetails extends Pi {
-  programBoard: CardBoard;
-  teamBoards: CardBoard[];
+  programBoard: ICardBoard;
+  teamBoards: ICardBoard[];
 }
 
 export interface PiChange {

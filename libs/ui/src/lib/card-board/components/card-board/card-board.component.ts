@@ -1,25 +1,29 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { Card, CardBoard, ColumnHeader, RowHeader } from '@pim/data';
+import { ICard, ICardBoard, IColumnHeader, IRowHeader } from '@pim/data';
 import { groupBy } from 'lodash';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
+import { BoardService } from '../../services/board.service';
 
 export interface RowData {
-  header: RowHeader;
-  data: { [key: string]: Card[] };
+  header: IRowHeader;
+  data: { [key: string]: ICard[] };
 }
 
 @Component({
   selector: 'pim-card-board',
   templateUrl: './card-board.component.html',
   styleUrls: ['./card-board.component.scss'],
-  providers: [ConnectionBuilderService],
+  providers: [BoardService, ConnectionBuilderService],
 })
 export class CardBoardComponent implements OnInit, AfterViewInit {
-  @Input('model') board: CardBoard;
+  @Input('model') board: ICardBoard;
 
   public rows: RowData[] = [];
-  public columns: ColumnHeader[] = [];
-  constructor(private connectionBuilder: ConnectionBuilderService) {}
+  public columns: IColumnHeader[] = [];
+  constructor(
+    private boardService: BoardService,
+    private connectionBuilder: ConnectionBuilderService
+  ) {}
 
   ngOnInit(): void {
     this.columns = this.board.columnHeaders;
@@ -30,7 +34,7 @@ export class CardBoardComponent implements OnInit, AfterViewInit {
     this.connectionBuilder.create(this.board.connections);
   }
 
-  private initRowData(board: CardBoard): RowData[] {
+  private initRowData(board: ICardBoard): RowData[] {
     return board.rowHeaders.map((rHeader, rIndex) => {
       return {
         header: rHeader,

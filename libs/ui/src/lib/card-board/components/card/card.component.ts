@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Card } from '@pim/data';
+import { ICard } from '@pim/data';
 
 @Component({
   selector: 'pim-card',
@@ -7,7 +7,7 @@ import { Card } from '@pim/data';
   styleUrls: ['./card.component.scss'],
 })
 export class CardComponent implements OnInit {
-  @Input() card: Card;
+  @Input() card: ICard;
   constructor() {
     //
   }

@@ -1,6 +1,6 @@
-import { CardBoard } from '@pim/data';
+import { ICardBoard } from '@pim/data';
 
-export const DemoBoard: CardBoard = {
+export const DemoBoard: ICardBoard = {
   id: '123213-123123-234234',
   name: 'demo board',
   columnHeaders: [

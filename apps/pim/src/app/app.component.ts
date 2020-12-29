@@ -9,8 +9,6 @@ export class AppComponent implements OnInit {
   title = 'PI Manager';
   isIframe = false;
 
-  constructor() {}
-
   ngOnInit() {
     this.isIframe = window !== window.parent && !window.opener;
   }

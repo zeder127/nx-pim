@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CardBoard } from '@pim/data';
+import { ICardBoard } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -78,7 +78,7 @@ export class PiService {
    * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
    * @param name Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
+  public getProgrammBoardOfPI(name: string): Observable<ICardBoard> {
     return this.getPiByName(name).pipe(
       filter((pi) => !!pi),
       map((pi) => {
@@ -91,6 +91,7 @@ export class PiService {
           columnHeaders: this.pimDORef.transformSharedMapToArray(boardDDS.cols),
           cards: this.pimDORef.transformSharedMapToArray(boardDDS.cards),
           connections: this.pimDORef.transformSharedMapToArray(boardDDS.connections),
+          dds: boardDDS,
         };
       })
     );

@@ -6,11 +6,12 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { Card } from '@pim/data';
+import { ICard } from '@pim/data';
 import {
   ConnectionBuilderService,
   ConnectionRef,
 } from '../../../connection/connection-builder.service';
+import { BoardService } from '../../services/board.service';
 
 @Component({
   selector: 'pim-card-container',
@@ -21,8 +22,12 @@ export class CardContainerComponent implements OnInit, OnDestroy {
   private relatedConnections: ConnectionRef[] = [];
   private draggingConnections: ConnectionRef[];
 
-  @Input() cards: Card[];
-  constructor(private connectionBuilder: ConnectionBuilderService) {}
+  @Input() cards: ICard[];
+
+  constructor(
+    private boardService: BoardService,
+    private connectionBuilder: ConnectionBuilderService
+  ) {}
 
   ngOnInit(): void {
     //
@@ -32,13 +37,9 @@ export class CardContainerComponent implements OnInit, OnDestroy {
     this.connectionBuilder.clear();
   }
 
-  public drop(event: CdkDragDrop<Card[]>) {
+  public drop(event: CdkDragDrop<ICard[]>) {
     if (event.previousContainer === event.container) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
+      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
     } else {
       transferArrayItem(
         event.previousContainer.data,
@@ -49,7 +50,7 @@ export class CardContainerComponent implements OnInit, OnDestroy {
     }
   }
 
-  public dragStart(event: CdkDragStart<Card>) {
+  public dragStart(event: CdkDragStart<ICard>) {
     this.relatedConnections = this.connectionBuilder.getRelatedConnections(
       `${event.source.data.linkedWitId}`
     );
@@ -59,7 +60,7 @@ export class CardContainerComponent implements OnInit, OnDestroy {
     });
   }
 
-  public dragMove(event: CdkDragMove<Card>) {
+  public dragMove(event: CdkDragMove<ICard>) {
     const draggedCard = event.source.data;
     const draggedPreviewElement: HTMLElement = document.querySelector(
       '.cdk-drag-preview'
@@ -93,13 +94,11 @@ export class CardContainerComponent implements OnInit, OnDestroy {
       });
   }
 
-  public dragDropped(event: CdkDragDrop<Card>) {
+  public dragDropped(event: CdkDragDrop<ICard>) {
     // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
     // Without setTimeout, all lines will get wrong startPoint or endPoint.
     setTimeout(() => {
-      this.connectionBuilder.updateConnections(
-        `${event.item.data.linkedWitId}`
-      ); // Re-draw all lines
+      this.connectionBuilder.updateConnections(`${event.item.data.linkedWitId}`); // Re-draw all lines
     }, 0);
     this.draggingConnections.forEach((ref) => ref.line.remove());
     this.draggingConnections = undefined;

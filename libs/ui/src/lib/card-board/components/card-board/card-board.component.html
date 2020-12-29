@@ -1,4 +1,9 @@
-<p-table [value]="rows" [columns]="columns" cdkDropListGroup>
+<p-table
+  [value]="rows"
+  [columns]="columns"
+  styleClass="p-datatable-gridlines"
+  cdkDropListGroup
+>
   <ng-template pTemplate="header" let-columns>
     <tr>
       <th></th>

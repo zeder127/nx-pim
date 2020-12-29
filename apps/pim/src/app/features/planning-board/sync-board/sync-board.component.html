@@ -1,2 +1,8 @@
-<code>{{cardBoard | json}}</code>
+<div>
+  <button (click)="addNewCard()">New Card</button>
+  <button>New linked Card</button>
+  <button>Delete Card</button>
+  <button>Move Card</button>
+</div>
+<!-- <code>{{cardBoard | json}}</code> -->
 <pim-card-board *ngIf="cardBoard" [model]="cardBoard"></pim-card-board>

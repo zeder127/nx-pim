@@ -1,6 +1,11 @@
 import { DataObject, DataObjectFactory } from '@fluidframework/aqueduct';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import { IDirectory, IDirectoryValueChanged, SharedMap } from '@fluidframework/map';
+import {
+  IDirectory,
+  IDirectoryValueChanged,
+  IValueChanged,
+  SharedMap,
+} from '@fluidframework/map';
 import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
 import { Subject } from 'rxjs';
 import { Constants } from '../shared/constants/constants';
@@ -13,7 +18,7 @@ const Key_Boards_Cols = 'cols';
 const Key_Boards_Cards = 'cards';
 const Key_Boards_Connectons = 'connections';
 
-interface BoardDDS {
+export interface BoardDDS {
   name: string;
   rows: SharedMap;
   cols: SharedMap;
@@ -160,7 +165,7 @@ export class PimDataObject extends DataObject {
    * Helper function to set up event listeners for SharedMap
    */
   private createEventListenersForSharedMap(map: SharedMap) {
-    map.on('valueChanged', (event) => {
+    map.on('valueChanged', (event: IValueChanged) => {
       console.log(`🚀 ~ PiDataObject ~ event`, event);
     });
   }
