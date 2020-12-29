@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { CardBoard } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
-import { delay, map, switchMap } from 'rxjs/operators';
+import { delay, filter, map, switchMap } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
 import { PimDataObjectRefService } from '../../fluid/data-object-ref.service';
 import { Pi } from '../models/pi';
 import { IterationService } from './iteration.service';
@@ -35,7 +36,7 @@ export class PiService {
   constructor(
     private teamService: TeamService,
     private iterationService: IterationService,
-    private pimDO: PimDataObjectRefService
+    private pimDORef: PimDataObjectRefService
   ) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
@@ -49,21 +50,28 @@ export class PiService {
   //   );
   // }
   /**
-   * Get all PIs.
+   * Get all PIs asychronlly. Used to get PIs, if DataObject has not been loaded.
    */
-  public getPis(): Observable<Pi[]> {
-    return from(this.pimDO.getInstanceAsync()).pipe(
+  public getPisAsync(): Observable<Pi[]> {
+    return from(this.pimDORef.getInstanceAsync()).pipe(
       delay(0), // work-around to wait for resolve of all promises while loading DataObject
       switchMap((pim) => {
         return of(pim.getPis());
       })
     );
   }
+
+  /**
+   * Get all PIs directly from current DataObject.
+   */
+  public getPis() {
+    return this.pimDORef.instance.getPis();
+  }
   /**
    * Get PI by its name.
    */
   public getPiByName(name: string): Observable<Pi> {
-    return this.getPis().pipe(map((pis) => pis.find((pi) => pi.name === name)));
+    return this.getPisAsync().pipe(map((pis) => pis.find((pi) => pi.name === name)));
   }
 
   /**
@@ -72,17 +80,36 @@ export class PiService {
    */
   public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
     return this.getPiByName(name).pipe(
+      filter((pi) => !!pi),
       map((pi) => {
-        const boardDDS = this.pimDO.instance.boardRefsMap.get(pi.programBoardId);
+        const boardDDS = this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
+        if (!boardDDS) return null;
         return {
           id: pi.programBoardId,
           name: boardDDS.name,
-          rowHeaders: this.pimDO.transformSharedMapToArray(boardDDS.rows),
-          columnHeaders: this.pimDO.transformSharedMapToArray(boardDDS.cols),
-          cards: this.pimDO.transformSharedMapToArray(boardDDS.cards),
-          connections: this.pimDO.transformSharedMapToArray(boardDDS.connections),
+          rowHeaders: this.pimDORef.transformSharedMapToArray(boardDDS.rows),
+          columnHeaders: this.pimDORef.transformSharedMapToArray(boardDDS.cols),
+          cards: this.pimDORef.transformSharedMapToArray(boardDDS.cards),
+          connections: this.pimDORef.transformSharedMapToArray(boardDDS.connections),
         };
       })
     );
+  }
+
+  public createPi(newPiName: string) {
+    if (this.getPis()?.some((pi) => pi.name === newPiName)) {
+      alert(`Name exists already, please enter another name.`);
+      return;
+    }
+    this.pimDORef.instance.createPi({
+      id: uuidv4(),
+      name: newPiName,
+      teamBoardIds: [],
+      programBoardId: uuidv4(),
+    });
+  }
+
+  public remove(piId: string) {
+    this.pimDORef.instance.removePi(piId);
   }
 }
