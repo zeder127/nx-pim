@@ -1,12 +1,9 @@
 import { DataObject, DataObjectFactory } from '@fluidframework/aqueduct';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import {
-  IDirectory,
-  IDirectoryValueChanged,
-  IValueChanged,
-  SharedMap,
-} from '@fluidframework/map';
+import { IDirectory, IDirectoryValueChanged, SharedMap } from '@fluidframework/map';
 import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
+import { ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
 import { Subject } from 'rxjs';
 import { Constants } from '../shared/constants/constants';
 import { Pi } from '../shared/models/pi';
@@ -20,10 +17,10 @@ const Key_Boards_Connectons = 'connections';
 
 export interface BoardDDS {
   name: string;
-  rows: SharedMap;
-  cols: SharedMap;
-  cards: SharedMap;
-  connections: SharedMap;
+  rows: SharedObjectSequence<IRowHeader>;
+  cols: SharedObjectSequence<IColumnHeader>;
+  cards: SharedObjectSequence<ICard>;
+  connections: SharedObjectSequence<IConnection>;
 }
 
 // prototype, to be changes in future
@@ -86,10 +83,19 @@ export class PimDataObject extends DataObject {
       .createSubDirectory(Key_Boards)
       .createSubDirectory(pi.programBoardId);
     programBoardDir.set('name', Constants.Default_Programm_Board_Name);
-    const rowsMap = this.createSharedMapInDirectory(Key_Boards_Rows, programBoardDir);
-    const colsMap = this.createSharedMapInDirectory(Key_Boards_Cols, programBoardDir);
-    const cardsMap = this.createSharedMapInDirectory(Key_Boards_Cards, programBoardDir);
-    const connectionsMap = this.createSharedMapInDirectory(
+    const rowsSequence = this.createSequenceInDirectory<IRowHeader>(
+      Key_Boards_Rows,
+      programBoardDir
+    );
+    const colsSequence = this.createSequenceInDirectory<IColumnHeader>(
+      Key_Boards_Cols,
+      programBoardDir
+    );
+    const cardsSequence = this.createSequenceInDirectory<ICard>(
+      Key_Boards_Cards,
+      programBoardDir
+    );
+    const connectionsSequence = this.createSequenceInDirectory<IConnection>(
       Key_Boards_Connectons,
       programBoardDir
     );
@@ -97,10 +103,10 @@ export class PimDataObject extends DataObject {
     // insert
     this.boardRefsMap.set(pi.programBoardId, {
       name: Constants.Default_Programm_Board_Name,
-      rows: rowsMap,
-      cols: colsMap,
-      cards: cardsMap,
-      connections: connectionsMap,
+      rows: rowsSequence,
+      cols: colsSequence,
+      cards: cardsSequence,
+      connections: connectionsSequence,
     });
   }
 
@@ -127,11 +133,14 @@ export class PimDataObject extends DataObject {
    * @param id muss be unique
    * @param dir optional, default takes current root directory
    */
-  private createSharedMapInDirectory(id: string, dir: IDirectory = this.root): SharedMap {
-    const map = SharedMap.create(this.runtime);
-    dir.set(id, map.handle);
-    this.createEventListenersForSharedMap(map);
-    return map;
+  private createSequenceInDirectory<T>(
+    id: string,
+    dir: IDirectory = this.root
+  ): SharedObjectSequence<T> {
+    const sequence = SharedObjectSequence.create<T>(this.runtime);
+    dir.set(id, sequence.handle);
+    this.createEventListenersForSequence(sequence);
+    return sequence;
   }
 
   private async loadPi(piDir: IDirectory) {
@@ -144,29 +153,36 @@ export class PimDataObject extends DataObject {
   private async loadBoard(id: string, boardDir: IDirectory) {
     const boardDDS: BoardDDS = {
       name: boardDir.get('name'),
-      rows: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Rows).get(),
-      cols: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cols).get(),
-      cards: await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Cards).get(),
+      rows: await boardDir
+        .get<IFluidHandle<SharedObjectSequence<IRowHeader>>>(Key_Boards_Rows)
+        .get(),
+      cols: await boardDir
+        .get<IFluidHandle<SharedObjectSequence<IColumnHeader>>>(Key_Boards_Cols)
+        .get(),
+      cards: await boardDir
+        .get<IFluidHandle<SharedObjectSequence<ICard>>>(Key_Boards_Cards)
+        .get(),
       connections: await boardDir
-        .get<IFluidHandle<SharedMap>>(Key_Boards_Connectons)
+        .get<IFluidHandle<SharedObjectSequence<IConnection>>>(Key_Boards_Connectons)
         .get(),
     };
 
-    this.createEventListenersForSharedMap(boardDDS.rows);
-    this.createEventListenersForSharedMap(boardDDS.cols);
-    this.createEventListenersForSharedMap(boardDDS.cards);
-    this.createEventListenersForSharedMap(boardDDS.connections);
+    this.createEventListenersForSequence(boardDDS.rows);
+    this.createEventListenersForSequence(boardDDS.cols);
+    this.createEventListenersForSequence(boardDDS.cards);
+    this.createEventListenersForSequence(boardDDS.connections);
 
     // add in BoardRefsMap
     this.boardRefsMap.set(id, boardDDS);
   }
 
   /**
-   * Helper function to set up event listeners for SharedMap
+   * Helper function to set up event listeners for SharedObjectSequence
    */
-  private createEventListenersForSharedMap(map: SharedMap) {
-    map.on('valueChanged', (event: IValueChanged) => {
-      console.log(`🚀 ~ PiDataObject ~ event`, event);
+  private createEventListenersForSequence<T>(sequence: SharedObjectSequence<T>) {
+    sequence.on('sequenceDelta', (event: SequenceDeltaEvent) => {
+      console.log(`🚀 ~ PiDataObject ~ SequenceDeltaEvent`, event);
+      console.log(`🚀 ~ PiDataObject ~ sequence.id`, sequence.id);
     });
   }
 
@@ -202,6 +218,6 @@ export class PimDataObject extends DataObject {
 export const PiInstantiationFactory = new DataObjectFactory(
   'PiDataObject',
   PimDataObject,
-  [SharedMap.getFactory()],
+  [SharedObjectSequence.getFactory()],
   {}
 );

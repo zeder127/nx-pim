@@ -4,5 +4,6 @@
   <button>Delete Card</button>
   <button>Move Card</button>
 </div>
-<!-- <code>{{cardBoard | json}}</code> -->
+<!--Only for development-->
+<code *ngIf="cardBoard">{{cardBoardJsonable | json}}</code>
 <pim-card-board *ngIf="cardBoard" [model]="cardBoard"></pim-card-board>

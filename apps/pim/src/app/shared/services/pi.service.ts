@@ -82,19 +82,26 @@ export class PiService {
     return this.getPiByName(name).pipe(
       filter((pi) => !!pi),
       map((pi) => {
-        const boardDDS = this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
-        if (!boardDDS) return null;
-        return {
-          id: pi.programBoardId,
-          name: boardDDS.name,
-          rowHeaders: this.pimDORef.transformSharedMapToArray(boardDDS.rows),
-          columnHeaders: this.pimDORef.transformSharedMapToArray(boardDDS.cols),
-          cards: this.pimDORef.transformSharedMapToArray(boardDDS.cards),
-          connections: this.pimDORef.transformSharedMapToArray(boardDDS.connections),
-          dds: boardDDS,
-        };
+        return this.toCardBoard(pi.programBoardId, true);
       })
     );
+  }
+  //temp
+  public toCardBoard(boardId: string, withDDS = false): ICardBoard {
+    const boardDDS = this.pimDORef.instance.boardRefsMap.get(boardId);
+    if (!boardDDS) return null;
+    const cardBoard: ICardBoard = {
+      id: boardId,
+      name: boardDDS.name,
+      rowHeaders: boardDDS.rows.getRange(0),
+      columnHeaders: boardDDS.cols.getRange(0),
+      cards: boardDDS.cards.getRange(0),
+      connections: boardDDS.connections.getRange(0),
+    };
+    if (withDDS) {
+      cardBoard.dds = boardDDS;
+    }
+    return cardBoard;
   }
 
   public createPi(newPiName: string) {

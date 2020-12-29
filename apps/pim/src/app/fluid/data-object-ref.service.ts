@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { SharedMap } from '@fluidframework/map';
 import { PiContainerFactory } from './container-code';
 import { FluidLoaderService } from './fluid-loader.service';
 import { PimDataObject } from './pim.dataobject';
@@ -44,15 +43,5 @@ export class PimDataObjectRefService {
     console.log(`🚀 ~ PimDataObjectRefService ~ this.instance`, this.instance);
 
     return this.instance;
-  }
-
-  /**
-   * Convert a SharedMap to array
-   * @param sharedMap
-   */
-  public transformSharedMapToArray<T>(sharedMap: SharedMap): T[] {
-    const result: T[] = [];
-    sharedMap.forEach((v) => result.push(v[1]));
-    return result;
   }
 }
