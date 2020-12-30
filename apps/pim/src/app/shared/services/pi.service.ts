@@ -95,7 +95,7 @@ export class PiService {
       name: boardDDS.name,
       rowHeaders: boardDDS.rows.getRange(0),
       columnHeaders: boardDDS.cols.getRange(0),
-      cards: boardDDS.cards.getRange(0),
+      cards: [], //boardDDS.matrix.getCell(1, 1).get(),
       connections: boardDDS.connections.getRange(0),
     };
     if (withDDS) {

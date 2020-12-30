@@ -6,6 +6,7 @@ export interface ICardBoard {
   rowHeaders: IRowHeader[];
   cards: ICard[];
   connections: IConnection[];
+  matrix?: unknown;
 }
 
 interface IHeader {

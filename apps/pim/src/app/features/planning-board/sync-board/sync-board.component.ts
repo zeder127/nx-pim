@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ICardBoard, Iteration, Team } from '@pim/data';
+import { SharedObjectSequence } from '@fluidframework/sequence';
+import { ICard, ICardBoard, Iteration, Team } from '@pim/data';
 import { BoardDDS } from '../../../fluid/pim.dataobject';
 import { PiService } from '../../../shared/services/pi.service';
 
@@ -16,24 +17,41 @@ export class SyncBoardComponent implements OnInit {
   public iterations: Iteration[] = [];
   public teams: Team[] = [];
   public cardBoard: ICardBoard;
-  public cardBoardJsonable: ICardBoard;
+  public cardBoardJsonable: ICard[];
 
   private piName: string;
-  // private pimDO: PimDataObject;
-
-  constructor(private route: ActivatedRoute, private piService: PiService) {}
+  private boardDDS: BoardDDS;
+  private cellSeq: SharedObjectSequence<ICard>;
+  constructor(
+    private route: ActivatedRoute,
+    private piService: PiService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.piName = this.route.snapshot.paramMap.get('piName');
-    this.piService.getProgrammBoardOfPI(this.piName).subscribe((board) => {
+    this.piService.getProgrammBoardOfPI(this.piName).subscribe(async (board) => {
       this.cardBoard = board;
-      this.updateBoard();
+      this.boardDDS = this.cardBoard.dds as BoardDDS;
+      const cellSeqHandle = this.boardDDS.matrix.getCell(0, 1);
+      if (!cellSeqHandle) {
+        alert('Cell (0,1) is empty');
+        return;
+      }
+      this.cellSeq = await cellSeqHandle.get();
+      this.cellSeq.on('sequenceDelta', (event) => {
+        console.log(`🚀 ~ cellSeq ~ event`, event);
+        this.cardBoardJsonable = this.cellSeq.getRange(0);
+        this.cdr.detectChanges();
+      });
+      this.boardDDS.matrix.on('op', (event) => {
+        console.log(`🚀 ~ boardDDS ~ event`, event);
+      });
     });
   }
 
-  addNewCard() {
-    const boardDDS: BoardDDS = this.cardBoard.dds as BoardDDS;
-    boardDDS.cards.insert(0, [
+  addNewCard(row: number, col: number) {
+    this.cellSeq.insert(0, [
       {
         linkedWitId: 99,
         x: 1,
@@ -41,10 +59,10 @@ export class SyncBoardComponent implements OnInit {
         text: 'test',
       },
     ]);
-
-    this.updateBoard();
   }
-  updateBoard() {
-    this.cardBoardJsonable = this.piService.toCardBoard(this.cardBoard.id);
+
+  deleteCard() {
+    // this.boardDDS.matrix.re(0, 1);
+    // this.updateBoard();
   }
 }
