@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { ICardBoard } from '@pim/data';
+import { ICardBoard, Pi } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
-import { PimDataObjectRefService } from '../../fluid/data-object-ref.service';
-import { Pi } from '../models/pi';
+import { PimDataObjectRefService } from './data-object-ref.service';
 import { IterationService } from './iteration.service';
 import { TeamService } from './team.service';
 

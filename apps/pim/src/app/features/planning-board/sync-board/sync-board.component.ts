@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard, ICardBoard, Iteration, Team } from '@pim/data';
-import { BoardDDS } from '../../../fluid/pim.dataobject';
+import { BoardDDS } from '@pim/data/fluid';
 import { PiService } from '../../../shared/services/pi.service';
 
 // const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';

@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Pi } from '@pim/data';
 import { AutoUnsubscriber } from '@pim/ui';
-import { PimDataObjectRefService } from '../../fluid/data-object-ref.service';
-import { Pi } from '../../shared/models/pi';
+import { PimDataObjectRefService } from '../../shared/services/data-object-ref.service';
 import { PiService } from '../../shared/services/pi.service';
 
 @Component({

@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
-import { PiContainerFactory } from './container-code';
-import { FluidLoaderService } from './fluid-loader.service';
-import { PimDataObject } from './pim.dataobject';
+import { FluidLoaderService, PiContainerFactory, PimDataObject } from '@pim/data/fluid';
 
 @Injectable({
   providedIn: 'root',

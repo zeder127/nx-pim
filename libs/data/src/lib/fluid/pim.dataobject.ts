@@ -6,8 +6,8 @@ import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions'
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
 import { Subject } from 'rxjs';
-import { Constants } from '../shared/constants/constants';
-import { Pi } from '../shared/models/pi';
+import { Constants } from '../constants';
+import { Pi } from '../pi';
 
 const Key_Pis = 'pis';
 const Key_Boards = 'boards';
