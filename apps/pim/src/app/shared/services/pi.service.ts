@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Cacheable } from '@pim/ui';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { Pi } from '../models/pi';
+import { CardBoard, Pi } from '@pim/data';
+import { from, Observable, of } from 'rxjs';
+import { delay, filter, map, switchMap } from 'rxjs/operators';
+import { v4 as uuidv4 } from 'uuid';
+import { PimDataObjectRefService } from './data-object-ref.service';
 import { IterationService } from './iteration.service';
 import { TeamService } from './team.service';
 
@@ -24,37 +25,18 @@ import { TeamService } from './team.service';
 //   witIds: []
 // }
 
-const DemoPis: Pi[] = [
-  {
-    id: '111',
-    name: '20Q1',
-    teamBoardIds: [],
-    programBoardId: '111-111',
-  },
-  {
-    id: '222',
-    name: '20Q 2',
-    teamBoardIds: [],
-    programBoardId: '222-222',
-  },
-  {
-    id: '333',
-    name: '20Q3',
-    teamBoardIds: [],
-    programBoardId: '333-333',
-  },
-];
-
+/**
+ * Apdapter between UI and DataObject
+ */
 @Injectable({
   providedIn: 'root',
 })
-export class PiService extends Cacheable<Pi> {
+export class PiService {
   constructor(
     private teamService: TeamService,
-    private iterationService: IterationService
-  ) {
-    super();
-  }
+    private iterationService: IterationService,
+    private pimDORef: PimDataObjectRefService
+  ) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
   //   return of(piconfig).pipe(
@@ -66,16 +48,65 @@ export class PiService extends Cacheable<Pi> {
   //     })
   //   );
   // }
-
-  protected getAll(): Observable<Pi[]> {
-    return of(DemoPis).pipe(delay(100));
+  /**
+   * Get all PIs asychronlly. Used to get PIs, if DataObject has not been loaded.
+   */
+  public getPisAsync(): Observable<Pi[]> {
+    return from(this.pimDORef.getInstanceAsync()).pipe(
+      delay(0), // work-around to wait for resolve of all promises while loading DataObject
+      switchMap((pim) => {
+        return of(pim.getPis());
+      })
+    );
   }
 
-  public getPis(): Observable<Pi[]> {
-    return this.getCache();
+  /**
+   * Get all PIs directly from current DataObject.
+   */
+  public getPis() {
+    return this.pimDORef.instance.getPis();
+  }
+  /**
+   * Get PI by its name.
+   */
+  public getPiByName(name: string): Observable<Pi> {
+    return this.getPisAsync().pipe(map((pis) => pis.find((pi) => pi.name === name)));
   }
 
-  public getPiByName(name: string) {
-    return this.getSingleByKey('name', name);
+  /**
+   * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
+   * @param name Name of a PI
+   */
+  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
+    return this.getPiByName(name).pipe(
+      filter((pi) => !!pi),
+      map((pi) => {
+        return this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
+      })
+    );
+  }
+  /**
+   * Create a new PI DDS
+   * @param name name of a new PI, this name muss be unique
+   */
+  public createPi(name: string) {
+    if (this.getPis()?.some((pi) => pi.name === name)) {
+      alert(`Name exists already, please enter another name.`);
+      return;
+    }
+    this.pimDORef.instance.createPi({
+      id: uuidv4(),
+      name: name,
+      teamBoardIds: [],
+      programBoardId: uuidv4(),
+    });
+  }
+
+  /**
+   * Remove a PI by the given id
+   * @param piId
+   */
+  public remove(piId: string) {
+    this.pimDORef.instance.removePi(piId);
   }
 }

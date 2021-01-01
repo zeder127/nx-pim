@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Connection } from '@pim/data';
+import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
 
-export type ConnectionRef = { connection: Connection; line: LeaderLine };
+export type ConnectionRef = { connection: IConnection; line: LeaderLine };
 
 @Injectable()
 export class ConnectionBuilderService {
@@ -16,7 +16,7 @@ export class ConnectionBuilderService {
    * Draw lines based on given Connections.
    * @param connections
    */
-  public create(connections: Connection[]) {
+  public create(connections: IConnection[]) {
     connections?.forEach((connection) => {
       const line = this.drawLineByConnection(connection);
       // add this connection in store
@@ -30,7 +30,7 @@ export class ConnectionBuilderService {
    * Draw a line base on the given connection
    * @param connection
    */
-  public drawLineByConnection(connection: Connection): LeaderLine {
+  public drawLineByConnection(connection: IConnection): LeaderLine {
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
     return this.drawLine(startPointElement, endPointElement);
@@ -59,7 +59,7 @@ export class ConnectionBuilderService {
    * Re-draw lines that connect to an element. If elementId is undefined, re-draw all lines.
    * @param elementId
    */
-  public updateConnections(elementId?: string) {
+  public redrawConnections(elementId?: string) {
     this.getRelatedConnections(elementId).forEach(
       (ref) => (ref.line = this.drawLineByConnection(ref.connection))
     );
@@ -98,5 +98,12 @@ export class ConnectionBuilderService {
   public clear() {
     this.connectionStore.forEach((ref) => ref.line.remove());
     this.connectionStore = [];
+  }
+
+  /**
+   * Update postions of all connections
+   */
+  public updatePositions() {
+    this.connectionStore.forEach((ref) => ref.line.position());
   }
 }

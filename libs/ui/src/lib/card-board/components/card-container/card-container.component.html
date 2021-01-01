@@ -14,5 +14,9 @@
     (cdkDragStarted)="dragStart($event)"
     (cdkDragMoved)="dragMove($event)"
     (cdkDragDropped)="dragDropped($event)"
+    (load)="onLoad()"
+    (remove)="removeCard($event)"
   ></pim-card>
 </div>
+
+<button (click)="addCard()">+</button>

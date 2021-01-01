@@ -1,8 +1,9 @@
 <p>Dashboard with charts for statistic of all Pis</p>
 <ul>
-  <li *ngFor="let pi of pis$ | async">
+  <li *ngFor="let pi of pis">
     <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
+    <button (click)="removePi(pi.id)">X</button>
   </li>
 </ul>
 <input type="text" [(ngModel)]="newPiName" />
-<button (click)="createPi(newPiName)">New PI</button>
+<button (click)="createPi(newPiName); newPiName=undefined">New PI</button>

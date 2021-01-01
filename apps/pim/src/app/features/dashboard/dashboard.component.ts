@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { v4 as uuidv4 } from 'uuid';
-import { DataObjectRefService } from '../../fluid/data-object-ref.service';
-import { Pi } from '../../shared/models/pi';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Pi } from '@pim/data';
+import { AutoUnsubscriber } from '@pim/ui';
+import { PimDataObjectRefService } from '../../shared/services/data-object-ref.service';
 import { PiService } from '../../shared/services/pi.service';
 
 @Component({
@@ -10,19 +9,35 @@ import { PiService } from '../../shared/services/pi.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent implements OnInit {
-  public pis$: Observable<Pi[]>;
-  constructor(private piService: PiService, private dor: DataObjectRefService) {}
+export class DashboardComponent extends AutoUnsubscriber implements OnInit {
+  public pis: Pi[];
   public newPiName: string;
-  ngOnInit(): void {
-    this.pis$ = this.piService.getPis();
+  constructor(
+    private piService: PiService,
+    private pimDORef: PimDataObjectRefService,
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
   }
+
+  async ngOnInit() {
+    const pimDO = await this.pimDORef.getInstanceAsync();
+    pimDO.pisChange$.pipe(this.autoUnsubscribe()).subscribe(() => this.updatePis());
+    this.updatePis();
+  }
+
   public createPi(name: string) {
-    this.dor.instance.createPi({
-      id: uuidv4(),
-      name,
-      teamBoardIds: [],
-      programBoardId: uuidv4(),
-    });
+    this.piService.createPi(name);
+  }
+
+  public removePi(id: string) {
+    this.piService.remove(id);
+  }
+
+  private updatePis(): void {
+    this.pis = this.piService.getPis();
+
+    // Event is occuring outside of Angular so detecting changes
+    this.cdr.detectChanges();
   }
 }

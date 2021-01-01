@@ -1,35 +1,62 @@
+import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { SharedMatrix } from '@fluidframework/matrix';
+import { SharedObjectSequence } from '@fluidframework/sequence';
+
+// TODO to remove
+export interface ICardBoard {
+  id: string;
+  name: string;
+  columnHeaders: IColumnHeader[];
+  rowHeaders: IRowHeader[];
+  cards: ICard[];
+  connections: IConnection[];
+}
+
 export interface CardBoard {
   id: string;
   name: string;
-  columnHeaders: ColumnHeader[];
-  rowHeaders: RowHeader[];
-  cards: Card[];
-  connections: Connection[];
+  columnHeaders: SharedObjectSequence<IColumnHeader>;
+  rowHeaders: SharedObjectSequence<IRowHeader>;
+  cells: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
+  connections: SharedObjectSequence<IConnection>;
 }
 
-interface Header {
+interface IHeader {
   text: string;
   description: string;
   id: string;
 }
 
-export interface ColumnHeader extends Header {
+export interface IColumnHeader extends IHeader {
   linkedWitId: number;
 }
 
-export interface RowHeader extends Header {
+export interface IRowHeader extends IHeader {
   linkedIterationId: number;
 }
 
-export interface Card {
-  id?: string; // should be required
+// TODO remove Cell extension
+export interface ICard extends Cell {
+  id?: string;
   linkedWitId: number;
-  x: number;
-  y: number;
   text: string;
 }
 
-export interface Connection {
+/**
+ * Interface for SpecMap
+ */
+export interface SpecMapItem extends Cell {
+  id: number;
+  text: string;
+  description: string;
+}
+
+export interface IConnection {
   startPointId: string;
   endPointId: string;
+}
+
+export interface Cell {
+  x: number;
+  y: number;
 }
