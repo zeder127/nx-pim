@@ -59,7 +59,7 @@ export class ConnectionBuilderService {
    * Re-draw lines that connect to an element. If elementId is undefined, re-draw all lines.
    * @param elementId
    */
-  public updateConnections(elementId?: string) {
+  public redrawConnections(elementId?: string) {
     this.getRelatedConnections(elementId).forEach(
       (ref) => (ref.line = this.drawLineByConnection(ref.connection))
     );
@@ -98,5 +98,12 @@ export class ConnectionBuilderService {
   public clear() {
     this.connectionStore.forEach((ref) => ref.line.remove());
     this.connectionStore = [];
+  }
+
+  /**
+   * Update postions of all connections
+   */
+  public updatePositions() {
+    this.connectionStore.forEach((ref) => ref.line.position());
   }
 }

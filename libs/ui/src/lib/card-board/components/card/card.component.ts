@@ -19,9 +19,8 @@ export class CardComponent implements OnInit, AfterViewInit {
    * Event will be triggered, when this card has been loaded.
    */
   @Output() load = new EventEmitter();
-  constructor() {
-    //
-  }
+  @Output() remove = new EventEmitter<ICard>();
+  constructor() {}
 
   ngOnInit(): void {
     //
@@ -29,5 +28,9 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.load.emit();
+  }
+
+  public onRemove() {
+    this.remove.emit(this.card);
   }
 }

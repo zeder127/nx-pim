@@ -16,7 +16,7 @@ import {
   Output,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import { SharedObjectSequence } from '@fluidframework/sequence';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard } from '@pim/data';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -56,6 +56,10 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
 
   async ngOnInit() {
     this.cardsSeq = await this.cardsSeqHandle.get();
+    this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
+      console.log(`🚀 ~ CardContainerComponent ~ event`, event);
+      this.update(true);
+    });
     this.update();
   }
 
@@ -67,20 +71,26 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
     this.connectionBuilder.clear();
   }
 
-  addNewCard() {
+  public addCard() {
     this.cardsSeq.insert(this.cardsSeq.getItemCount(), [DemoCard]);
     this.update(true);
   }
 
-  onLoad() {
+  public onLoad() {
     this.loadedCardsCount++;
     if (this.loadedCardsCount === this.cardsSeq.getItemCount()) {
       this.load.emit();
     }
   }
 
+  public removeCard(card: ICard) {
+    const indexToRemove = this.cards.findIndex((c) => c.id === card.id);
+    if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
+  }
+
   private update(detechChanges?: boolean) {
     this.cards = this.cardsSeq.getRange(0);
+    this.connectionBuilder.updatePositions();
     if (detechChanges) this.cdr.detectChanges();
   }
 
@@ -146,7 +156,7 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
     // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
     // Without setTimeout, all lines will get wrong startPoint or endPoint.
     setTimeout(() => {
-      this.connectionBuilder.updateConnections(`${event.item.data.linkedWitId}`); // Re-draw all lines
+      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all lines
     }, 0);
     this.draggingConnections.forEach((ref) => ref.line.remove());
     this.draggingConnections = undefined;
