@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ICardBoard, Pi } from '@pim/data';
+import { CardBoard, Pi } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -77,45 +77,35 @@ export class PiService {
    * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
    * @param name Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<ICardBoard> {
+  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
     return this.getPiByName(name).pipe(
       filter((pi) => !!pi),
       map((pi) => {
-        return this.toCardBoard(pi.programBoardId, true);
+        return this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
       })
     );
   }
-  //temp
-  public toCardBoard(boardId: string, withDDS = false): ICardBoard {
-    const boardDDS = this.pimDORef.instance.boardRefsMap.get(boardId);
-    if (!boardDDS) return null;
-    const cardBoard: ICardBoard = {
-      id: boardId,
-      name: boardDDS.name,
-      rowHeaders: boardDDS.rows.getRange(0),
-      columnHeaders: boardDDS.cols.getRange(0),
-      cards: [], //boardDDS.matrix.getCell(1, 1).get(),
-      connections: boardDDS.connections.getRange(0),
-    };
-    if (withDDS) {
-      cardBoard.dds = boardDDS;
-    }
-    return cardBoard;
-  }
-
-  public createPi(newPiName: string) {
-    if (this.getPis()?.some((pi) => pi.name === newPiName)) {
+  /**
+   * Create a new PI DDS
+   * @param name name of a new PI, this name muss be unique
+   */
+  public createPi(name: string) {
+    if (this.getPis()?.some((pi) => pi.name === name)) {
       alert(`Name exists already, please enter another name.`);
       return;
     }
     this.pimDORef.instance.createPi({
       id: uuidv4(),
-      name: newPiName,
+      name: name,
       teamBoardIds: [],
       programBoardId: uuidv4(),
     });
   }
 
+  /**
+   * Remove a PI by the given id
+   * @param piId
+   */
   public remove(piId: string) {
     this.pimDORef.instance.removePi(piId);
   }

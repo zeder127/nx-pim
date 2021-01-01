@@ -1,12 +1,20 @@
-import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { ICard, ICardBoard, IColumnHeader, IRowHeader } from '@pim/data';
-import { groupBy } from 'lodash';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { SharedObjectSequence } from '@fluidframework/sequence';
+import { CardBoard, ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
 export interface RowData {
   header: IRowHeader;
-  data: { [key: string]: ICard[] };
+  data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
 }
 
 @Component({
@@ -16,33 +24,40 @@ export interface RowData {
   providers: [BoardService, ConnectionBuilderService],
 })
 export class CardBoardComponent implements OnInit, AfterViewInit {
-  @Input('model') board: ICardBoard;
+  @Input('model') board: CardBoard;
+  /**
+   * Event will be triggered, when all cells has been loaded.
+   */
+  @Output() load = new EventEmitter();
 
-  public rows: RowData[] = [];
+  public rows: IRowHeader[] = [];
   public columns: IColumnHeader[] = [];
+  public connections: IConnection[] = [];
+  private loadedCellsCount = 0;
   constructor(
-    private boardService: BoardService,
+    // private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService
   ) {}
 
   ngOnInit(): void {
-    this.columns = this.board.columnHeaders;
-    this.rows = this.initRowData(this.board);
+    this.columns = this.board.columnHeaders.getRange(0);
+    this.connections = this.board.connections.getRange(0);
+    this.rows = this.board.rowHeaders.getRange(0);
   }
 
   ngAfterViewInit(): void {
-    this.connectionBuilder.create(this.board.connections);
+    // this.connectionBuilder.create(this.connections);
   }
 
-  private initRowData(board: ICardBoard): RowData[] {
-    return board.rowHeaders.map((rHeader, rIndex) => {
-      return {
-        header: rHeader,
-        data: groupBy(
-          board.cards.filter((card) => card.y === rIndex + 1),
-          'x'
-        ),
-      };
-    });
+  public getCell(row: number, col: number) {
+    return this.board.cells.getCell(row, col);
+  }
+
+  public onLoad() {
+    this.loadedCellsCount++;
+    if (this.loadedCellsCount === this.columns.length * this.rows.length) {
+      this.load.emit();
+      this.connectionBuilder.create(this.connections);
+    }
   }
 }

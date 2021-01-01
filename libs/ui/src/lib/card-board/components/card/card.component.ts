@@ -1,4 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ICard } from '@pim/data';
 
 @Component({
@@ -6,13 +13,21 @@ import { ICard } from '@pim/data';
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
 })
-export class CardComponent implements OnInit {
+export class CardComponent implements OnInit, AfterViewInit {
   @Input() card: ICard;
+  /**
+   * Event will be triggered, when this card has been loaded.
+   */
+  @Output() load = new EventEmitter();
   constructor() {
     //
   }
 
   ngOnInit(): void {
     //
+  }
+
+  ngAfterViewInit(): void {
+    this.load.emit();
   }
 }
