@@ -47,10 +47,13 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
       this.update(true);
     });
     this.update();
+
+    // If no card in container, have to emit load event manully
+    if (this.cardsSeq.getItemCount() === 0) this.load.next();
   }
 
   ngAfterViewInit(): void {
-    console.log(`🚀 ~ CardContainerComponent ~ ngAfterViewInit()`);
+    //
   }
 
   ngOnDestroy(): void {
@@ -83,8 +86,8 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private update(detechChanges?: boolean) {
     this.cards = this.cardsSeq.getRange(0);
-    this.connectionBuilder.updatePositions();
     if (detechChanges) this.cdr.detectChanges();
+    this.connectionBuilder.update$.next();
   }
 
   // *******************************************************/
@@ -92,11 +95,14 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
   // *******************************************************/
   public drop(event: CdkDragDrop<ICard[]>) {
     if (event.previousContainer === event.container) {
-      this.moveItemInSequence(
-        event.container.data as never,
-        event.previousIndex,
-        event.currentIndex
-      );
+      // Index really changed
+      if (event.previousIndex !== event.currentIndex) {
+        this.moveItemInSequence(
+          event.container.data as never,
+          event.previousIndex,
+          event.currentIndex
+        );
+      }
     } else {
       this.transferSequenceItem(
         event.previousContainer.data as never,

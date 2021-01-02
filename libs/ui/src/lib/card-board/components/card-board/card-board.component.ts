@@ -57,7 +57,7 @@ export class CardBoardComponent implements OnInit, AfterViewInit {
     this.loadedCellsCount++;
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
       this.load.emit();
-      this.connectionBuilder.create(this.connections);
+      this.connectionBuilder.initConnections(this.connections);
     }
   }
 }

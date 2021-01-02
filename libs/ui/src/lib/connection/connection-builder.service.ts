@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 export type ConnectionRef = { connection: IConnection; line: LeaderLine };
 
@@ -8,15 +10,21 @@ export type ConnectionRef = { connection: IConnection; line: LeaderLine };
 export class ConnectionBuilderService {
   private connectionStore: ConnectionRef[] = [];
 
+  /**
+   * Handle to update positions of all connections
+   */
+  public update$ = new Subject();
+
   constructor() {
-    //
+    // Using debounceTime to avoid from frequently updating
+    this.update$.pipe(debounceTime(50)).subscribe(() => this.updatePositions());
   }
 
   /**
    * Draw lines based on given Connections.
    * @param connections
    */
-  public create(connections: IConnection[]) {
+  public initConnections(connections: IConnection[]) {
     connections?.forEach((connection) => {
       const line = this.drawLineByConnection(connection);
       // add this connection in store
@@ -101,9 +109,9 @@ export class ConnectionBuilderService {
   }
 
   /**
-   * Update postions of all connections
+   * Execute update postions of all connections
    */
-  public updatePositions() {
+  private updatePositions() {
     this.connectionStore.forEach((ref) => ref.line.position());
   }
 }
