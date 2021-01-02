@@ -1,11 +1,9 @@
 import { CdkDragDrop, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -24,7 +22,7 @@ import { BoardService } from '../../services/board.service';
   templateUrl: './card-container.component.html',
   styleUrls: ['./card-container.component.scss'],
 })
-export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class CardContainerComponent implements OnInit {
   private relatedConnections: ConnectionRef[] = [];
   private draggingConnections: ConnectionRef[];
   public cardsSeq: SharedObjectSequence<ICard>;
@@ -51,15 +49,6 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
     // If no card in container, have to emit load event manully
     if (this.cardsSeq.getItemCount() === 0) this.load.next();
   }
-
-  ngAfterViewInit(): void {
-    //
-  }
-
-  ngOnDestroy(): void {
-    this.connectionBuilder.clear();
-  }
-
   public addCard() {
     const DemoCard: ICard = {
       id: uuidv4(),
