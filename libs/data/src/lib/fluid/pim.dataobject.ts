@@ -18,6 +18,8 @@ const Key_Boards_Rows = 'rows';
 const Key_Boards_Cols = 'cols';
 const Key_Boards_Cards = 'cards';
 const Key_Boards_Connectons = 'connections';
+const Key_Users = 'users';
+const Key_WorkItems = 'workItems';
 
 // prototype, to be changes in future
 export class PimDataObject extends DataObject {
@@ -25,14 +27,22 @@ export class PimDataObject extends DataObject {
   pisChange$ = this.pisChangeSubject$.asObservable();
   private pisDir: IDirectory;
   public boardRefsMap = new Map<string, CardBoard>();
+  public workItems: SharedMap;
 
   protected async initializingFirstTime() {
     this.root.createSubDirectory(Key_Pis);
+
+    // SharedMap to hold all collaborating users
     const users = SharedMap.create(this.runtime);
-    this.root.set('users', users.handle);
+    this.root.set(Key_Users, users.handle);
+
+    // SharedMap to hold all related workitem objects
+    const workItems = SharedMap.create(this.runtime);
+    this.root.set(Key_WorkItems, workItems.handle);
   }
 
   protected async hasInitialized() {
+    // load Pis
     this.pisDir = this.root.getSubDirectory(Key_Pis);
     if (!this.pisDir) {
       alert(`FluidFramework: no such subdriectory -> ${Key_Pis}`);
@@ -42,6 +52,11 @@ export class PimDataObject extends DataObject {
     [...this.pisDir.subdirectories()].forEach(async (v) => {
       await this.loadPi(v[1]);
     });
+
+    // TODO load users
+
+    // load workItems
+    this.workItems = await this.root.get<IFluidHandle<SharedMap>>(Key_WorkItems).get();
 
     this.root.on('valueChanged', (changed: IDirectoryValueChanged) => {
       const result = [...this.pisDir.subdirectories()].find(

@@ -41,7 +41,8 @@ export class CardContainerComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.cardsSeq = await this.cardsSeqHandle.get();
+    // FIXME sometimems cardsSeqHandle is null
+    this.cardsSeq = await this.cardsSeqHandle?.get();
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
       this.update();
