@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { CardBoard, ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
@@ -23,7 +16,7 @@ export interface RowData {
   styleUrls: ['./card-board.component.scss'],
   providers: [BoardService, ConnectionBuilderService],
 })
-export class CardBoardComponent implements OnInit, AfterViewInit {
+export class CardBoardComponent implements OnInit, OnDestroy {
   @Input('model') board: CardBoard;
   /**
    * Event will be triggered, when all cells has been loaded.
@@ -45,8 +38,8 @@ export class CardBoardComponent implements OnInit, AfterViewInit {
     this.rows = this.board.rowHeaders.getRange(0);
   }
 
-  ngAfterViewInit(): void {
-    // this.connectionBuilder.create(this.connections);
+  ngOnDestroy(): void {
+    this.connectionBuilder.clear();
   }
 
   public getCell(row: number, col: number) {
@@ -57,7 +50,7 @@ export class CardBoardComponent implements OnInit, AfterViewInit {
     this.loadedCellsCount++;
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
       this.load.emit();
-      this.connectionBuilder.create(this.connections);
+      this.connectionBuilder.initConnections(this.connections);
     }
   }
 }

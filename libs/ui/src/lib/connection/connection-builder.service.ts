@@ -1,22 +1,42 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { AutoUnsubscriber } from '../util/base/auto-unsubscriber';
 
 export type ConnectionRef = { connection: IConnection; line: LeaderLine };
 
 @Injectable()
-export class ConnectionBuilderService {
+export class ConnectionBuilderService extends AutoUnsubscriber implements OnDestroy {
   private connectionStore: ConnectionRef[] = [];
 
+  /**
+   * Handle to update positions of all connections
+   */
+  public update$ = new Subject();
+
   constructor() {
-    //
+    super();
+
+    // Using debounceTime to avoid from frequently updating
+    this.update$
+      .pipe(this.autoUnsubscribe(), debounceTime(50))
+      .subscribe(() => this.updatePositions());
+  }
+  ngOnDestroy(): void {
+    super.ngOnDestroy();
+
+    // LeaderLine are rendered under <body> directly(not part of angular),
+    // so they should be removed manually, if this service is destroyed
+    this.clear();
   }
 
   /**
    * Draw lines based on given Connections.
    * @param connections
    */
-  public create(connections: IConnection[]) {
+  public initConnections(connections: IConnection[]) {
     connections?.forEach((connection) => {
       const line = this.drawLineByConnection(connection);
       // add this connection in store
@@ -101,9 +121,13 @@ export class ConnectionBuilderService {
   }
 
   /**
-   * Update postions of all connections
+   * Execute update postions of all connections
    */
-  public updatePositions() {
-    this.connectionStore.forEach((ref) => ref.line.position());
+  private updatePositions() {
+    this.connectionStore.forEach((ref) => {
+      ref.line.remove();
+      ref.line = this.drawLineByConnection(ref.connection);
+      ref.line.position();
+    });
   }
 }

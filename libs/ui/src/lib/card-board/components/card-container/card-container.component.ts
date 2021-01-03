@@ -1,17 +1,9 @@
+import { CdkDragDrop, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
-  CdkDragDrop,
-  CdkDragMove,
-  CdkDragStart,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
-import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -25,23 +17,15 @@ import {
 } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
-const DemoCard: ICard = {
-  id: uuidv4(),
-  text: 'New card',
-  linkedWitId: 100,
-  x: undefined, // TODO
-  y: undefined, // TODO
-};
-
 @Component({
   selector: 'pim-card-container',
   templateUrl: './card-container.component.html',
   styleUrls: ['./card-container.component.scss'],
 })
-export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class CardContainerComponent implements OnInit {
   private relatedConnections: ConnectionRef[] = [];
   private draggingConnections: ConnectionRef[];
-  private cardsSeq: SharedObjectSequence<ICard>;
+  public cardsSeq: SharedObjectSequence<ICard>;
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
 
@@ -57,21 +41,22 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
   async ngOnInit() {
     this.cardsSeq = await this.cardsSeqHandle.get();
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-      console.log(`🚀 ~ CardContainerComponent ~ event`, event);
+      console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
       this.update(true);
     });
     this.update();
-  }
 
-  ngAfterViewInit(): void {
-    console.log(`🚀 ~ CardContainerComponent ~ ngAfterViewInit()`);
+    // If no card in container, have to emit load event manully
+    if (this.cardsSeq.getItemCount() === 0) this.load.next();
   }
-
-  ngOnDestroy(): void {
-    this.connectionBuilder.clear();
-  }
-
   public addCard() {
+    const DemoCard: ICard = {
+      id: uuidv4(),
+      text: `New card ${Math.floor(Math.random() * 10)}`,
+      linkedWitId: 100,
+      x: undefined, // TODO
+      y: undefined, // TODO
+    };
     this.cardsSeq.insert(this.cardsSeq.getItemCount(), [DemoCard]);
     this.update(true);
   }
@@ -90,22 +75,51 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private update(detechChanges?: boolean) {
     this.cards = this.cardsSeq.getRange(0);
-    this.connectionBuilder.updatePositions();
     if (detechChanges) this.cdr.detectChanges();
+    this.connectionBuilder.update$.next();
   }
 
+  // *******************************************************/
   // **************** Start: Drag and Drop *****************/
+  // *******************************************************/
   public drop(event: CdkDragDrop<ICard[]>) {
     if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+      // Index really changed
+      if (event.previousIndex !== event.currentIndex) {
+        this.moveItemInSequence(
+          event.container.data as never,
+          event.previousIndex,
+          event.currentIndex
+        );
+      }
     } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
+      this.transferSequenceItem(
+        event.previousContainer.data as never,
+        event.container.data as never,
         event.previousIndex,
         event.currentIndex
       );
     }
+  }
+  private transferSequenceItem(
+    previousSeq: SharedObjectSequence<ICard>,
+    currentSeq: SharedObjectSequence<ICard>,
+    previousIndex: number,
+    currentIndex: number
+  ) {
+    const itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
+    previousSeq.removeRange(previousIndex, previousIndex + 1);
+    currentSeq.insert(currentIndex, itemsToMove);
+  }
+
+  private moveItemInSequence(
+    seq: SharedObjectSequence<ICard>,
+    previousIndex: number,
+    currentIndex: number
+  ) {
+    const itemsToMove = seq.getItems(previousIndex, previousIndex + 1);
+    seq.removeRange(previousIndex, previousIndex + 1);
+    seq.insert(currentIndex, itemsToMove);
   }
 
   public dragStart(event: CdkDragStart<ICard>) {
@@ -161,6 +175,7 @@ export class CardContainerComponent implements OnInit, AfterViewInit, OnDestroy 
     this.draggingConnections.forEach((ref) => ref.line.remove());
     this.draggingConnections = undefined;
   }
-
-  // **************** End: Drag and Drop *****************/
+  // *******************************************************/
+  // ****************** End: Drag and Drop *****************/
+  // *******************************************************/
 }
