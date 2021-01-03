@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { CardBoard, ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
@@ -15,6 +23,7 @@ export interface RowData {
   templateUrl: './card-board.component.html',
   styleUrls: ['./card-board.component.scss'],
   providers: [BoardService, ConnectionBuilderService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBoardComponent implements OnInit, OnDestroy {
   @Input('model') board: CardBoard;

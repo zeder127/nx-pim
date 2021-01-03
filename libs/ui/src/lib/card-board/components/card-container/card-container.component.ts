@@ -1,5 +1,6 @@
 import { CdkDragDrop, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -21,6 +22,7 @@ import { BoardService } from '../../services/board.service';
   selector: 'pim-card-container',
   templateUrl: './card-container.component.html',
   styleUrls: ['./card-container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardContainerComponent implements OnInit {
   private relatedConnections: ConnectionRef[] = [];
@@ -42,7 +44,7 @@ export class CardContainerComponent implements OnInit {
     this.cardsSeq = await this.cardsSeqHandle.get();
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
-      this.update(true);
+      this.update();
     });
     this.update();
 
@@ -58,7 +60,7 @@ export class CardContainerComponent implements OnInit {
       y: undefined, // TODO
     };
     this.cardsSeq.insert(this.cardsSeq.getItemCount(), [DemoCard]);
-    this.update(true);
+    this.update();
   }
 
   public onLoad() {
@@ -73,9 +75,9 @@ export class CardContainerComponent implements OnInit {
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
 
-  private update(detechChanges?: boolean) {
+  private update() {
     this.cards = this.cardsSeq.getRange(0);
-    if (detechChanges) this.cdr.detectChanges();
+    this.cdr.detectChanges();
     this.connectionBuilder.update$.next();
   }
 
