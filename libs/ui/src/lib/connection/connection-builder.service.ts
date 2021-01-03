@@ -124,6 +124,10 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
    * Execute update postions of all connections
    */
   private updatePositions() {
-    this.connectionStore.forEach((ref) => ref.line.position());
+    this.connectionStore.forEach((ref) => {
+      ref.line.remove();
+      ref.line = this.drawLineByConnection(ref.connection);
+      ref.line.position();
+    });
   }
 }
