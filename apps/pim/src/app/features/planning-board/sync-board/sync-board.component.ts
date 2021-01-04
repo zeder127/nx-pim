@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CardBoard } from '@pim/data';
-import { AzureDevopsClientService } from '../../../shared/services/azure-devops-client.service';
+import { WitService } from '@pim/ui';
 import { PiService } from '../../../shared/services/pi.service';
 
 // const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';
@@ -18,14 +18,14 @@ export class SyncBoardComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private piService: PiService,
-    private devopsClient: AzureDevopsClientService
+    private witService: WitService
   ) {}
 
   ngOnInit() {
     this.piName = this.route.snapshot.paramMap.get('piName');
     this.piService.getProgrammBoardOfPI(this.piName).subscribe((board) => {
       this.cardBoard = board;
-      this.devopsClient
+      this.witService
         .queryWitByFilter({
           type: 'Product Backlog Item',
           team: 'pi-manager-dev\\Backend',

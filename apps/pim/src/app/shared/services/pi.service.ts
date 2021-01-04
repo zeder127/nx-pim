@@ -4,8 +4,6 @@ import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { PimDataObjectRefService } from './data-object-ref.service';
-import { IterationService } from './iteration.service';
-import { TeamService } from './team.service';
 
 // const piconfig: PiConfiguration = {
 //   id: '111222334455',
@@ -32,11 +30,7 @@ import { TeamService } from './team.service';
   providedIn: 'root',
 })
 export class PiService {
-  constructor(
-    private teamService: TeamService,
-    private iterationService: IterationService,
-    private pimDORef: PimDataObjectRefService
-  ) {}
+  constructor(private pimDORef: PimDataObjectRefService) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
   //   return of(piconfig).pipe(

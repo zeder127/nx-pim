@@ -1,9 +1,8 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { WorkItem } from '@pim/data';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { devops_host, organization, project } from '../constants/auzre-endpoint';
+import { AzureDevopsClientService } from './azure-devops-client.service';
 
 interface AzureWorkItem {
   id: number;
@@ -16,18 +15,15 @@ interface WitQueryFilter {
   type?: string;
 }
 
-/**
- * Http client to call Azure DevOps REST api
- */
 @Injectable({
   providedIn: 'root',
 })
-export class AzureDevopsClientService {
-  constructor(private httpClient: HttpClient) {}
+export class WitService {
+  constructor(private devOpsClient: AzureDevopsClientService) {}
 
   public getWorkItems(ids: number[]): Observable<WorkItem[]> {
-    return this.httpClient
-      .post(this.buildUrl(`/_apis/wit/workitemsbatch?api-version=5.1`), {
+    return this.devOpsClient
+      .fetchByPost(`/_apis/wit/workitemsbatch?api-version=5.1`, {
         ids: ids,
         fields: ['System.Id', 'System.Title', 'System.WorkItemType'],
       })
@@ -50,20 +46,14 @@ export class AzureDevopsClientService {
       } [System.State] IN ('New', 'In Progress', 'Proposed', 'New', 'Active', 'Approved', 'Committed', 'To Do', 'Doing') order by [Backlog Priority], [System.Id]`,
     };
 
-    return this.httpClient
-      .post(this.buildUrl('_apis/wit/wiql?api-version=5.1'), payload)
-      .pipe(
-        switchMap((result: { workItems: Array<{ id: number }> }) => {
-          const ids = result.workItems.map((wi) => {
-            return wi.id;
-          });
-          return this.getWorkItems(ids);
-        })
-      );
-  }
-
-  private buildUrl(path: string): string {
-    return `${devops_host}/${organization}/${project}/${path}`;
+    return this.devOpsClient.fetchByPost('_apis/wit/wiql?api-version=5.1', payload).pipe(
+      switchMap((result: { workItems: Array<{ id: number }> }) => {
+        const ids = result.workItems.map((wi) => {
+          return wi.id;
+        });
+        return this.getWorkItems(ids);
+      })
+    );
   }
 
   private toWorkItem(awi: AzureWorkItem): WorkItem {

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { WorkItem } from '@pim/data';
+import { Team, WorkItem } from '@pim/data';
 
 @Component({
   selector: 'pim-sources-list',
@@ -8,7 +8,11 @@ import { WorkItem } from '@pim/data';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SourcesListComponent implements OnInit {
+  public selectedTeam: Team;
+
   @Input() sources: WorkItem[];
+  @Input() teams: Team[];
+
   constructor() {}
 
   ngOnInit(): void {}
