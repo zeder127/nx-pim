@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
@@ -18,6 +19,7 @@ import {
   WorkItem,
 } from '@pim/data';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
+import { WitService } from '../../../http';
 import { BoardService } from '../../services/board.service';
 
 export interface RowData {
@@ -49,13 +51,26 @@ export class CardBoardComponent implements OnInit, OnDestroy {
   private loadedCellsCount = 0;
   constructor(
     // private boardService: BoardService,
-    private connectionBuilder: ConnectionBuilderService
+    private connectionBuilder: ConnectionBuilderService,
+    private witService: WitService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.columns = this.board.columnHeaders.getRange(0);
     this.connections = this.board.connections.getRange(0);
     this.rows = this.board.rowHeaders.getRange(0);
+
+    this.witService
+      .queryWitByFilter({
+        type: 'Product Backlog Item',
+        team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
+      })
+      .subscribe((workItems) => {
+        this.sourceWorkItems = workItems;
+        console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {

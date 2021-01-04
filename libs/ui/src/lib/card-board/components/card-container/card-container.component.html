@@ -1,6 +1,7 @@
 <div
   class="container"
   cdkDropList
+  #cardContainer="cdkDropList"
   [cdkDropListData]="cardsSeq"
   cdkDropListOrientation="horizontal"
   (cdkDropListDropped)="drop($event)"

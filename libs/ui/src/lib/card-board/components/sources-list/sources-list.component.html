@@ -1,2 +1,13 @@
 <p-dropdown [options]="teams" optionLabel="name" [(ngModel)]="selectedTeam"></p-dropdown>
+<!--Filter-->
+<span class="p-input-icon-left">
+  <i class="pi pi-filter"></i>
+  <input type="text" pInputText [(ngModel)]="filterText" placeholder="Filter" />
+</span>
 
+<!--List-->
+<div cdkDropList [cdkDropListData]="workItems" cdkDropListSortingDisabled>
+  <div *ngFor="let workItem of workItems" cdkDrag [cdkDragData]="workItem">
+    {{workItem.id}} {{workItem.title}}
+  </div>
+</div>
