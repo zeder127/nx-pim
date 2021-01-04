@@ -1,11 +1,1 @@
-<!--start Only for development-->
-<!-- <div>
-  <button (click)="addNewCard(0,1)">New Card</button>
-  <button>New linked Card</button>
-  <button (click)="deleteCard()">Delete Card</button>
-  <button>Move Card</button>
-</div> -->
-<!--end-->
-
-<code *ngIf="cardBoard">{{cardBoardJsonable | json}}</code>
 <pim-card-board *ngIf="cardBoard" [model]="cardBoard"></pim-card-board>

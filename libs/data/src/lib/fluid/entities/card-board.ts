@@ -1,7 +1,7 @@
 import { ICard, ICardBoard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
 import { v4 as uuidv4 } from 'uuid';
 import { Constants } from '../../constants';
-
+// TODO remove??
 export class CardBoard implements ICardBoard {
   id: string;
   name: string;

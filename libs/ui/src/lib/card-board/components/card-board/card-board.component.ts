@@ -9,7 +9,14 @@ import {
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { SharedObjectSequence } from '@fluidframework/sequence';
-import { CardBoard, ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
+import {
+  CardBoard,
+  ICard,
+  IColumnHeader,
+  IConnection,
+  IRowHeader,
+  WorkItem,
+} from '@pim/data';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
@@ -35,6 +42,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
    */
   @Output() load = new EventEmitter();
 
+  public sourceWorkItems: WorkItem[];
   public rows: IRowHeader[] = [];
   public columns: IColumnHeader[] = [];
   public connections: IConnection[] = [];
