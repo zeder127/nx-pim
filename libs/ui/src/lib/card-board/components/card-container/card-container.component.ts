@@ -18,6 +18,9 @@ import {
 } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
+/**
+ * Container component in every cell of board, to hold a list of cards
+ */
 @Component({
   selector: 'pim-card-container',
   templateUrl: './card-container.component.html',

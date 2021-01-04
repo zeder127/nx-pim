@@ -18,6 +18,9 @@ export interface RowData {
   data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
 }
 
+/**
+ * Basic card board, supports live synchronisation and svg lines between cards
+ */
 @Component({
   selector: 'pim-card-board',
   templateUrl: './card-board.component.html',
@@ -61,5 +64,9 @@ export class CardBoardComponent implements OnInit, OnDestroy {
       this.load.emit();
       this.connectionBuilder.initConnections(this.connections);
     }
+  }
+
+  public updateConnections() {
+    this.connectionBuilder.update$.next();
   }
 }
