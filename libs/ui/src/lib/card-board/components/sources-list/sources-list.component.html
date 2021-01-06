@@ -7,7 +7,13 @@
 
 <!--List-->
 <div cdkDropList [cdkDropListData]="sourceCards" cdkDropListSortingDisabled>
-  <div *ngFor="let card of sourceCards" cdkDrag [cdkDragData]="card">
+  <div
+    *ngFor="let card of sourceCards"
+    cdkDrag
+    [cdkDragData]="card"
+    [class.is-mapped]="isMapped(card.linkedWitId)"
+    [cdkDragDisabled]="isMapped(card.linkedWitId)"
+  >
     {{card.linkedWitId}} {{card.text}}
   </div>
 </div>

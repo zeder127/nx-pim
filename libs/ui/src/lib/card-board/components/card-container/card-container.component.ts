@@ -9,6 +9,7 @@ import {
   Output,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard } from '@pim/data';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,6 +37,7 @@ export class CardContainerComponent implements OnInit {
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter();
+  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the cards inserted
 
   constructor(
     private boardService: BoardService,
@@ -48,9 +50,17 @@ export class CardContainerComponent implements OnInit {
     this.cardsSeq = await this.cardsSeqHandle?.get();
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
-      this.update();
+      this.doUpdate();
+      if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
+        const newCardIds = [];
+        event.deltaArgs.deltaSegments.forEach((deltaSeg) => {
+          const newCards: ICard[] = deltaSeg.segment.toJSONObject().items;
+          newCards.forEach((nCard) => newCardIds.push(nCard.linkedWitId));
+        });
+        this.insert.emit(newCardIds);
+      }
     });
-    this.update();
+    this.doUpdate();
 
     // If no card in container, have to emit load event manully
     if (this.cardsSeq.getItemCount() === 0) this.load.next();
@@ -64,7 +74,7 @@ export class CardContainerComponent implements OnInit {
       y: undefined, // TODO
     };
     this.cardsSeq.insert(this.cardsSeq.getItemCount(), [DemoCard]);
-    this.update();
+    this.doUpdate();
   }
 
   public onLoad() {
@@ -79,7 +89,7 @@ export class CardContainerComponent implements OnInit {
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
 
-  private update() {
+  private doUpdate() {
     this.cards = this.cardsSeq.getRange(0);
     this.cdr.detectChanges();
     this.connectionBuilder.update$.next();

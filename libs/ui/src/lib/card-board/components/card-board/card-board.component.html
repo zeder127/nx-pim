@@ -22,6 +22,7 @@
             <pim-card-container
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad()"
+              (insert)="onInsert($event)"
             ></pim-card-container>
           </td>
         </tr>

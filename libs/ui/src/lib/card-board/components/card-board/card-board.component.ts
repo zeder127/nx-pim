@@ -50,7 +50,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
   public connections: IConnection[] = [];
   private loadedCellsCount = 0;
   constructor(
-    // private boardService: BoardService,
+    private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
     private witService: WitService,
     private cdr: ChangeDetectorRef
@@ -96,6 +96,10 @@ export class CardBoardComponent implements OnInit, OnDestroy {
       this.load.emit();
       this.connectionBuilder.initConnections(this.connections);
     }
+  }
+
+  public onInsert(ids: number[]) {
+    this.boardService.cardsOnBoardinsert$.next(ids);
   }
 
   public updateConnections() {

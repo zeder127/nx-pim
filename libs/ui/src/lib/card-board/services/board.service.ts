@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class BoardService {
-  constructor() {}
+  public cardsOnBoardinsert$ = new Subject<number[]>();
 
-  public insertNewCard() {}
+  constructor() {}
 }
