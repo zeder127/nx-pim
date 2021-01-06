@@ -6,8 +6,8 @@
 </span>
 
 <!--List-->
-<div cdkDropList [cdkDropListData]="workItems" cdkDropListSortingDisabled>
-  <div *ngFor="let workItem of workItems" cdkDrag [cdkDragData]="workItem">
-    {{workItem.id}} {{workItem.title}}
+<div cdkDropList [cdkDropListData]="sourceCards" cdkDropListSortingDisabled>
+  <div *ngFor="let card of sourceCards" cdkDrag [cdkDragData]="card">
+    {{card.linkedWitId}} {{card.text}}
   </div>
 </div>

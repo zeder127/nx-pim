@@ -1,10 +1,7 @@
 <mat-sidenav-container class="example-container" cdkDropListGroup>
   <mat-sidenav #sidenav mode="side" position="end" opened>
     <div style="width: 200px;">
-      <pim-sources-list
-        *ngIf="sourceWorkItems"
-        [sources]="sourceWorkItems"
-      ></pim-sources-list>
+      <pim-sources-list *ngIf="sourceCards" [sources]="sourceCards"></pim-sources-list>
     </div>
   </mat-sidenav>
   <mat-sidenav-content>

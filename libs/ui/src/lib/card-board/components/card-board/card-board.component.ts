@@ -44,7 +44,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
    */
   @Output() load = new EventEmitter();
 
-  public sourceWorkItems: WorkItem[];
+  public sourceCards: ICard[];
   public rows: IRowHeader[] = [];
   public columns: IColumnHeader[] = [];
   public connections: IConnection[] = [];
@@ -67,7 +67,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
         team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
       })
       .subscribe((workItems) => {
-        this.sourceWorkItems = workItems;
+        this.sourceCards = workItems.map((wi) => this.toCard(wi));
         console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
         this.cdr.markForCheck();
       });
@@ -75,6 +75,15 @@ export class CardBoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.connectionBuilder.clear();
+  }
+
+  private toCard(wi: WorkItem): ICard {
+    return {
+      text: wi.title,
+      linkedWitId: wi.id,
+      x: undefined,
+      y: undefined,
+    } as ICard;
   }
 
   public getCell(row: number, col: number) {

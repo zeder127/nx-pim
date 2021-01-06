@@ -107,14 +107,22 @@ export class CardContainerComponent implements OnInit {
       );
     }
   }
+
   private transferSequenceItem(
-    previousSeq: SharedObjectSequence<ICard>,
+    previousSeq: SharedObjectSequence<ICard> | Array<ICard>,
     currentSeq: SharedObjectSequence<ICard>,
     previousIndex: number,
     currentIndex: number
   ) {
-    const itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
-    previousSeq.removeRange(previousIndex, previousIndex + 1);
+    let itemsToMove: ICard[];
+    if (Array.isArray(previousSeq)) {
+      // dragged from source-list
+      itemsToMove = [previousSeq[previousIndex]];
+    } else {
+      // dragged from another card-container
+      itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
+      previousSeq.removeRange(previousIndex, previousIndex + 1);
+    }
     currentSeq.insert(currentIndex, itemsToMove);
   }
 

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Team, WorkItem } from '@pim/data';
+import { ICard, Team } from '@pim/data';
 
 @Component({
   selector: 'pim-sources-list',
@@ -10,13 +10,13 @@ export class SourcesListComponent implements OnInit {
   public selectedTeam: Team;
   public filterText: string;
 
-  @Input('sources') workItems: WorkItem[];
+  @Input('sources') sourceCards: ICard[];
 
   @Input() teams: Team[];
 
   constructor() {}
 
   ngOnInit(): void {
-    console.log(`🚀 ~ SourcesListComponent ~ workItems`, this.workItems);
+    console.log(`🚀 ~ SourcesListComponent ~ sourceCards`, this.sourceCards);
   }
 }
