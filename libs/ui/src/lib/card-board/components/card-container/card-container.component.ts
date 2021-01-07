@@ -36,8 +36,8 @@ export class CardContainerComponent implements OnInit {
   public cards: ICard[] = [];
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
-  @Output() load = new EventEmitter();
-  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the cards inserted
+  @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
+  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
 
   constructor(
     private boardService: BoardService,
@@ -80,7 +80,8 @@ export class CardContainerComponent implements OnInit {
   public onLoad() {
     this.loadedCardsCount++;
     if (this.loadedCardsCount === this.cardsSeq.getItemCount()) {
-      this.load.emit();
+      const cards = this.cardsSeq.getRange(0);
+      this.load.emit(cards.map((c) => c.linkedWitId));
     }
   }
 

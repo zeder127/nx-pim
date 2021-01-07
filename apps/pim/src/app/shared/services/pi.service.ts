@@ -58,6 +58,9 @@ export class PiService {
    * Get all PIs directly from current DataObject.
    */
   public getPis() {
+    if (!this.pimDORef.instance) {
+      throw 'DataObject war null! FluidFramework went something wrong, please check the connection to the Fluid server.';
+    }
     return this.pimDORef.instance.getPis();
   }
   /**

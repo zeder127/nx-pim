@@ -49,6 +49,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
   public columns: IColumnHeader[] = [];
   public connections: IConnection[] = [];
   private loadedCellsCount = 0;
+  private mappedSourceIds: number[] = [];
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
@@ -86,20 +87,28 @@ export class CardBoardComponent implements OnInit, OnDestroy {
     } as ICard;
   }
 
-  public getCell(row: number, col: number) {
+  public getCell(row: number, col: number): IFluidHandle<SharedObjectSequence<ICard>> {
     return this.board.cells.getCell(row, col);
   }
 
-  public onLoad() {
+  public onLoad(mappedSourceIds: number[]) {
+    // Counter for loaded cells.
     this.loadedCellsCount++;
+
+    // hold the source ids that have been mapped on board.
+    this.mappedSourceIds = this.mappedSourceIds.concat(mappedSourceIds ?? []);
+
+    // all cells have been loaded
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
+      this.boardService.cardsOnBoardLoad$.next(this.mappedSourceIds);
+      console.log(`🚀 ~ CardBoardComponent ~ this.mappedSourceIds`, this.mappedSourceIds);
       this.load.emit();
       this.connectionBuilder.initConnections(this.connections);
     }
   }
 
   public onInsert(ids: number[]) {
-    this.boardService.cardsOnBoardinsert$.next(ids);
+    this.boardService.cardsOnBoardInsert$.next(ids);
   }
 
   public updateConnections() {

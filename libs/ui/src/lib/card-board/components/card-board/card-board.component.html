@@ -21,7 +21,7 @@
           <td *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
               [cards]="getCell(rowIndex, columnIndex)"
-              (load)="onLoad()"
+              (load)="onLoad($event)"
               (insert)="onInsert($event)"
             ></pim-card-container>
           </td>
