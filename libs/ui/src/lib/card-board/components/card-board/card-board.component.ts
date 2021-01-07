@@ -100,7 +100,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
 
     // all cells have been loaded
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
-      this.boardService.cardsOnBoardLoad$.next(this.mappedSourceIds);
+      this.boardService.cardsLoad$.next(this.mappedSourceIds);
       console.log(`🚀 ~ CardBoardComponent ~ this.mappedSourceIds`, this.mappedSourceIds);
       this.load.emit();
       this.connectionBuilder.initConnections(this.connections);
@@ -108,7 +108,7 @@ export class CardBoardComponent implements OnInit, OnDestroy {
   }
 
   public onInsert(ids: number[]) {
-    this.boardService.cardsOnBoardInsert$.next(ids);
+    this.boardService.cardsInsert$.next(ids);
   }
 
   public updateConnections() {

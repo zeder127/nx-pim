@@ -3,7 +3,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable()
 export class BoardService {
-  public cardsOnBoardInsert$ = new Subject<number[]>();
-  public cardsOnBoardLoad$ = new BehaviorSubject<number[]>(null);
+  public cardsInsert$ = new Subject<number[]>();
+  public cardsLoad$ = new BehaviorSubject<number[]>(null);
   constructor() {}
 }

@@ -27,13 +27,11 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
   ngOnInit(): void {
     console.log(`🚀 ~ SourcesListComponent ~ sourceCards`, this.sourceCards); // TODO to remove
-    this.boardService.cardsOnBoardInsert$
-      .pipe(this.autoUnsubscribe())
-      .subscribe((ids) => {
-        this.mappedSourceIds = unionWith(this.mappedSourceIds, ids);
-      });
+    this.boardService.cardsInsert$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
+      this.mappedSourceIds = unionWith(this.mappedSourceIds, ids);
+    });
 
-    this.boardService.cardsOnBoardLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
+    this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = ids;
       console.log(`🚀 ~ SourcesListComponent ~ ids`, ids);
     });
