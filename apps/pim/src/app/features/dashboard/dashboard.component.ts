@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { Pi } from '@pim/data';
 import { AutoUnsubscriber } from '@pim/ui';
 import { PimDataObjectRefService } from '../../shared/services/data-object-ref.service';
@@ -15,14 +15,16 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
   constructor(
     private piService: PiService,
     private pimDORef: PimDataObjectRefService,
-    private cdr: ChangeDetectorRef
+    private zone: NgZone
   ) {
     super();
   }
 
   async ngOnInit() {
     const pimDO = await this.pimDORef.getInstanceAsync();
-    pimDO.pisChange$.pipe(this.autoUnsubscribe()).subscribe(() => this.updatePis());
+    pimDO.pisChange$
+      .pipe(this.autoUnsubscribe())
+      .subscribe(() => this.zone.run(() => this.updatePis()));
     this.updatePis();
   }
 
@@ -36,8 +38,5 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
 
   private updatePis(): void {
     this.pis = this.piService.getPis();
-
-    // Event is occuring outside of Angular so detecting changes
-    this.cdr.detectChanges();
   }
 }

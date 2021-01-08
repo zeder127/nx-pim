@@ -55,6 +55,7 @@ export class CardContainerComponent implements OnInit {
     this.cardsSeq = await this.cardsSeqHandle?.get();
 
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
+      // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
       this.zone.run(() => {
         this.doUpdate();
 
