@@ -1,8 +1,8 @@
 import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { SharedMap } from '@fluidframework/map';
 import { SharedMatrix } from '@fluidframework/matrix';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 
-// TODO to remove
 export interface ICardBoard {
   id: string;
   name: string;
@@ -12,13 +12,13 @@ export interface ICardBoard {
   connections: IConnection[];
 }
 
-export interface CardBoard {
+export interface CardBoardDDS {
   id: string;
   name: string;
   columnHeaders: SharedObjectSequence<IColumnHeader>;
   rowHeaders: SharedObjectSequence<IRowHeader>;
   cells: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
-  connections: SharedObjectSequence<IConnection>;
+  connections: SharedMap;
 }
 
 interface IHeader {

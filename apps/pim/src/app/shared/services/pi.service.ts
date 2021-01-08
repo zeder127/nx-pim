@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CardBoard, Pi } from '@pim/data';
+import { CardBoardDDS, Pi } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -74,7 +74,7 @@ export class PiService {
    * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
    * @param name Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
+  public getProgrammBoardOfPI(name: string): Observable<CardBoardDDS> {
     return this.getPiByName(name).pipe(
       filter((pi) => !!pi),
       map((pi) => {

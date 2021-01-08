@@ -10,7 +10,7 @@ import {
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
-  CardBoard,
+  CardBoardDDS,
   ICard,
   IColumnHeader,
   IConnection,
@@ -38,7 +38,7 @@ export interface RowData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
-  @Input('model') board: CardBoard;
+  @Input('model') board: CardBoardDDS;
   /**
    * Event will be triggered, when all cells has been loaded.
    */
@@ -61,7 +61,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
   ngOnInit(): void {
     this.columns = this.board.columnHeaders.getItems(0);
-    this.connections = this.board.connections.getItems(0);
+    this.connections = [...this.board.connections.values()];
     console.log(`🚀 ~ CardBoardComponent ~ this.connections`, this.connections);
     this.rows = this.board.rowHeaders.getItems(0);
 
@@ -81,12 +81,12 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
         // remove from related connection in UI
         this.connectionBuilder.clearRelatedConnections(`${id}`);
         // remove from DDS
-        this.connections.forEach((conn, index) => {
+        [...this.board.connections.entries()].forEach((value) => {
+          const key = value[0];
+          const conn = value[1];
           if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
+            this.board.connections.delete(key);
             // FIXME remove from connection, change connections to SharedMap
-            const segmentObj = this.board.connections.getContainingSegment(index);
-            const currentPos = this.board.connections.getPosition(segmentObj.segment);
-            this.board.connections.remove(currentPos, currentPos + 1);
           }
         });
       });

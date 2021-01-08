@@ -3,10 +3,10 @@ import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IDirectory, IDirectoryValueChanged, SharedMap } from '@fluidframework/map';
 import { SharedMatrix } from '@fluidframework/matrix';
 import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
-import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
-import { ICard, IColumnHeader, IConnection, IRowHeader } from '@pim/data';
+import { SharedObjectSequence } from '@fluidframework/sequence';
+import { ICard, IColumnHeader, IRowHeader } from '@pim/data';
 import { Subject } from 'rxjs';
-import { CardBoard } from '../card-board';
+import { CardBoardDDS } from '../card-board';
 import { Constants } from '../constants';
 import { Pi } from '../pi';
 import { DemoBoard } from './demoBoard';
@@ -26,7 +26,7 @@ export class PimDataObject extends DataObject {
   private pisChangeSubject$ = new Subject();
   pisChange$ = this.pisChangeSubject$.asObservable();
   private pisDir: IDirectory;
-  public boardRefsMap = new Map<string, CardBoard>();
+  public boardRefsMap = new Map<string, CardBoardDDS>();
   public workItems: SharedMap;
 
   protected async initializingFirstTime() {
@@ -101,7 +101,11 @@ export class PimDataObject extends DataObject {
       Key_Boards_Cols,
       programBoardDir
     );
-    const connectionsSequence = this.createSequenceInDirectory<IConnection>(
+    // const connectionsSequence = this.createSequenceInDirectory<IConnection>(
+    //   Key_Boards_Connectons,
+    //   programBoardDir
+    // );
+    const connectionsMap = this.createMapInDirectory(
       Key_Boards_Connectons,
       programBoardDir
     );
@@ -110,7 +114,9 @@ export class PimDataObject extends DataObject {
     // insert initial data
     rowsSequence.insert(0, DemoBoard.rowHeaders);
     colsSequence.insert(0, DemoBoard.columnHeaders);
-    connectionsSequence.insert(0, DemoBoard.connections);
+    DemoBoard.connections.forEach((conn) =>
+      connectionsMap.set(`${conn.startPointId}_${conn.endPointId}`, conn)
+    );
     cardsMatrix = PimDataObjectHelper.initialMatrixWithValue(
       this.runtime,
       cardsMatrix,
@@ -124,7 +130,7 @@ export class PimDataObject extends DataObject {
       rowHeaders: rowsSequence,
       columnHeaders: colsSequence,
       cells: cardsMatrix,
-      connections: connectionsSequence,
+      connections: connectionsMap,
     });
   }
 
@@ -157,8 +163,15 @@ export class PimDataObject extends DataObject {
   ): SharedObjectSequence<T> {
     const sequence = SharedObjectSequence.create<T>(this.runtime);
     dir.set(id, sequence.handle);
-    this.createEventListenersForSequence(sequence);
+    // this.createEventListenersForSequence(sequence);
     return sequence;
+  }
+
+  private createMapInDirectory(id: string, dir: IDirectory) {
+    const map = SharedMap.create(this.runtime);
+    dir.set(id, map.handle);
+    // this.createEventListenersForSequence(sequence);
+    return map;
   }
 
   private createMatrixInDirectory(
@@ -193,12 +206,10 @@ export class PimDataObject extends DataObject {
           Key_Boards_Cards
         )
         .get(),
-      await boardDir
-        .get<IFluidHandle<SharedObjectSequence<IConnection>>>(Key_Boards_Connectons)
-        .get(),
+      await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Connectons).get(),
     ]);
 
-    const cardBoardTmp: CardBoard = {
+    const cardBoardTmp: CardBoardDDS = {
       id: id,
       name: boardDir.get('name'),
       rowHeaders: rows,
@@ -219,12 +230,12 @@ export class PimDataObject extends DataObject {
   /**
    * Helper function to set up event listeners for SharedObjectSequence
    */
-  private createEventListenersForSequence<T>(sequence: SharedObjectSequence<T>) {
-    sequence.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-      console.log(`🚀 ~ PiDataObject ~ SequenceDeltaEvent`, event);
-      console.log(`🚀 ~ PiDataObject ~ sequence.id`, sequence.id);
-    });
-  }
+  // private createEventListenersForSequence<T>(sequence: SharedObjectSequence<T>) {
+  //   sequence.on('sequenceDelta', (event: SequenceDeltaEvent) => {
+  //     console.log(`🚀 ~ PiDataObject ~ SequenceDeltaEvent`, event);
+  //     console.log(`🚀 ~ PiDataObject ~ sequence.id`, sequence.id);
+  //   });
+  // }
 
   /**
    * Helper function to set up event listeners for SharedDirectory
