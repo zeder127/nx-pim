@@ -5,6 +5,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnInit,
   Output,
 } from '@angular/core';
@@ -12,6 +13,7 @@ import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard } from '@pim/data';
+import { PimDataObjectHelper } from '@pim/data/fluid';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ConnectionBuilderService,
@@ -38,12 +40,13 @@ export class CardContainerComponent implements OnInit {
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
-  @Output() remove = new EventEmitter<number>(); // linkedWitId of the cards to remove
+  @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
 
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   async ngOnInit() {
@@ -52,18 +55,21 @@ export class CardContainerComponent implements OnInit {
     this.cardsSeq = await this.cardsSeqHandle?.get();
 
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-      console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
-      this.doUpdate();
+      this.zone.run(() => {
+        this.doUpdate();
 
-      const deltaCardIds: number[] = [];
-      event.deltaArgs.deltaSegments.forEach((deltaSeg) => {
-        const cardsInSeg: ICard[] = deltaSeg.segment.toJSONObject().items;
-        cardsInSeg.forEach((nCard) => deltaCardIds.push(nCard.linkedWitId));
+        const deltaCardIds = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
+          event
+        ).map((c) => c.linkedWitId);
+
+        if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
+          // TODO just using boardService??
+          this.insert.emit(deltaCardIds);
+        }
+        if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
+          this.remove.emit(deltaCardIds);
+        }
       });
-
-      if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
-        this.insert.emit(deltaCardIds);
-      }
     });
     this.doUpdate();
 
@@ -99,7 +105,7 @@ export class CardContainerComponent implements OnInit {
 
   private doUpdate() {
     this.cards = this.cardsSeq.getRange(0);
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
     this.connectionBuilder.update$.next();
   }
 

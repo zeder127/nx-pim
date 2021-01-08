@@ -115,7 +115,6 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     // all cells have been loaded
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
       this.boardService.cardsLoad$.next(this.mappedSourceIds);
-      console.log(`🚀 ~ CardBoardComponent ~ this.mappedSourceIds`, this.mappedSourceIds);
       this.load.emit();
       this.connectionBuilder.initConnections(this.connections);
     }
@@ -123,6 +122,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
   public onInsert(ids: number[]) {
     this.boardService.cardsInsert$.next(ids);
+  }
+
+  public onRemove(ids: number[]) {
+    this.boardService.cardsRemove$.next(ids);
   }
 
   public updateConnections() {
