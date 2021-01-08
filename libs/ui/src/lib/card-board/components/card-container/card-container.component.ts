@@ -48,7 +48,9 @@ export class CardContainerComponent implements OnInit {
 
   async ngOnInit() {
     // FIXME sometimems cardsSeqHandle is null
+    console.log(`🚀 ~ CardContainerComponent ~ this.cardsSeqHandle`, this.cardsSeqHandle);
     this.cardsSeq = await this.cardsSeqHandle?.get();
+
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
       this.doUpdate();
@@ -62,12 +64,6 @@ export class CardContainerComponent implements OnInit {
       if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
         this.insert.emit(deltaCardIds);
       }
-      // if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
-      //   // remove related connection
-      //   deltaCardIds.forEach((id) =>
-      //     this.connectionBuilder.clearRelatedConnections(`${id}`)
-      //   );
-      // }
     });
     this.doUpdate();
 
@@ -97,7 +93,7 @@ export class CardContainerComponent implements OnInit {
   public removeCard(card: ICard) {
     this.boardService.cardsRemove$.next([card.linkedWitId]);
     // remove from SharedObjectSequence
-    const indexToRemove = this.cards.findIndex((c) => c.id === card.id);
+    const indexToRemove = this.cards.findIndex((c) => c.linkedWitId === card.linkedWitId);
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
 

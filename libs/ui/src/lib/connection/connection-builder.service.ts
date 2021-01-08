@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
+import { difference } from 'lodash';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AutoUnsubscriber } from '../util/base/auto-unsubscriber';
@@ -22,7 +23,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     // Using debounceTime to avoid from frequently updating
     this.update$
       .pipe(this.autoUnsubscribe(), debounceTime(50))
-      .subscribe(() => this.updatePositions());
+      .subscribe(() => this.updateConnections());
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -132,19 +133,18 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Execute update postions of all connections
    */
-  private updatePositions() {
-    console.log(
-      `🚀 ~ ConnectionBuilderService ~ this.connectionStore`,
-      this.connectionStore
-    );
-    this.connectionStore.forEach((ref, index) => {
+  private updateConnections() {
+    const toRemove = [];
+    this.connectionStore.forEach((ref) => {
       ref.line.remove();
       ref.line = this.drawLineByConnection(ref.connection);
       if (ref.line) {
         ref.line.position();
       } else {
-        this.connectionStore.splice(index, 1);
+        toRemove.push(ref);
       }
     });
+
+    this.connectionStore = difference(this.connectionStore, toRemove);
   }
 }
