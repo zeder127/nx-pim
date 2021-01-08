@@ -86,7 +86,6 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
           const conn = value[1];
           if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
             this.board.connections.delete(key);
-            // FIXME remove from connection, change connections to SharedMap
           }
         });
       });

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { CardBoard } from '@pim/data';
+import { CardBoardDDS } from '@pim/data';
 import { PiService } from '../../../shared/services/pi.service';
 
 // const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';
@@ -12,7 +12,7 @@ import { PiService } from '../../../shared/services/pi.service';
   styleUrls: ['./sync-board.component.scss'],
 })
 export class SyncBoardComponent implements OnInit {
-  public cardBoard: CardBoard;
+  public cardBoard: CardBoardDDS;
   private piName: string;
   constructor(private route: ActivatedRoute, private piService: PiService) {}
 
