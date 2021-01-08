@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ICard, Team } from '@pim/data';
-import { unionWith } from 'lodash';
+import { difference, unionWith } from 'lodash';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
@@ -26,14 +26,16 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log(`🚀 ~ SourcesListComponent ~ sourceCards`, this.sourceCards); // TODO to remove
+    this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
+      this.mappedSourceIds = ids;
+    });
+
     this.boardService.cardsInsert$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = unionWith(this.mappedSourceIds, ids);
     });
 
-    this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
-      this.mappedSourceIds = ids;
-      console.log(`🚀 ~ SourcesListComponent ~ ids`, ids);
+    this.boardService.cardsRemove$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
+      this.mappedSourceIds = difference(this.mappedSourceIds, ids);
     });
   }
 

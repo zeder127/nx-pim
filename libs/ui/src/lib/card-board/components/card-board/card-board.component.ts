@@ -4,7 +4,6 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';
@@ -20,6 +19,7 @@ import {
 } from '@pim/data';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { WitService } from '../../../http';
+import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
 export interface RowData {
@@ -37,7 +37,7 @@ export interface RowData {
   providers: [BoardService, ConnectionBuilderService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardBoardComponent implements OnInit, OnDestroy {
+export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   @Input('model') board: CardBoard;
   /**
    * Event will be triggered, when all cells has been loaded.
@@ -55,12 +55,15 @@ export class CardBoardComponent implements OnInit, OnDestroy {
     private connectionBuilder: ConnectionBuilderService,
     private witService: WitService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
-    this.columns = this.board.columnHeaders.getRange(0);
-    this.connections = this.board.connections.getRange(0);
-    this.rows = this.board.rowHeaders.getRange(0);
+    this.columns = this.board.columnHeaders.getItems(0);
+    this.connections = this.board.connections.getItems(0);
+    console.log(`🚀 ~ CardBoardComponent ~ this.connections`, this.connections);
+    this.rows = this.board.rowHeaders.getItems(0);
 
     this.witService
       .queryWitByFilter({
@@ -72,10 +75,22 @@ export class CardBoardComponent implements OnInit, OnDestroy {
         console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
         this.cdr.markForCheck();
       });
-  }
 
-  ngOnDestroy(): void {
-    this.connectionBuilder.clear();
+    this.boardService.cardsRemove$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
+      ids.forEach((id) => {
+        // remove from related connection in UI
+        this.connectionBuilder.clearRelatedConnections(`${id}`);
+        // remove from DDS
+        this.connections.forEach((conn, index) => {
+          if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
+            // FIXME remove from connection, change connections to SharedMap
+            const segmentObj = this.board.connections.getContainingSegment(index);
+            const currentPos = this.board.connections.getPosition(segmentObj.segment);
+            this.board.connections.remove(currentPos, currentPos + 1);
+          }
+        });
+      });
+    });
   }
 
   private toCard(wi: WorkItem): ICard {

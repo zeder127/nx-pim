@@ -120,14 +120,31 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     this.connectionStore = [];
   }
 
+  public clearRelatedConnections(elementId: string) {
+    this.getRelatedConnections(elementId).forEach((ref) => {
+      // remove from store
+      ref.line.remove();
+      const index = this.connectionStore.indexOf(ref);
+      this.connectionStore.splice(index, 1);
+    });
+  }
+
   /**
    * Execute update postions of all connections
    */
   private updatePositions() {
-    this.connectionStore.forEach((ref) => {
+    console.log(
+      `🚀 ~ ConnectionBuilderService ~ this.connectionStore`,
+      this.connectionStore
+    );
+    this.connectionStore.forEach((ref, index) => {
       ref.line.remove();
       ref.line = this.drawLineByConnection(ref.connection);
-      ref.line.position();
+      if (ref.line) {
+        ref.line.position();
+      } else {
+        this.connectionStore.splice(index, 1);
+      }
     });
   }
 }

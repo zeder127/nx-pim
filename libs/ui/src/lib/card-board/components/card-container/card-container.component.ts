@@ -38,6 +38,7 @@ export class CardContainerComponent implements OnInit {
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
+  @Output() remove = new EventEmitter<number>(); // linkedWitId of the cards to remove
 
   constructor(
     private boardService: BoardService,
@@ -51,14 +52,22 @@ export class CardContainerComponent implements OnInit {
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
       this.doUpdate();
+
+      const deltaCardIds: number[] = [];
+      event.deltaArgs.deltaSegments.forEach((deltaSeg) => {
+        const cardsInSeg: ICard[] = deltaSeg.segment.toJSONObject().items;
+        cardsInSeg.forEach((nCard) => deltaCardIds.push(nCard.linkedWitId));
+      });
+
       if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
-        const newCardIds = [];
-        event.deltaArgs.deltaSegments.forEach((deltaSeg) => {
-          const newCards: ICard[] = deltaSeg.segment.toJSONObject().items;
-          newCards.forEach((nCard) => newCardIds.push(nCard.linkedWitId));
-        });
-        this.insert.emit(newCardIds);
+        this.insert.emit(deltaCardIds);
       }
+      // if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
+      //   // remove related connection
+      //   deltaCardIds.forEach((id) =>
+      //     this.connectionBuilder.clearRelatedConnections(`${id}`)
+      //   );
+      // }
     });
     this.doUpdate();
 
@@ -86,6 +95,8 @@ export class CardContainerComponent implements OnInit {
   }
 
   public removeCard(card: ICard) {
+    this.boardService.cardsRemove$.next([card.linkedWitId]);
+    // remove from SharedObjectSequence
     const indexToRemove = this.cards.findIndex((c) => c.id === card.id);
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
