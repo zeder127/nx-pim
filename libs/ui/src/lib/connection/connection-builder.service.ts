@@ -120,15 +120,6 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     this.connectionStore = undefined;
   }
 
-  public clearRelatedConnections(elementId: string) {
-    this.getRelatedConnections(elementId).forEach((ref) => {
-      // remove from store
-      // ref.line.remove();
-      const index = this.connectionStore.indexOf(ref);
-      this.connectionStore.splice(index, 1);
-    });
-  }
-
   public remove(conn: IConnection) {
     const index = this.connectionStore.findIndex((ref) => {
       if (ref.connection === conn) {
@@ -142,21 +133,15 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
-   * Execute update postions of all connections
+   * Execute update postions of all connections, internally all lines will be redrawed.
    */
   private updateConnections() {
-    // const toRemove = [];
     this.connectionStore.forEach((ref) => {
-      ref.line.position();
-      // ref.line.remove();
-      // ref.line = this.drawLineByConnection(ref.connection);
-      // if (ref.line) {
-      //   ref.line.position();
-      // } else {
-      //   toRemove.push(ref);
-      // }
+      // FIXME have to use settimeout to resolve some timing problem, maybe use ngZone is better
+      setTimeout(() => {
+        ref.line.remove();
+        ref.line = this.drawLineByConnection(ref.connection);
+      }, 0);
     });
-
-    // this.connectionStore = difference(this.connectionStore, toRemove);
   }
 }

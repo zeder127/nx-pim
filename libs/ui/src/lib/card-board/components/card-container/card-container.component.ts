@@ -21,6 +21,8 @@ import {
 } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
+const Drag_Out = 'dragOut';
+
 /**
  * Container component in every cell of board, to hold a list of cards
  */
@@ -41,6 +43,7 @@ export class CardContainerComponent implements OnInit {
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
   @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
+  @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
 
   constructor(
     private boardService: BoardService,
@@ -68,7 +71,11 @@ export class CardContainerComponent implements OnInit {
           this.insert.emit(deltaCardIds);
         }
         if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
-          this.remove.emit(deltaCardIds);
+          if (event.opArgs.op.register === Drag_Out) {
+            this.dragOut.emit(deltaCardIds);
+          } else {
+            this.remove.emit(deltaCardIds);
+          }
         }
       });
     });
@@ -145,7 +152,10 @@ export class CardContainerComponent implements OnInit {
     } else {
       // dragged from another card-container
       itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
-      previousSeq.removeRange(previousIndex, previousIndex + 1);
+      // Use 'cut' instead of 'remove': possible to set a register name.
+      // Using it to tell other client, card will be just moved to another CardContainer.
+      // Its related connection should not be removed
+      previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
     }
     currentSeq.insert(currentIndex, itemsToMove);
   }

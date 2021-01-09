@@ -121,8 +121,8 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   public onRemove(ids: number[]) {
     this.boardService.cardsRemove$.next(ids);
 
+    // remove related connections from DDS
     ids.forEach((id) => {
-      // remove from DDS
       [...this.board.connections.entries()].forEach((value) => {
         const key = value[0];
         const conn = value[1];
@@ -131,6 +131,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
         }
       });
     });
+  }
+
+  public onDragOut(ids: number[]) {
+    this.boardService.cardsRemove$.next(ids);
   }
 
   public updateConnections() {
