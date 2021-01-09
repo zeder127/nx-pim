@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
-import { difference } from 'lodash';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AutoUnsubscriber } from '../util/base/auto-unsubscriber';
@@ -30,7 +29,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
 
     // LeaderLine are rendered under <body> directly(not part of angular),
     // so they should be removed manually, if this service is destroyed
-    this.clear();
+    this.destroy();
   }
 
   /**
@@ -116,35 +115,48 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Remove all lines on board
    */
-  public clear() {
+  public destroy() {
     this.connectionStore.forEach((ref) => ref.line.remove());
-    this.connectionStore = [];
+    this.connectionStore = undefined;
   }
 
   public clearRelatedConnections(elementId: string) {
     this.getRelatedConnections(elementId).forEach((ref) => {
       // remove from store
-      ref.line.remove();
+      // ref.line.remove();
       const index = this.connectionStore.indexOf(ref);
       this.connectionStore.splice(index, 1);
     });
+  }
+
+  public remove(conn: IConnection) {
+    const index = this.connectionStore.findIndex((ref) => {
+      if (ref.connection === conn) {
+        // remove leaderline
+        ref.line.remove();
+        return true;
+      }
+    });
+    // remove from store
+    this.connectionStore.splice(index, 1);
   }
 
   /**
    * Execute update postions of all connections
    */
   private updateConnections() {
-    const toRemove = [];
+    // const toRemove = [];
     this.connectionStore.forEach((ref) => {
-      ref.line.remove();
-      ref.line = this.drawLineByConnection(ref.connection);
-      if (ref.line) {
-        ref.line.position();
-      } else {
-        toRemove.push(ref);
-      }
+      ref.line.position();
+      // ref.line.remove();
+      // ref.line = this.drawLineByConnection(ref.connection);
+      // if (ref.line) {
+      //   ref.line.position();
+      // } else {
+      //   toRemove.push(ref);
+      // }
     });
 
-    this.connectionStore = difference(this.connectionStore, toRemove);
+    // this.connectionStore = difference(this.connectionStore, toRemove);
   }
 }

@@ -8,6 +8,7 @@ import {
   Output,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { IValueChanged } from '@fluidframework/map';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
@@ -76,19 +77,12 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
         this.cdr.markForCheck();
       });
 
-    this.boardService.cardsRemove$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
-      ids.forEach((id) => {
-        // remove from related connection in UI
-        this.connectionBuilder.clearRelatedConnections(`${id}`);
-        // remove from DDS
-        [...this.board.connections.entries()].forEach((value) => {
-          const key = value[0];
-          const conn = value[1];
-          if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
-            this.board.connections.delete(key);
-          }
-        });
-      });
+    this.board.connections.on('valueChanged', (event: IValueChanged) => {
+      // if true, one item muss be deleted
+      if (event.previousValue && !this.board.connections.has(event.key)) {
+        this.connectionBuilder.remove(event.previousValue as IConnection);
+        this.connectionBuilder.update$.next();
+      }
     });
   }
 
@@ -126,6 +120,17 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
   public onRemove(ids: number[]) {
     this.boardService.cardsRemove$.next(ids);
+
+    ids.forEach((id) => {
+      // remove from DDS
+      [...this.board.connections.entries()].forEach((value) => {
+        const key = value[0];
+        const conn = value[1];
+        if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
+          this.board.connections.delete(key);
+        }
+      });
+    });
   }
 
   public updateConnections() {

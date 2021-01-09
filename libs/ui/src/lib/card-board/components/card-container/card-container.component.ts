@@ -98,7 +98,6 @@ export class CardContainerComponent implements OnInit {
   }
 
   public removeCard(card: ICard) {
-    this.boardService.cardsRemove$.next([card.linkedWitId]);
     // remove from SharedObjectSequence
     const indexToRemove = this.cards.findIndex((c) => c.linkedWitId === card.linkedWitId);
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
@@ -209,7 +208,7 @@ export class CardContainerComponent implements OnInit {
     // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
     // Without setTimeout, all lines will get wrong startPoint or endPoint.
     setTimeout(() => {
-      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all lines
+      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all related lines
     }, 0);
     this.draggingConnections.forEach((ref) => ref.line.remove());
     this.draggingConnections = undefined;
