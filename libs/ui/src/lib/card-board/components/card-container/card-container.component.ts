@@ -1,15 +1,19 @@
 import { CdkDragDrop, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnInit,
   Output,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard } from '@pim/data';
+import { PimDataObjectHelper } from '@pim/data/fluid';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ConnectionBuilderService,
@@ -17,10 +21,16 @@ import {
 } from '../../../connection/connection-builder.service';
 import { BoardService } from '../../services/board.service';
 
+const Drag_Out = 'dragOut';
+
+/**
+ * Container component in every cell of board, to hold a list of cards
+ */
 @Component({
   selector: 'pim-card-container',
   templateUrl: './card-container.component.html',
   styleUrls: ['./card-container.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardContainerComponent implements OnInit {
   private relatedConnections: ConnectionRef[] = [];
@@ -30,21 +40,46 @@ export class CardContainerComponent implements OnInit {
   public cards: ICard[] = [];
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
-  @Output() load = new EventEmitter();
+  @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
+  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
+  @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
+  @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
 
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   async ngOnInit() {
-    this.cardsSeq = await this.cardsSeqHandle.get();
+    // FIXME sometimems cardsSeqHandle is null
+    console.log(`🚀 ~ CardContainerComponent ~ this.cardsSeqHandle`, this.cardsSeqHandle);
+    this.cardsSeq = await this.cardsSeqHandle?.get();
+
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-      console.log(`🚀 ~ CardContainer ~ SequenceDeltaEvent`, event);
-      this.update(true);
+      // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
+      this.zone.run(() => {
+        this.doUpdate();
+
+        const deltaCardIds = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
+          event
+        ).map((c) => c.linkedWitId);
+
+        if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
+          // TODO just using boardService??
+          this.insert.emit(deltaCardIds);
+        }
+        if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
+          if (event.opArgs.op.register === Drag_Out) {
+            this.dragOut.emit(deltaCardIds);
+          } else {
+            this.remove.emit(deltaCardIds);
+          }
+        }
+      });
     });
-    this.update();
+    this.doUpdate();
 
     // If no card in container, have to emit load event manully
     if (this.cardsSeq.getItemCount() === 0) this.load.next();
@@ -58,24 +93,26 @@ export class CardContainerComponent implements OnInit {
       y: undefined, // TODO
     };
     this.cardsSeq.insert(this.cardsSeq.getItemCount(), [DemoCard]);
-    this.update(true);
+    this.doUpdate();
   }
 
   public onLoad() {
     this.loadedCardsCount++;
     if (this.loadedCardsCount === this.cardsSeq.getItemCount()) {
-      this.load.emit();
+      const cards = this.cardsSeq.getRange(0);
+      this.load.emit(cards.map((c) => c.linkedWitId));
     }
   }
 
   public removeCard(card: ICard) {
-    const indexToRemove = this.cards.findIndex((c) => c.id === card.id);
+    // remove from SharedObjectSequence
+    const indexToRemove = this.cards.findIndex((c) => c.linkedWitId === card.linkedWitId);
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
 
-  private update(detechChanges?: boolean) {
+  private doUpdate() {
     this.cards = this.cardsSeq.getRange(0);
-    if (detechChanges) this.cdr.detectChanges();
+    this.cdr.markForCheck();
     this.connectionBuilder.update$.next();
   }
 
@@ -101,14 +138,25 @@ export class CardContainerComponent implements OnInit {
       );
     }
   }
+
   private transferSequenceItem(
-    previousSeq: SharedObjectSequence<ICard>,
+    previousSeq: SharedObjectSequence<ICard> | Array<ICard>,
     currentSeq: SharedObjectSequence<ICard>,
     previousIndex: number,
     currentIndex: number
   ) {
-    const itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
-    previousSeq.removeRange(previousIndex, previousIndex + 1);
+    let itemsToMove: ICard[];
+    if (Array.isArray(previousSeq)) {
+      // dragged from source-list
+      itemsToMove = [previousSeq[previousIndex]];
+    } else {
+      // dragged from another card-container
+      itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
+      // Use 'cut' instead of 'remove': possible to set a register name.
+      // Using it to tell other client, card will be just moved to another CardContainer.
+      // Its related connection should not be removed
+      previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
+    }
     currentSeq.insert(currentIndex, itemsToMove);
   }
 
@@ -170,7 +218,7 @@ export class CardContainerComponent implements OnInit {
     // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
     // Without setTimeout, all lines will get wrong startPoint or endPoint.
     setTimeout(() => {
-      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all lines
+      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all related lines
     }, 0);
     this.draggingConnections.forEach((ref) => ref.line.remove());
     this.draggingConnections = undefined;

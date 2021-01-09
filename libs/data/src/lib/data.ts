@@ -1,3 +1,4 @@
+// TODO remove
 export interface PiConfiguration {
   id: string;
   name: string;

@@ -1,0 +1,20 @@
+<p-dropdown [options]="teams" optionLabel="name" [(ngModel)]="selectedTeam"></p-dropdown>
+<!--Filter-->
+<span class="p-input-icon-left">
+  <i class="pi pi-filter"></i>
+  <input type="text" pInputText [(ngModel)]="filterText" placeholder="Filter" />
+</span>
+
+<!--List-->
+<div cdkDropList [cdkDropListData]="sourceCards" cdkDropListSortingDisabled>
+  <!--TODO call isMapped only once-->
+  <div
+    *ngFor="let card of sourceCards"
+    cdkDrag
+    [cdkDragData]="card"
+    [class.is-mapped]="isMapped(card.linkedWitId)"
+    [cdkDragDisabled]="isMapped(card.linkedWitId)"
+  >
+    {{card.linkedWitId}} {{card.text}}
+  </div>
+</div>

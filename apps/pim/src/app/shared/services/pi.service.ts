@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
-import { CardBoard, Pi } from '@pim/data';
+import { CardBoardDDS, Pi } from '@pim/data';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { PimDataObjectRefService } from './data-object-ref.service';
-import { IterationService } from './iteration.service';
-import { TeamService } from './team.service';
 
 // const piconfig: PiConfiguration = {
 //   id: '111222334455',
@@ -32,11 +30,7 @@ import { TeamService } from './team.service';
   providedIn: 'root',
 })
 export class PiService {
-  constructor(
-    private teamService: TeamService,
-    private iterationService: IterationService,
-    private pimDORef: PimDataObjectRefService
-  ) {}
+  constructor(private pimDORef: PimDataObjectRefService) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
   //   return of(piconfig).pipe(
@@ -64,6 +58,9 @@ export class PiService {
    * Get all PIs directly from current DataObject.
    */
   public getPis() {
+    if (!this.pimDORef.instance) {
+      throw 'DataObject war null! FluidFramework went something wrong, please check the connection to the Fluid server.';
+    }
     return this.pimDORef.instance.getPis();
   }
   /**
@@ -77,7 +74,7 @@ export class PiService {
    * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
    * @param name Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<CardBoard> {
+  public getProgrammBoardOfPI(name: string): Observable<CardBoardDDS> {
     return this.getPiByName(name).pipe(
       filter((pi) => !!pi),
       map((pi) => {

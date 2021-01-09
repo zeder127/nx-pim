@@ -22,14 +22,14 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     // Using debounceTime to avoid from frequently updating
     this.update$
       .pipe(this.autoUnsubscribe(), debounceTime(50))
-      .subscribe(() => this.updatePositions());
+      .subscribe(() => this.updateConnections());
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
 
     // LeaderLine are rendered under <body> directly(not part of angular),
     // so they should be removed manually, if this service is destroyed
-    this.clear();
+    this.destroy();
   }
 
   /**
@@ -115,19 +115,33 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Remove all lines on board
    */
-  public clear() {
+  public destroy() {
     this.connectionStore.forEach((ref) => ref.line.remove());
-    this.connectionStore = [];
+    this.connectionStore = undefined;
+  }
+
+  public remove(conn: IConnection) {
+    const index = this.connectionStore.findIndex((ref) => {
+      if (ref.connection === conn) {
+        // remove leaderline
+        ref.line.remove();
+        return true;
+      }
+    });
+    // remove from store
+    this.connectionStore.splice(index, 1);
   }
 
   /**
-   * Execute update postions of all connections
+   * Execute update postions of all connections, internally all lines will be redrawed.
    */
-  private updatePositions() {
+  private updateConnections() {
     this.connectionStore.forEach((ref) => {
-      ref.line.remove();
-      ref.line = this.drawLineByConnection(ref.connection);
-      ref.line.position();
+      // FIXME have to use settimeout to resolve some timing problem, maybe use ngZone is better
+      setTimeout(() => {
+        ref.line.remove();
+        ref.line = this.drawLineByConnection(ref.connection);
+      }, 0);
     });
   }
 }

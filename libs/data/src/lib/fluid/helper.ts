@@ -1,7 +1,7 @@
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IFluidDataStoreRuntime } from '@fluidframework/datastore-definitions';
 import { SharedMatrix } from '@fluidframework/matrix';
-import { SharedObjectSequence } from '@fluidframework/sequence';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard } from '../card-board';
 
 export class PimDataObjectHelper {
@@ -46,5 +46,14 @@ export class PimDataObjectHelper {
       if (c.x > colSize) colSize = c.x;
     });
     return { rowSize, colSize };
+  }
+
+  public static getItemsFromSequenceDeltaEvent<T>(event: SequenceDeltaEvent): T[] {
+    let items: T[] = [];
+    event.deltaArgs.deltaSegments.forEach((deltaSeg) => {
+      const tArray: T[] = deltaSeg.segment.toJSONObject().items;
+      items = items.concat(tArray);
+    });
+    return items;
   }
 }

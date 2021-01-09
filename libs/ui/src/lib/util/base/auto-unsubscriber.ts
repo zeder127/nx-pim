@@ -9,7 +9,7 @@ export class AutoUnsubscriber implements OnDestroy {
     this.destroy$.next();
   }
 
-  protected autoUnsubscribe() {
-    return takeUntil(this.destroy$);
+  protected autoUnsubscribe<T>() {
+    return takeUntil<T>(this.destroy$);
   }
 }

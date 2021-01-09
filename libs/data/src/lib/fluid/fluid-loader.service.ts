@@ -4,6 +4,7 @@ import { getTinyliciousContainer } from '@fluidframework/get-tinylicious-contain
 
 @Injectable({ providedIn: 'root' })
 export class FluidLoaderService {
+  public clientId: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async loadDataObject<T>(factory: any, documentId: string, createNew: boolean) {
     // The getTinyliciousContainer helper function facilitates loading our container code into a Container and
@@ -12,7 +13,7 @@ export class FluidLoaderService {
     // The helper function takes the ID of the document we're creating or loading, the container code to load into it, and a
     // flag to specify whether we're creating a new document or loading an existing one.
     const container = await getTinyliciousContainer(documentId, factory, createNew);
-
+    this.clientId = container.clientId;
     // Get the Default Object from the Container
     return await getDefaultObjectFromContainer<T>(container);
   }
