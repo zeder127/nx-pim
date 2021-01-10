@@ -3,4 +3,5 @@ export interface WorkItem {
   title: string;
   type: string;
   url: string;
+  rev: number;
 }
