@@ -17,7 +17,7 @@
       </ng-template>
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex" let-columns="columns">
         <tr>
-          <td>{{row.text}}</td>
+          <td><pim-row-header [model]="row"></pim-row-header></td>
           <td *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
               [cards]="getCell(rowIndex, columnIndex)"

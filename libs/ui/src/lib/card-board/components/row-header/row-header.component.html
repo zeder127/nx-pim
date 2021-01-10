@@ -1,0 +1,5 @@
+<div class="title">{{rowHeader.text}}</div>
+<div class="date" *ngIf="linkedIteration?.attributes?.startDate">
+  {{linkedIteration.attributes.startDate | date}} -
+  {{linkedIteration.attributes.finishDate |date}}
+</div>
