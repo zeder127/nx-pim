@@ -32,7 +32,7 @@ export interface IColumnHeader extends IHeader {
 }
 
 export interface IRowHeader extends IHeader {
-  linkedIterationId: number;
+  linkedIterationId: string;
 }
 
 // TODO remove Cell extension

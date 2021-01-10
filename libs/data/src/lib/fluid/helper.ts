@@ -2,7 +2,7 @@ import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IFluidDataStoreRuntime } from '@fluidframework/datastore-definitions';
 import { SharedMatrix } from '@fluidframework/matrix';
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
-import { ICard } from '../card-board';
+import { ICard, ICardBoard } from '../card-board';
 
 export class PimDataObjectHelper {
   /**
@@ -14,15 +14,16 @@ export class PimDataObjectHelper {
   public static initialMatrixWithValue(
     runtime: IFluidDataStoreRuntime,
     matrix: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>,
-    cells: ICard[]
+    board: ICardBoard
   ): SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>> {
-    const { rowSize, colSize } = this.getRowAndColSize(cells);
+    const rowSize = board.rowHeaders.length;
+    const colSize = board.columnHeaders.length;
     matrix.insertRows(0, rowSize);
     matrix.insertCols(0, colSize);
     for (let rowIndex = 0; rowIndex < rowSize; rowIndex++) {
       for (let colIndex = 0; colIndex < colSize; colIndex++) {
         const newSeq = SharedObjectSequence.create<ICard>(runtime);
-        const cardsForCell = cells.filter(
+        const cardsForCell = board.cards.filter(
           (c) => c.y === rowIndex + 1 && c.x === colIndex + 1 // x, y start with 1
         );
         if (cardsForCell.length > 0) {

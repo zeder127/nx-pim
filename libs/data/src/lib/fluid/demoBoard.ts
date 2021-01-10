@@ -19,13 +19,37 @@ export const DemoBoard: ICardBoard = {
   ],
   rowHeaders: [
     {
-      text: 'row1',
+      text: 'Q1.1',
       description: '',
-      linkedIterationId: null,
+      linkedIterationId: '479afcc4-d6d5-489b-8857-5e729b25283f',
       id: '2',
     },
     {
-      text: 'row2',
+      text: 'Q1.2',
+      description: '',
+      linkedIterationId: '0e0c20f8-3ca4-4fe6-9891-0376eba8802f',
+      id: '5',
+    },
+    {
+      text: 'Q1.3',
+      description: '',
+      linkedIterationId: '4ef05253-3a92-4659-aceb-0270affe8c26',
+      id: '5',
+    },
+    {
+      text: 'Q1.4',
+      description: '',
+      linkedIterationId: '4ee23779-9e43-422a-b24e-10a99f6bc988',
+      id: '5',
+    },
+    {
+      text: 'Q1.5',
+      description: '',
+      linkedIterationId: '728a9d26-743f-465c-8a81-90c72155d83c',
+      id: '5',
+    },
+    {
+      text: 'Unplanned',
       description: '',
       linkedIterationId: null,
       id: '5',

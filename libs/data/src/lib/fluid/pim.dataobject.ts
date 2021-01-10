@@ -120,7 +120,7 @@ export class PimDataObject extends DataObject {
     cardsMatrix = PimDataObjectHelper.initialMatrixWithValue(
       this.runtime,
       cardsMatrix,
-      DemoBoard.cards
+      DemoBoard
     );
 
     // insert this new board into Map
