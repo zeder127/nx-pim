@@ -19,6 +19,7 @@ export class BoardService {
   }
 
   public updateIteration(ids: number[], newIterationId: string) {
+    if (!newIterationId) return;
     ids?.forEach((id) => {
       this.getIterationById(newIterationId)
         .pipe(
