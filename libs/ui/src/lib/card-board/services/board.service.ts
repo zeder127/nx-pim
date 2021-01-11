@@ -34,7 +34,7 @@ export class BoardService {
         this.getTeamById(`${newSourceId}`)
           .pipe(
             switchMap((team) => {
-              return this.witService.updateTeam(id, team.name);
+              return this.witService.updateTeam(id, `${team.projectName}\\${team.name}`);
             })
           )
           .subscribe();
@@ -53,14 +53,14 @@ export class BoardService {
       ids?.forEach((id) => {
         forkJoin([
           this.getIterationById(newIterationId),
-          this.getTeamById(newIterationId),
+          this.getTeamById(`${newSourceId}`),
         ])
           .pipe(
             switchMap(([iteration, team]) => {
               return this.witService.updateIterationAndTeam(
                 id,
                 iteration.path,
-                team.name
+                `${team.projectName}\\${team.name}`
               );
             })
           )

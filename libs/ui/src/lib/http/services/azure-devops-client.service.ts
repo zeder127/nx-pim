@@ -29,6 +29,11 @@ export class AzureDevopsClientService {
     return this.httpClient.get<T>(this.buildUrl(path), options);
   }
 
+  /** Use a provided Url to send a HttpGet request to get objects */
+  public fetchByUrl<T>(url: string, options?: RequestOptions): Observable<T> {
+    return this.httpClient.get<T>(url, options);
+  }
+
   /** Send a HttpPost request to get objects */
   public fetchByPost<T>(
     path: string,

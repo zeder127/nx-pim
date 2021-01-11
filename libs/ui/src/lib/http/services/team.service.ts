@@ -3,6 +3,7 @@ import { Team } from '@pim/data';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Cacheable } from '../../util/base/cacheable';
+import * as DevOps from '../constants/auzre-endpoint';
 import { AzureDevopsClientService } from './azure-devops-client.service';
 
 @Injectable({
@@ -13,9 +14,11 @@ export class TeamService extends Cacheable<Team> {
     super();
   }
 
-  getAllAsync(): Observable<Team[]> {
+  protected getAllAsync(): Observable<Team[]> {
     return this.devOpsClient
-      .fetchAll('_apis/teams')
+      .fetchByUrl(
+        `${DevOps.host}/${DevOps.organization}/_apis/teams?api-version=5.1-preview.3`
+      )
       .pipe(map((response: { value: Team[] }) => response.value));
   }
 }
