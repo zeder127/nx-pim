@@ -47,6 +47,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   @Output() load = new EventEmitter();
 
   public sourceCards: ICard[];
+  public colLinkSourceType: 'team' | 'workitem';
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -69,7 +70,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
   ngOnInit(): void {
     this.connections = [...this.board.connections.values()];
-    console.log(`🚀 ~ CardBoardComponent ~ this.connections`, this.connections);
+    this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
     this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
