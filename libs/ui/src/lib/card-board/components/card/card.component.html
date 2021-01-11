@@ -1,1 +1,7 @@
-<b>({{card.linkedWitId}}) {{card.text}}</b><button (click)="onRemove()">x</button>
+<div class="card-content">
+  <div class="header">
+    <b class="id">{{card.linkedWitId}}</b>
+    <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
+    <a class="btn-close" (click)="onRemove()"><i class="pi pi-times"></i></a>
+  </div>
+</div>
