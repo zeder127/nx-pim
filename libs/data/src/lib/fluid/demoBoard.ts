@@ -7,13 +7,13 @@ export const DemoBoard: ICardBoard = {
     {
       text: 'column1',
       description: null,
-      linkedWitId: null,
+      linkedSourceId: null,
       id: '1',
     },
     {
       text: 'column2',
       description: '',
-      linkedWitId: null,
+      linkedSourceId: null,
       id: '4',
     },
   ],

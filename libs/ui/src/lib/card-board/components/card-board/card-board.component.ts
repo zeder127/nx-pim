@@ -40,6 +40,7 @@ export interface RowData {
 })
 export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   @Input('model') board: CardBoardDDS;
+  @Input() type: 'program' | 'team' = 'program';
   /**
    * Event will be triggered, when all cells has been loaded.
    */
@@ -144,7 +145,8 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   public onDragIn(ids: number[], rowIndex: number, colIndex: number) {
     // get current IterationPath and AreaPath(Team)
     const iterationId = this.rows[rowIndex].linkedIterationId;
-    this.boardService.updateIteration(ids, iterationId);
+    const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
+    this.boardService.updateIterationAndTeam(ids, iterationId, colLinkedSourceId);
   }
 
   public updateConnections() {
