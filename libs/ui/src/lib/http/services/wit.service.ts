@@ -40,6 +40,12 @@ export class WitService {
       );
   }
 
+  public getWorkItemById(id: number): Observable<WorkItem> {
+    return this.devOpsClient
+      .getSingle<AzureWorkItem>(`_apis/wit/workitems/${id}`)
+      .pipe(map((awi) => this.toWorkItem(awi)));
+  }
+
   // TODO more flexible filter
   public queryWitByFilter(filter: WitQueryFilter) {
     const payload = {
@@ -60,24 +66,34 @@ export class WitService {
     );
   }
 
-  public updateIteration(wi: WorkItem, newIterationPath: string): Observable<WorkItem> {
-    return this.update(wi.id, [
-      {
-        op: 'test',
-        path: '/rev',
-        value: wi.rev,
-      },
-      {
-        op: 'replace',
-        path: '/fields/System.IterationPath',
-        value: newIterationPath,
-      },
-    ]);
+  public updateIteration(id: number, newIterationPath: string): Observable<WorkItem> {
+    return this.getWorkItemById(id).pipe(
+      switchMap((wi) => {
+        return this.update(wi.id, [
+          {
+            op: 'test',
+            path: '/rev',
+            value: wi.rev,
+          },
+          {
+            op: 'replace',
+            path: '/fields/System.IterationPath',
+            value: newIterationPath,
+          },
+        ]);
+      })
+    );
+  }
+
+  public open(id: number) {
+    window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
   }
 
   private update(id: number, payload: JsonPatchDocument[]): Observable<WorkItem> {
     return this.devOpsClient
-      .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload)
+      .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
+        headers: { 'content-type': 'application/json-patch+json' },
+      })
       .pipe(map((awi) => this.toWorkItem(awi)));
   }
 

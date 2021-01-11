@@ -46,11 +46,17 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   @Output() load = new EventEmitter();
 
   public sourceCards: ICard[];
-  public rows: IRowHeader[] = [];
-  public columns: IColumnHeader[] = [];
+
+  public get rows(): IRowHeader[] {
+    return this.board.rowHeaders.getItems(0) ?? [];
+  }
+  public get columns(): IColumnHeader[] {
+    return this.board.columnHeaders.getItems(0) ?? [];
+  }
   public connections: IConnection[] = [];
   private loadedCellsCount = 0;
   private mappedSourceIds: number[] = [];
+
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
@@ -61,12 +67,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   }
 
   ngOnInit(): void {
-    this.columns = this.board.columnHeaders.getItems(0);
     this.connections = [...this.board.connections.values()];
     console.log(`🚀 ~ CardBoardComponent ~ this.connections`, this.connections);
-    this.rows = this.board.rowHeaders.getItems(0);
 
-    this.witService
+    this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
         type: 'Product Backlog Item',
         team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
@@ -135,6 +139,12 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
   public onDragOut(ids: number[]) {
     this.boardService.cardsRemove$.next(ids);
+  }
+
+  public onDragIn(ids: number[], rowIndex: number, colIndex: number) {
+    // get current IterationPath and AreaPath(Team)
+    const iterationId = this.rows[rowIndex].linkedIterationId;
+    this.boardService.updateIteration(ids, iterationId);
   }
 
   public updateConnections() {

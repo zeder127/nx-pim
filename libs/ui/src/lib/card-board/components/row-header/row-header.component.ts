@@ -6,7 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { IRowHeader, Iteration } from '@pim/data';
-import { IterationService } from '@pim/ui';
+import { IterationService } from '../../../http';
 
 @Component({
   selector: 'pim-row-header',

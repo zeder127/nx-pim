@@ -20,6 +20,10 @@ export interface JsonPatchDocument {
 export class AzureDevopsClientService {
   constructor(private httpClient: HttpClient) {}
 
+  public get baseUrl() {
+    return `${DevOps.host}/${DevOps.organization}/${DevOps.project}`;
+  }
+
   /** Send a HttpGet request to get objects */
   public fetchAll<T>(path: string, options?: RequestOptions): Observable<T> {
     return this.httpClient.get<T>(this.buildUrl(path), options);
@@ -34,6 +38,10 @@ export class AzureDevopsClientService {
     return this.httpClient.post<T>(this.buildUrl(path), payload, options);
   }
 
+  public getSingle<T>(path: string, options?: RequestOptions): Observable<T> {
+    return this.httpClient.get<T>(this.buildUrl(path), options);
+  }
+
   /** Send a HttpPatch request to update a object */
   public patch<T>(
     path: string,
@@ -44,6 +52,6 @@ export class AzureDevopsClientService {
   }
 
   private buildUrl(path: string): string {
-    return `${DevOps.host}/${DevOps.organization}/${DevOps.project}/${path}?api-version=${DevOps.api_version}`;
+    return `${this.baseUrl}/${path}?api-version=${DevOps.api_version}`;
   }
 }
