@@ -67,34 +67,66 @@ export class WitService {
   }
 
   public updateIteration(id: number, newIterationPath: string): Observable<WorkItem> {
-    return this.getWorkItemById(id).pipe(
-      switchMap((wi) => {
-        return this.update(wi.id, [
-          {
-            op: 'test',
-            path: '/rev',
-            value: wi.rev,
-          },
-          {
-            op: 'replace',
-            path: '/fields/System.IterationPath',
-            value: newIterationPath,
-          },
-        ]);
-      })
-    );
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.IterationPath',
+        value: newIterationPath,
+      },
+    ]);
+  }
+
+  public updateTeam(id: number, newTeamName: string): Observable<WorkItem> {
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: newTeamName,
+      },
+    ]);
+  }
+
+  public updateIterationAndTeam(
+    id: number,
+    newIterationPath: string,
+    newTeamName: string
+  ): Observable<WorkItem> {
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.IterationPath',
+        value: newIterationPath,
+      },
+      {
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: newTeamName,
+      },
+    ]);
   }
 
   public open(id: number) {
     window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
   }
 
-  private update(id: number, payload: JsonPatchDocument[]): Observable<WorkItem> {
-    return this.devOpsClient
-      .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
-        headers: { 'content-type': 'application/json-patch+json' },
+  private update(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
+    return this.getWorkItemById(id).pipe(
+      switchMap((wi) => {
+        const payload = [
+          {
+            op: 'test',
+            path: '/rev',
+            value: wi.rev,
+          } as JsonPatchDocument,
+          ...newValues,
+        ];
+        return this.devOpsClient
+          .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
+            headers: { 'content-type': 'application/json-patch+json' },
+          })
+          .pipe(map((awi) => this.toWorkItem(awi)));
       })
-      .pipe(map((awi) => this.toWorkItem(awi)));
+    );
   }
 
   private toWorkItem(awi: AzureWorkItem): WorkItem {

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Iteration } from '@pim/data';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Iteration, Team } from '@pim/data';
+import { BehaviorSubject, forkJoin, Observable, Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { IterationService, WitService } from '../../http';
+import { IterationService, TeamService, WitService } from '../../http';
 
 @Injectable()
 export class BoardService {
@@ -11,6 +11,7 @@ export class BoardService {
   public cardsRemove$ = new Subject<number[]>();
   constructor(
     private iterationService: IterationService,
+    private teamService: TeamService,
     private witService: WitService
   ) {}
 
@@ -18,17 +19,54 @@ export class BoardService {
     return this.iterationService.getSingleByKey('id', id);
   }
 
-  public updateIteration(ids: number[], newIterationId: string) {
-    if (!newIterationId) return;
-    ids?.forEach((id) => {
-      this.getIterationById(newIterationId)
-        .pipe(
-          switchMap((iteration) => {
-            return this.witService.updateIteration(id, iteration.path);
-          })
-        )
-        .subscribe();
-    });
+  public getTeamById(id: string): Observable<Team> {
+    return this.teamService.getSingleByKey('id', id);
+  }
+
+  public updateIterationAndTeam(
+    ids: number[],
+    newIterationId: string,
+    newSourceId: string | number
+  ) {
+    if (!newIterationId && !newSourceId) return;
+    if (!newIterationId && !!newSourceId) {
+      ids?.forEach((id) => {
+        this.getTeamById(`${newSourceId}`)
+          .pipe(
+            switchMap((team) => {
+              return this.witService.updateTeam(id, team.name);
+            })
+          )
+          .subscribe();
+      });
+    } else if (!!newIterationId && !newSourceId) {
+      ids?.forEach((id) => {
+        this.getIterationById(`${newIterationId}`)
+          .pipe(
+            switchMap((iteration) => {
+              return this.witService.updateIteration(id, iteration.path);
+            })
+          )
+          .subscribe();
+      });
+    } else {
+      ids?.forEach((id) => {
+        forkJoin([
+          this.getIterationById(newIterationId),
+          this.getTeamById(newIterationId),
+        ])
+          .pipe(
+            switchMap(([iteration, team]) => {
+              return this.witService.updateIterationAndTeam(
+                id,
+                iteration.path,
+                team.name
+              );
+            })
+          )
+          .subscribe();
+      });
+    }
   }
 
   public openSourceUrl(id: number) {
