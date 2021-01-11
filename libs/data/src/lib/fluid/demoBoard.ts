@@ -5,15 +5,21 @@ export const DemoBoard: ICardBoard = {
   name: 'demo board',
   columnHeaders: [
     {
-      text: 'column1',
+      text: 'Frontend',
       description: null,
-      linkedSourceId: null,
+      linkedSourceId: '52f0bcb4-7117-4370-b1c1-0ffa9a54295b',
       id: '1',
     },
     {
-      text: 'column2',
+      text: 'Backend',
       description: '',
-      linkedSourceId: null,
+      linkedSourceId: '66e85cef-d37b-481f-b966-5f8af51d8df2',
+      id: '4',
+    },
+    {
+      text: 'IT-Service',
+      description: '',
+      linkedSourceId: 'adc65352-4bef-4702-9e13-b819b3a34ead',
       id: '4',
     },
   ],

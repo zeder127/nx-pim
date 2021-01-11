@@ -13,6 +13,7 @@ export interface PiConfiguration {
 export interface Team {
   id: string;
   name: string;
+  projectName: string;
 }
 
 export interface Iteration {

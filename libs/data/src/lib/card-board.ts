@@ -28,7 +28,7 @@ interface IHeader {
 }
 
 export interface IColumnHeader extends IHeader {
-  linkedSourceId: number;
+  linkedSourceId: string | number;
 }
 
 export interface IRowHeader extends IHeader {
