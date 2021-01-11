@@ -1,6 +1,8 @@
 :host {
   border-left: solid 3px #009ccc;
   margin-right: 10px;
+  width: 10rem;
+  height: fit-content;
 }
 
 .card-content {
@@ -19,6 +21,8 @@
   white-space: pre-wrap;
 }
 
-.btn-close i.pi {
-  font-size: 0.8rem;
+.btn-close {
+  i.pi {
+    font-size: 0.8rem;
+  }
 }
