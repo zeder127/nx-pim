@@ -10,6 +10,8 @@ import { CardBoardComponent } from './components/card-board/card-board.component
 import { CardContainerComponent } from './components/card-container/card-container.component';
 import { CardComponent } from './components/card/card.component';
 import { SourcesListComponent } from './components/sources-list/sources-list.component';
+import { RowHeaderComponent } from './components/row-header/row-header.component';
+import { ColumnHeaderComponent } from './components/column-header/column-header.component';
 
 @NgModule({
   imports: [
@@ -26,6 +28,8 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     CardContainerComponent,
     CardComponent,
     SourcesListComponent,
+    RowHeaderComponent,
+    ColumnHeaderComponent,
   ],
   exports: [CardBoardComponent, TableModule],
 })

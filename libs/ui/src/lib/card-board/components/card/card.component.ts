@@ -20,6 +20,7 @@ export class CardComponent implements OnInit, AfterViewInit {
    */
   @Output() load = new EventEmitter();
   @Output() remove = new EventEmitter<ICard>();
+  @Output() open = new EventEmitter<number>();
   constructor() {}
 
   ngOnInit(): void {
@@ -28,6 +29,10 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.load.emit();
+  }
+
+  public openSourceUrl(id: number) {
+    this.open.emit(id);
   }
 
   public onRemove() {

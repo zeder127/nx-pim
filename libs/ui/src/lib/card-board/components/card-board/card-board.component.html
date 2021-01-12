@@ -9,15 +9,18 @@
     <p-table [value]="rows" [columns]="columns" styleClass="p-datatable-gridlines">
       <ng-template pTemplate="header" let-columns>
         <tr>
-          <th></th>
+          <th>Iterations</th>
           <th *ngFor="let col of columns">
-            {{col.text}}
+            <pim-column-header
+              [model]="col"
+              [linkedSourceType]="colLinkSourceType"
+            ></pim-column-header>
           </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex" let-columns="columns">
         <tr>
-          <td>{{row.text}}</td>
+          <td><pim-row-header [model]="row"></pim-row-header></td>
           <td *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
               [cards]="getCell(rowIndex, columnIndex)"
@@ -25,6 +28,7 @@
               (insert)="onInsert($event)"
               (remove)="onRemove($event)"
               (dragOut)="onDragOut($event)"
+              (dragIn)="onDragIn($event, rowIndex, columnIndex)"
             ></pim-card-container>
           </td>
         </tr>

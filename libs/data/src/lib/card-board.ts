@@ -28,11 +28,11 @@ interface IHeader {
 }
 
 export interface IColumnHeader extends IHeader {
-  linkedWitId: number;
+  linkedSourceId: string | number;
 }
 
 export interface IRowHeader extends IHeader {
-  linkedIterationId: number;
+  linkedIterationId: string;
 }
 
 // TODO remove Cell extension

@@ -1,4 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
 .leader-line {
   z-index: 1; // because z-index of mat-sidenav-container is 1
+}
+
+a {
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
 }

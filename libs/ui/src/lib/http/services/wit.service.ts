@@ -2,12 +2,16 @@ import { Injectable } from '@angular/core';
 import { WorkItem } from '@pim/data';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { AzureDevopsClientService } from './azure-devops-client.service';
+import {
+  AzureDevopsClientService,
+  JsonPatchDocument,
+} from './azure-devops-client.service';
 
 interface AzureWorkItem {
   id: number;
   fields: Record<string, unknown>;
   url: string;
+  rev: number;
 }
 
 interface WitQueryFilter {
@@ -23,7 +27,7 @@ export class WitService {
 
   public getWorkItems(ids: number[]): Observable<WorkItem[]> {
     return this.devOpsClient
-      .fetchByPost(`/_apis/wit/workitemsbatch?api-version=5.1`, {
+      .fetchByPost(`/_apis/wit/workitemsbatch`, {
         ids: ids,
         fields: ['System.Id', 'System.Title', 'System.WorkItemType'],
       })
@@ -36,6 +40,12 @@ export class WitService {
       );
   }
 
+  public getWorkItemById(id: number): Observable<WorkItem> {
+    return this.devOpsClient
+      .getSingle<AzureWorkItem>(`_apis/wit/workitems/${id}`)
+      .pipe(map((awi) => this.toWorkItem(awi)));
+  }
+
   // TODO more flexible filter
   public queryWitByFilter(filter: WitQueryFilter) {
     const payload = {
@@ -46,7 +56,7 @@ export class WitService {
       } [System.State] IN ('New', 'In Progress', 'Proposed', 'New', 'Active', 'Approved', 'Committed', 'To Do', 'Doing') order by [Backlog Priority], [System.Id]`,
     };
 
-    return this.devOpsClient.fetchByPost('_apis/wit/wiql?api-version=5.1', payload).pipe(
+    return this.devOpsClient.fetchByPost('_apis/wit/wiql', payload).pipe(
       switchMap((result: { workItems: Array<{ id: number }> }) => {
         const ids = result.workItems.map((wi) => {
           return wi.id;
@@ -56,12 +66,76 @@ export class WitService {
     );
   }
 
+  public updateIteration(id: number, newIterationPath: string): Observable<WorkItem> {
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.IterationPath',
+        value: newIterationPath,
+      },
+    ]);
+  }
+
+  public updateTeam(id: number, newTeamName: string): Observable<WorkItem> {
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: newTeamName,
+      },
+    ]);
+  }
+
+  public updateIterationAndTeam(
+    id: number,
+    newIterationPath: string,
+    newTeamName: string
+  ): Observable<WorkItem> {
+    return this.update(id, [
+      {
+        op: 'add',
+        path: '/fields/System.IterationPath',
+        value: newIterationPath,
+      },
+      {
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: newTeamName,
+      },
+    ]);
+  }
+
+  public open(id: number) {
+    window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
+  }
+
+  private update(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
+    return this.getWorkItemById(id).pipe(
+      switchMap((wi) => {
+        const payload = [
+          {
+            op: 'test',
+            path: '/rev',
+            value: wi.rev,
+          } as JsonPatchDocument,
+          ...newValues,
+        ];
+        return this.devOpsClient
+          .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
+            headers: { 'content-type': 'application/json-patch+json' },
+          })
+          .pipe(map((awi) => this.toWorkItem(awi)));
+      })
+    );
+  }
+
   private toWorkItem(awi: AzureWorkItem): WorkItem {
     return {
-      id: awi.fields['System.Id'] as number,
+      id: awi.id,
       title: awi.fields['System.Title'] as string,
       type: awi.fields['System.WorkItemType'] as string,
       url: awi.url,
+      rev: awi.rev,
     };
   }
 }

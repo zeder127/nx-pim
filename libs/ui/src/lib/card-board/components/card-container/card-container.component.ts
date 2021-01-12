@@ -19,9 +19,11 @@ import {
   ConnectionBuilderService,
   ConnectionRef,
 } from '../../../connection/connection-builder.service';
+import { WitService } from '../../../http';
 import { BoardService } from '../../services/board.service';
 
 const Drag_Out = 'dragOut';
+const Drag_Within = 'dragWithin';
 
 /**
  * Container component in every cell of board, to hold a list of cards
@@ -44,9 +46,10 @@ export class CardContainerComponent implements OnInit {
   @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
   @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
   @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
-
+  @Output() dragIn = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into current card-container
   constructor(
     private boardService: BoardService,
+    private witService: WitService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone
@@ -110,6 +113,10 @@ export class CardContainerComponent implements OnInit {
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
   }
 
+  public openSourceUrl(id: number) {
+    this.boardService.openSourceUrl(id);
+  }
+
   private doUpdate() {
     this.cards = this.cardsSeq.getRange(0);
     this.cdr.markForCheck();
@@ -145,19 +152,21 @@ export class CardContainerComponent implements OnInit {
     previousIndex: number,
     currentIndex: number
   ) {
-    let itemsToMove: ICard[];
+    let cardsToMove: ICard[];
     if (Array.isArray(previousSeq)) {
       // dragged from source-list
-      itemsToMove = [previousSeq[previousIndex]];
+      cardsToMove = [previousSeq[previousIndex]];
     } else {
       // dragged from another card-container
-      itemsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
+      cardsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
       // Use 'cut' instead of 'remove': possible to set a register name.
       // Using it to tell other client, card will be just moved to another CardContainer.
       // Its related connection should not be removed
       previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
     }
-    currentSeq.insert(currentIndex, itemsToMove);
+    currentSeq.insert(currentIndex, cardsToMove);
+
+    this.dragIn.emit(cardsToMove.map((c) => c.linkedWitId));
   }
 
   private moveItemInSequence(

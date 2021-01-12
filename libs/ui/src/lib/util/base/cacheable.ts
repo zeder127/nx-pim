@@ -1,25 +1,19 @@
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { shareReplay, switchMap, tap } from 'rxjs/operators';
 
 export abstract class Cacheable<T> {
-  private cache$ = new BehaviorSubject<T[]>(null);
-  protected abstract getAll(): Observable<T[]>;
+  private cache$: Observable<T[]>;
+  private cacheValue: T[];
+  protected abstract getAllAsync(): Observable<T[]>;
 
-  protected get value(): T[] {
-    return this.cache$.value;
+  get value(): T[] {
+    return this.cacheValue;
   }
 
-  protected getCache(): Observable<T[]> {
-    if (this.value) {
-      return this.cache$.asObservable();
-    }
+  public getAll(): Observable<T[]> {
     return this.doGetAll();
   }
-
-  protected getSingleByKey(key: string, value: unknown): Observable<T> {
-    if (this.value) {
-      return of(this.cache$.value.find((v) => v[key] === value));
-    }
+  public getSingleByKey(key: string, value: unknown): Observable<T> {
     return this.doGetAll().pipe(
       switchMap((results) => of(results.find((v) => v[key] === value)))
     );
@@ -27,14 +21,21 @@ export abstract class Cacheable<T> {
 
   protected clear() {
     this.cache$ = undefined;
+    this.cacheValue = undefined;
   }
 
   protected update() {
     this.clear();
-    this.getAll();
+    this.getAllAsync();
   }
 
   private doGetAll(): Observable<T[]> {
-    return this.getAll().pipe(tap((results) => this.cache$.next(results)));
+    if (!this.cache$) {
+      this.cache$ = this.getAllAsync().pipe(
+        tap((result) => (this.cacheValue = result)),
+        shareReplay(1)
+      );
+    }
+    return this.cache$;
   }
 }
