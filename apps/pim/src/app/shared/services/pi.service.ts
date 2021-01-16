@@ -30,6 +30,8 @@ import { PimDataObjectRefService } from './data-object-ref.service';
   providedIn: 'root',
 })
 export class PiService {
+  private pisObservable: Observable<Pi[]>;
+
   constructor(private pimDORef: PimDataObjectRefService) {}
 
   // getPiConfiguration(id: string): Observable<PiConfiguration> {
@@ -46,12 +48,10 @@ export class PiService {
    * Get all PIs asychronlly. Used to get PIs, if DataObject has not been loaded.
    */
   public getPisAsync(): Observable<Pi[]> {
-    return from(this.pimDORef.getInstanceAsync()).pipe(
-      delay(0), // work-around to wait for resolve of all promises while loading DataObject
-      switchMap((pim) => {
-        return of(pim.getPis());
-      })
-    );
+    if (!this.pisObservable) {
+      this.pisObservable = this.doGetPisAsync();
+    }
+    return this.pisObservable;
   }
 
   /**
@@ -105,5 +105,14 @@ export class PiService {
    */
   public remove(piId: string) {
     this.pimDORef.instance.removePi(piId);
+  }
+
+  private doGetPisAsync(): Observable<Pi[]> {
+    return from(this.pimDORef.getInstanceAsync()).pipe(
+      delay(0), // work-around to wait for resolve of all promises while loading DataObject
+      switchMap((pim) => {
+        return of(pim.getPis());
+      })
+    );
   }
 }

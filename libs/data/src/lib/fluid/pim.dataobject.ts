@@ -50,6 +50,7 @@ export class PimDataObject extends DataObject {
       return;
     }
     [...this.pisDir.subdirectories()].forEach(async (v) => {
+      // TODO performance: just load necessary Pi DataObject
       await this.loadPi(v[1]);
     });
 

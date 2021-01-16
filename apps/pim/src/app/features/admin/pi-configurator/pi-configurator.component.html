@@ -1,1 +1,64 @@
-<p>pi-configurator works!</p>
+<!-- <ul>
+  <li *ngFor="let pi of pis$ | async">
+    <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
+    <button (click)="removePi(pi.id)">X</button>
+  </li>
+</ul> -->
+<div class="p-fluid">
+  <div class="p-field">
+    <label for="pi-name">PI Name</label>
+    <input id="pi-name" type="text" [(ngModel)]="newPiName" pInputText autofocus />
+  </div>
+  <div class="p-field">
+    <label for="pi-iterations">Iterations</label>
+    <p-multiSelect
+      id="pi-iterations"
+      [options]="iterations$ | async"
+      [(ngModel)]="selectedIterations"
+      [filter]="true"
+      optionLabel="path"
+      scrollHeight="350px"
+    >
+      <ng-template let-value pTemplate="selectedItems">
+        <div class="p-chips">
+          <span class="p-chips-multiple-container">
+            <span class="p-chips-token" *ngFor="let iteration of selectedIterations">
+              {{iteration.path}}
+            </span>
+          </span>
+        </div>
+      </ng-template>
+      <ng-template let-iteration pTemplate="item">
+        {{iteration.value.path}} ({{iteration.value.attributes.startDate | date}} -
+        {{iteration.value.attributes.finishDate | date}})
+      </ng-template>
+    </p-multiSelect>
+  </div>
+  <div class="p-field">
+    <label for="pi-teams">Teams</label>
+    <p-multiSelect
+      id="pi-teams"
+      [options]="teams$ | async"
+      [(ngModel)]="selectedTeams"
+      [filter]="true"
+      optionLabel="name"
+      scrollHeight="350px"
+    >
+      <ng-template let-value pTemplate="selectedItems">
+        <div class="p-chips">
+          <span class="p-chips-multiple-container">
+            <span class="p-chips-token" *ngFor="let team of selectedTeams">
+              {{team.name}}
+            </span>
+          </span>
+        </div>
+      </ng-template>
+    </p-multiSelect>
+  </div>
+</div>
+
+<button
+  pButton
+  label="Create"
+  (click)="createPi(newPiName); newPiName=undefined"
+></button>

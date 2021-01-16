@@ -2,8 +2,16 @@
 <ul>
   <li *ngFor="let pi of pis">
     <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
-    <button (click)="removePi(pi.id)">X</button>
+    <button [routerLink]="['/admin/' + pi.name +'/configuration']">edit</button>
+    <button (click)="removePi(pi.id)">delete</button>
   </li>
 </ul>
-<input type="text" [(ngModel)]="newPiName" />
-<button (click)="createPi(newPiName); newPiName=undefined">New PI</button>
+
+<span class="p-float-label">
+  <input id="float-input" type="text" [(ngModel)]="newPiName" pInputText />
+  <label for="float-input">PI Name</label>
+</span>
+<div>
+  <button (click)="createPi(newPiName); newPiName=undefined">New PI(old)</button>
+  <button [routerLink]="['/admin/pi/new']">New PI</button>
+</div>
