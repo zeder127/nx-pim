@@ -60,7 +60,7 @@ export class PiService {
   }
 
   /**
-   * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
+   * Get ProgrammBoard definition of the PI by a given PI name.
    * @param name Name of a PI
    */
   public getProgrammBoardOfPI(name: string): Observable<CardBoardDDS> {
@@ -70,6 +70,14 @@ export class PiService {
         return this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
       })
     );
+  }
+
+  /**
+   * Get Board definitions from PI DataObject.
+   * @param id id of a board
+   */
+  public getBoardById(id: string): CardBoardDDS {
+    return this.pimDORef.instance.boardRefsMap.get(id);
   }
   /**
    * Create a new PI DDS

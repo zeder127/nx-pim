@@ -47,10 +47,12 @@ export class PimDataObject extends DataObject {
       console.error(`FluidFramework: no such subdriectory -> ${Key_Pis}`, this.root);
       return;
     }
-    [...this.pisDir.subdirectories()].forEach(async (v) => {
-      // TODO performance: just load necessary Pi DataObject
-      await this.loadPi(v[1]);
-    });
+    await Promise.all(
+      [...this.pisDir.subdirectories()].map(async (v) => {
+        // TODO performance: just load necessary Pi DataObject
+        await this.loadPi(v[1]);
+      })
+    );
 
     // TODO load users
 
@@ -183,9 +185,11 @@ export class PimDataObject extends DataObject {
 
   private async loadPi(piDir: IDirectory) {
     const boardDirs = piDir.getSubDirectory(Key_Boards).subdirectories();
-    [...boardDirs].forEach(async (v) => {
-      await this.loadBoard(v[0], v[1]);
-    });
+    await Promise.all(
+      [...boardDirs].map(async (v) => {
+        await this.loadBoard(v[0], v[1]);
+      })
+    );
   }
 
   private async loadBoard(id: string, boardDir: IDirectory) {

@@ -1,9 +1,19 @@
 <p>Dashboard with charts for statistic of all Pis</p>
 <ul>
   <li *ngFor="let pi of pis">
-    <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
-    <button [routerLink]="['/admin/' + pi.name +'/edit']">edit</button>
+    {{pi.name}}
     <button (click)="removePi(pi.id)">delete</button>
+    <button [routerLink]="['/admin/' + pi.name +'/edit']">edit</button>
+    <ul>
+      <li>
+        <a [routerLink]="['/planning/' + pi.name +'/programm-board']">Programm Board</a>
+      </li>
+      <li *ngFor="let teamBoard of getBoards(pi.teamBoardIds)">
+        <a [routerLink]="['/planning/' + pi.name + '/' + teamBoard.name]">
+          {{teamBoard.name}}
+        </a>
+      </li>
+    </ul>
   </li>
 </ul>
 
