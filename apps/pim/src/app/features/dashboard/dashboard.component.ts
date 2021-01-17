@@ -29,7 +29,7 @@ export class DashboardComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public createPi(name: string) {
-    this.piService.createPi(name);
+    this.piService.createPi(name, [], []); // TODO
   }
 
   public removePi(id: string) {

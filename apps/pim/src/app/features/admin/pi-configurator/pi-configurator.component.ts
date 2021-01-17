@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Iteration, Pi, Team } from '@pim/data';
+import { IColumnHeader, IRowHeader, Iteration, Pi, Team } from '@pim/data';
 import { IterationService, TeamService } from '@pim/ui';
 import { Observable } from 'rxjs';
 import { PiService } from '../../../shared/services/pi.service';
@@ -16,6 +16,7 @@ export class PiConfiguratorComponent implements OnInit {
   public teams$: Observable<Team[]>;
   public selectedIterations: Iteration[];
   public selectedTeams: Team[];
+  public selectedTemplatePi: Pi;
 
   constructor(
     private piService: PiService,
@@ -29,11 +30,22 @@ export class PiConfiguratorComponent implements OnInit {
     this.teams$ = this.teamService.getAll();
   }
 
-  public createPi(name: string) {
-    this.piService.createPi(name);
+  public createPi(name: string, iterations: Iteration[], teams: Team[]) {
+    // TODO validation: name is empty, name exists already
+    const rowHeaders: IRowHeader[] = iterations.map((iteration) => {
+      return { linkedIterationId: iteration.id, text: iteration.name };
+    });
+    const columnHeaders: IColumnHeader[] = teams.map((team) => {
+      return { linkedSourceId: team.id, text: team.name };
+    });
+    this.piService.createPi(name, rowHeaders, columnHeaders);
   }
 
   public removePi(id: string) {
     this.piService.remove(id);
+  }
+
+  public onTemplateChange(selectedPi: Pi) {
+    // TODO confirm to replace selectedIterations and selectedTeams
   }
 }

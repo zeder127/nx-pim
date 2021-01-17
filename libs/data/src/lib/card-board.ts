@@ -23,8 +23,7 @@ export interface CardBoardDDS {
 
 interface IHeader {
   text: string;
-  description: string;
-  id: string;
+  description?: string;
 }
 
 export interface IColumnHeader extends IHeader {

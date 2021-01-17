@@ -6,10 +6,8 @@ import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions'
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard, IColumnHeader, IRowHeader } from '@pim/data';
 import { Subject } from 'rxjs';
-import { CardBoardDDS } from '../card-board';
-import { Constants } from '../constants';
-import { Pi } from '../pi';
-import { DemoBoard } from './demoBoard';
+import { CardBoardDDS, ICardBoard } from '../card-board';
+import { Pi, PiWithDetails } from '../pi';
 import { PimDataObjectHelper } from './helper';
 
 const Key_Pis = 'pis';
@@ -84,54 +82,15 @@ export class PimDataObject extends DataObject {
    * Create a new PI DDS.
    * @param pi model of a new PI
    */
-  public createPi(pi: Pi) {
+  public createPi(pi: PiWithDetails) {
     const piDir = this.pisDir.createSubDirectory(pi.id);
     piDir.set('name', pi.name);
     piDir.set('programBoardId', pi.programBoardId);
     piDir.set('teamBoardIds', pi.teamBoardIds);
-
-    const programBoardDir = piDir
-      .createSubDirectory(Key_Boards)
-      .createSubDirectory(pi.programBoardId);
-    programBoardDir.set('name', Constants.Default_Programm_Board_Name);
-    const rowsSequence = this.createSequenceInDirectory<IRowHeader>(
-      Key_Boards_Rows,
-      programBoardDir
-    );
-    const colsSequence = this.createSequenceInDirectory<IColumnHeader>(
-      Key_Boards_Cols,
-      programBoardDir
-    );
-    // const connectionsSequence = this.createSequenceInDirectory<IConnection>(
-    //   Key_Boards_Connectons,
-    //   programBoardDir
-    // );
-    const connectionsMap = this.createMapInDirectory(
-      Key_Boards_Connectons,
-      programBoardDir
-    );
-    let cardsMatrix = this.createMatrixInDirectory(Key_Boards_Cards, programBoardDir);
-
-    // insert initial data
-    rowsSequence.insert(0, DemoBoard.rowHeaders);
-    colsSequence.insert(0, DemoBoard.columnHeaders);
-    DemoBoard.connections.forEach((conn) =>
-      connectionsMap.set(`${conn.startPointId}_${conn.endPointId}`, conn)
-    );
-    cardsMatrix = PimDataObjectHelper.initialMatrixWithValue(
-      this.runtime,
-      cardsMatrix,
-      DemoBoard
-    );
-
-    // insert this new board into Map
-    this.boardRefsMap.set(pi.programBoardId, {
-      id: pi.programBoardId,
-      name: Constants.Default_Programm_Board_Name,
-      rowHeaders: rowsSequence,
-      columnHeaders: colsSequence,
-      cells: cardsMatrix,
-      connections: connectionsMap,
+    [pi.programBoard, ...pi.teamBoards].forEach((board) => {
+      const boardDDS = this.createBoardForPI(piDir, board);
+      // insert this new board into Map
+      this.boardRefsMap.set(board.id, boardDDS);
     });
   }
 
@@ -151,6 +110,41 @@ export class PimDataObject extends DataObject {
         teamBoardIds: piDir.get('teamBoardIds'),
       };
     });
+  }
+
+  private createBoardForPI(piDir: IDirectory, board: ICardBoard): CardBoardDDS {
+    const boardDir = piDir.createSubDirectory(Key_Boards).createSubDirectory(board.id);
+    boardDir.set('name', board.name);
+    const rowsSequence = this.createSequenceInDirectory<IRowHeader>(
+      Key_Boards_Rows,
+      boardDir
+    );
+    const colsSequence = this.createSequenceInDirectory<IColumnHeader>(
+      Key_Boards_Cols,
+      boardDir
+    );
+    const connectionsMap = this.createMapInDirectory(Key_Boards_Connectons, boardDir);
+    let cardsMatrix = this.createMatrixInDirectory(Key_Boards_Cards, boardDir);
+
+    // insert initial data
+    rowsSequence.insert(0, board.rowHeaders);
+    colsSequence.insert(0, board.columnHeaders);
+    board.connections.forEach((conn) =>
+      connectionsMap.set(`${conn.startPointId}_${conn.endPointId}`, conn)
+    );
+    cardsMatrix = PimDataObjectHelper.initialMatrixWithValue(
+      this.runtime,
+      cardsMatrix,
+      board
+    );
+    return {
+      id: board.id,
+      name: board.name,
+      rowHeaders: rowsSequence,
+      columnHeaders: colsSequence,
+      cells: cardsMatrix,
+      connections: connectionsMap,
+    };
   }
 
   /**

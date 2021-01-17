@@ -2,7 +2,7 @@
 <ul>
   <li *ngFor="let pi of pis">
     <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
-    <button [routerLink]="['/admin/' + pi.name +'/configuration']">edit</button>
+    <button [routerLink]="['/admin/' + pi.name +'/edit']">edit</button>
     <button (click)="removePi(pi.id)">delete</button>
   </li>
 </ul>
