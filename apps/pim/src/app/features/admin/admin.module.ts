@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ChipsModule } from 'primeng/chips';
+import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { ListboxModule } from 'primeng/listbox';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -22,6 +23,7 @@ import { PiConfiguratorComponent } from './pi-configurator/pi-configurator.compo
     ButtonModule,
     ChipsModule,
     CardModule,
+    DropdownModule,
   ],
 })
 export class AdminModule {}

@@ -4,11 +4,23 @@
     <button (click)="removePi(pi.id)">X</button>
   </li>
 </ul> -->
+<!--TODO configure rowHeaders and columnHeaders, accept unlinked row and column -->
 <div class="p-fluid">
   <div class="p-field">
     <label for="pi-name">PI Name</label>
     <input id="pi-name" type="text" [(ngModel)]="newPiName" pInputText autofocus />
   </div>
+  <!-- <div class="p-field">
+    <label for="template">Template (optional)</label>
+    <p-dropdown
+      [options]="pis$ | async"
+      [(ngModel)]="selectedTemplatePi"
+      (onChnage)="onTemplateChange($event)"
+      filter="true"
+      optionLabel="name"
+    >
+    </p-dropdown>
+  </div>-->
   <div class="p-field">
     <label for="pi-iterations">Iterations</label>
     <p-multiSelect
@@ -60,5 +72,5 @@
 <button
   pButton
   label="Create"
-  (click)="createPi(newPiName); newPiName=undefined"
+  (click)="createPi(newPiName, selectedIterations, selectedTeams)"
 ></button>
