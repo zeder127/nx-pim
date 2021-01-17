@@ -12,6 +12,16 @@ import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { PimDataObjectRefService } from './data-object-ref.service';
 
+const DemoRow: IRowHeader = {
+  linkedIterationId: undefined,
+  text: Constants.Default_Row_Text,
+};
+
+const DemoColumn: IColumnHeader = {
+  linkedSourceId: undefined,
+  text: Constants.Default_Column_Text,
+};
+
 /**
  * Apdapter between UI and DataObject
  */
@@ -83,13 +93,8 @@ export class PiService {
     // Every columnHeader represents a team, every team has a TeamBoard.
     // A new TeamBoard has the same rows(iterations) as ProgrammBoard,
     // but only has a demo column. Every team could add his own columns individually with UI.
-    const newTeamBoards: ICardBoard[] = columnHeaders.map((columnHeader) => {
-      return this.createCardBoardModel(columnHeader.text, rowHeaders, [
-        {
-          linkedSourceId: undefined,
-          text: Constants.Default_Column_Text,
-        },
-      ]);
+    const newTeamBoards: ICardBoard[] = columnHeaders?.map((columnHeader) => {
+      return this.createCardBoardModel(columnHeader.text, rowHeaders, [DemoColumn]);
     });
 
     this.pimDORef.instance.createPi({
@@ -113,13 +118,16 @@ export class PiService {
   private createCardBoardModel(
     name: string,
     rowHeaders: IRowHeader[],
-    columnHeaders: IColumnHeader[]
+    colHeaders: IColumnHeader[]
   ): ICardBoard {
+    const id = uuidv4();
+    const newRowHeaders = rowHeaders && rowHeaders.length > 0 ? rowHeaders : [DemoRow];
+    const newColHeaders = colHeaders && colHeaders.length > 0 ? colHeaders : [DemoColumn];
     return {
-      id: uuidv4(),
-      name,
-      columnHeaders,
-      rowHeaders,
+      id,
+      name: name ?? `${Constants.Default_Board_Name}_${id}`,
+      columnHeaders: newColHeaders,
+      rowHeaders: newRowHeaders,
       cards: [],
       connections: [],
     };
