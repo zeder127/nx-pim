@@ -10,7 +10,11 @@ import { IColumnHeader } from '@pim/data';
 export class ColumnHeaderComponent implements OnInit {
   @Input('model') colHeader: IColumnHeader;
   @Input() linkedSourceType: 'team' | 'workitem' = 'team';
-  constructor() {}
+  constructor() {
+    //
+  }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    //
+  }
 }

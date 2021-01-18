@@ -61,13 +61,29 @@ export class PiService {
 
   /**
    * Get ProgrammBoard definition of the PI by a given PI name.
-   * @param name Name of a PI
+   * @param piName Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<CardBoardDDS> {
-    return this.getPiByName(name).pipe(
+  public getProgrammBoardOfPI(piName: string): Observable<CardBoardDDS> {
+    return this.getPiByName(piName).pipe(
       filter((pi) => !!pi),
       map((pi) => {
         return this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
+      })
+    );
+  }
+
+  /**
+   * Get a board definition of a given team in a given PI.
+   * @param piName id of a PI
+   * @param teamName name of a team
+   */
+  public getTeamBoardOfPI(piName: string, teamName: string): Observable<CardBoardDDS> {
+    return this.getPiByName(piName).pipe(
+      map((pi) => {
+        const boardId = pi.teamBoardIds.find(
+          (id) => this.getBoardById(id)?.name === teamName
+        );
+        return this.getBoardById(boardId);
       })
     );
   }

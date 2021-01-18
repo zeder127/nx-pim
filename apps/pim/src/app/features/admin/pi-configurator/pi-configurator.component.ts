@@ -44,8 +44,4 @@ export class PiConfiguratorComponent implements OnInit {
   public removePi(id: string) {
     this.piService.remove(id);
   }
-
-  public onTemplateChange(selectedPi: Pi) {
-    // TODO confirm to replace selectedIterations and selectedTeams
-  }
 }

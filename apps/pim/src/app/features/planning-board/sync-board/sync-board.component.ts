@@ -13,13 +13,12 @@ import { PiService } from '../../../shared/services/pi.service';
 })
 export class SyncBoardComponent implements OnInit {
   public cardBoard: CardBoardDDS;
-  private piName: string;
   constructor(private route: ActivatedRoute, private piService: PiService) {}
 
   ngOnInit() {
-    this.piName = this.route.snapshot.paramMap.get('piName');
+    const piName = this.route.snapshot.paramMap.get('piName');
     this.piService
-      .getProgrammBoardOfPI(this.piName)
+      .getProgrammBoardOfPI(piName)
       .subscribe((board) => (this.cardBoard = board));
   }
 }

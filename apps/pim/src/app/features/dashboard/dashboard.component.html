@@ -9,7 +9,7 @@
         <a [routerLink]="['/planning/' + pi.name +'/programm-board']">Programm Board</a>
       </li>
       <li *ngFor="let teamBoard of getBoards(pi.teamBoardIds)">
-        <a [routerLink]="['/planning/' + pi.name + '/' + teamBoard.name]">
+        <a [routerLink]="['/planning/' + pi.name + '/team-board/' + teamBoard.name]">
           {{teamBoard.name}}
         </a>
       </li>

@@ -9,12 +9,12 @@ const routes: Routes = [
     component: SyncBoardComponent,
   },
   {
-    path: ':piName/:teamName',
+    path: ':piName/team-board/:teamName',
     component: TeamBoardComponent,
   },
   {
     path: '**',
-    redirectTo: 'team/1', // FIXME
+    redirectTo: 'dashboard', // FIXME
     pathMatch: 'full',
   },
 ];
