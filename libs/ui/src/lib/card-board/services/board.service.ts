@@ -9,6 +9,12 @@ export class BoardService {
   public cardsInsert$ = new Subject<number[]>();
   public cardsLoad$ = new BehaviorSubject<number[]>([]);
   public cardsRemove$ = new Subject<number[]>();
+
+  /** Current PI name, read from current url */
+  public currentPiName: string;
+
+  /** Current team name, read from current url. Be null if it is a programm-board */
+  public currentTeamName: string;
   constructor(
     private iterationService: IterationService,
     private teamService: TeamService,

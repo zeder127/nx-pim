@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IValueChanged } from '@fluidframework/map';
 import { SharedObjectSequence } from '@fluidframework/sequence';
@@ -63,7 +64,8 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
     private witService: WitService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
     super();
   }
@@ -71,6 +73,9 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   ngOnInit(): void {
     this.connections = [...this.board.connections.values()];
     this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
+
+    this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
+    this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
 
     this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
