@@ -1,4 +1,4 @@
-<mat-sidenav-container class="example-container" cdkDropListGroup>
+<mat-sidenav-container cdkDropListGroup>
   <mat-sidenav #sidenav mode="side" position="end" opened>
     <div style="width: 200px;">
       <pim-sources-list *ngIf="sourceCards" [sources]="sourceCards"></pim-sources-list>
@@ -6,10 +6,27 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <!-- <button (click)="sidenav.toggle(); updateConnections()">Toggle</button> -->
-    <p-table [value]="rows" [columns]="columns" styleClass="p-datatable-gridlines">
+    <p-table
+      [value]="rows"
+      [columns]="columns"
+      frozenWidth="200px"
+      styleClass="p-datatable-gridlines"
+      [scrollable]="true"
+      scrollHeight="100%"
+      [autoLayout]="true"
+    >
+      <ng-template pTemplate="frozenheader">
+        <tr height="100px">
+          <th style="width: 200px;"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="frozenbody" let-row let-rowIndex="rowIndex">
+        <tr height="100px">
+          <td><pim-row-header [model]="row"></pim-row-header></td>
+        </tr>
+      </ng-template>
       <ng-template pTemplate="header" let-columns>
-        <tr>
-          <th></th>
+        <tr height="100px">
           <th *ngFor="let col of columns">
             <pim-column-header
               [model]="col"
@@ -19,10 +36,10 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex" let-columns="columns">
-        <tr>
-          <td><pim-row-header [model]="row"></pim-row-header></td>
-          <td *ngFor="let col of columns; index as columnIndex">
+        <tr height="100px">
+          <td height="1px" *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
+              [style.height]="'100%'"
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad($event)"
               (insert)="onInsert($event)"
