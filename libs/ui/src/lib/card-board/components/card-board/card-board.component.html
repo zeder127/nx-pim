@@ -12,7 +12,7 @@
       frozenWidth="200px"
       styleClass="p-datatable-gridlines"
       [scrollable]="true"
-      scrollHeight="100%"
+      scrollHeight="flex"
       [autoLayout]="true"
     >
       <ng-template pTemplate="frozenheader">
@@ -24,6 +24,11 @@
         <tr height="100px">
           <td><pim-row-header [model]="row"></pim-row-header></td>
         </tr>
+      </ng-template>
+      <ng-template pTemplate="colgroup" let-columns>
+        <colgroup>
+          <col *ngFor="let col of columns" style="width: 300px;" />
+        </colgroup>
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr height="100px">

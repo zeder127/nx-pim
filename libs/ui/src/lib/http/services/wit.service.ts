@@ -29,7 +29,7 @@ export class WitService {
     return this.devOpsClient
       .fetchByPost(`/_apis/wit/workitemsbatch`, {
         ids: ids,
-        fields: ['System.Id', 'System.Title', 'System.WorkItemType'],
+        fields: ['System.Id', 'System.Title', 'System.WorkItemType', 'System.Tags'],
       })
       .pipe(
         map((result: { value: AzureWorkItem[] }) => {
@@ -134,6 +134,7 @@ export class WitService {
       id: awi.id,
       title: awi.fields['System.Title'] as string,
       type: awi.fields['System.WorkItemType'] as string,
+      tags: (awi.fields['System.Tags'] as string)?.split(', '),
       url: awi.url,
       rev: awi.rev,
     };

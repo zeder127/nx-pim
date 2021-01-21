@@ -13,6 +13,7 @@ import { IValueChanged } from '@fluidframework/map';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
+  CardType,
   ICard,
   IColumnHeader,
   IConnection,
@@ -79,6 +80,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
     this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
+        //type: 'Feature',
         type: 'Product Backlog Item',
         team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
       })
@@ -101,9 +103,29 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     return {
       text: wi.title,
       linkedWitId: wi.id,
+      type: this.toCardType(wi),
       x: undefined,
       y: undefined,
     } as ICard;
+  }
+  private toCardType(wi: WorkItem): CardType {
+    if (wi.type === 'Feature') {
+      return CardType.Feature;
+    } else {
+      return this.getCardTypeFromTags(wi.tags); // Type 'Product Backlog Item' as default
+    }
+  }
+
+  private getCardTypeFromTags(tags: string[]): CardType {
+    // TODO Setting: tag to CardType
+    if (!tags) return CardType.PBI;
+    if (tags.some((tag) => tag.toLocaleLowerCase() === CardType.Delivery))
+      return CardType.Delivery;
+    if (tags.some((tag) => tag.toLocaleLowerCase() === CardType.Enabler))
+      return CardType.Enabler;
+    if (tags.some((tag) => tag.toLocaleLowerCase() === CardType.Milestone))
+      return CardType.Milestone;
+    return CardType.PBI;
   }
 
   public getCell(row: number, col: number): IFluidHandle<SharedObjectSequence<ICard>> {

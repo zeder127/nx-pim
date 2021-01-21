@@ -12,7 +12,7 @@ import {
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
-import { ICard } from '@pim/data';
+import { CardType, ICard } from '@pim/data';
 import { PimDataObjectHelper } from '@pim/data/fluid';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -56,15 +56,12 @@ export class CardContainerComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    // FIXME sometimems cardsSeqHandle is null
-    console.log(`🚀 ~ CardContainerComponent ~ this.cardsSeqHandle`, this.cardsSeqHandle);
-    this.cardsSeq = await this.cardsSeqHandle?.get();
+    this.cardsSeq = await this.cardsSeqHandle.get();
 
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
       this.zone.run(() => {
         this.doUpdate();
-
         const deltaCardIds = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
           event
         ).map((c) => c.linkedWitId);
@@ -92,6 +89,7 @@ export class CardContainerComponent implements OnInit {
       id: uuidv4(),
       text: `New card ${Math.floor(Math.random() * 10)}`,
       linkedWitId: 100,
+      type: CardType.PBI,
       x: undefined, // TODO
       y: undefined, // TODO
     };

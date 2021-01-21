@@ -39,6 +39,15 @@ export interface ICard extends Cell {
   id?: string;
   linkedWitId: number;
   text: string;
+  type: CardType;
+}
+
+export enum CardType {
+  Feature = 'feature',
+  Enabler = 'enabler',
+  Delivery = 'delivery',
+  Milestone = 'milestone',
+  PBI = 'pbi',
 }
 
 /**

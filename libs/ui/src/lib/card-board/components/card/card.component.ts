@@ -2,11 +2,12 @@ import {
   AfterViewInit,
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnInit,
   Output,
 } from '@angular/core';
-import { ICard } from '@pim/data';
+import { CardType, ICard } from '@pim/data';
 
 @Component({
   selector: 'pim-card',
@@ -21,7 +22,23 @@ export class CardComponent implements OnInit, AfterViewInit {
   @Output() load = new EventEmitter();
   @Output() remove = new EventEmitter<ICard>();
   @Output() open = new EventEmitter<number>();
-  constructor() {}
+
+  @HostBinding('style.border-left-color')
+  get borderLeftColor() {
+    // TODO Setting: CardType Color
+    switch (this.card.type) {
+      case CardType.Delivery:
+        return '#fbbc3d';
+      case CardType.Enabler:
+        return '#7ace64';
+      case CardType.Feature:
+        return '#602f70';
+      case CardType.Milestone:
+        return '#ec001d';
+      default:
+        return '#009ccc';
+    }
+  }
 
   ngOnInit(): void {
     //

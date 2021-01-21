@@ -20,6 +20,6 @@
     [class.is-mapped]="isMapped(card.linkedWitId)"
     [cdkDragDisabled]="isMapped(card.linkedWitId)"
   >
-    {{card.linkedWitId}} {{card.text}}
+    <p>{{card.linkedWitId}} {{card.text}} ({{card.type}})</p>
   </div>
 </div>
