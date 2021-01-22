@@ -23,6 +23,11 @@ export class CardComponent implements OnInit, AfterViewInit {
   @Output() remove = new EventEmitter<ICard>();
   @Output() open = new EventEmitter<number>();
 
+  @HostBinding('class')
+  get typeClass() {
+    return 'card-type-class';
+  }
+
   @HostBinding('style.border-left-color')
   get borderLeftColor() {
     // TODO Setting: CardType Color

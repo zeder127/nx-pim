@@ -68,3 +68,27 @@ export interface Cell {
   x: number;
   y: number;
 }
+
+export enum SyncType {
+  Insert = 'insert',
+  Remove = 'remove',
+  Move = 'move',
+  ValueChange = 'valueChange',
+}
+
+export interface SyncEvent {
+  type: SyncType;
+  linkedWitIds: number[];
+}
+
+export interface SyncInsertEvent extends SyncEvent {
+  type: SyncType.Insert;
+  linkedIterationId: string;
+  linkedSourceId: string | number;
+}
+
+export interface SyncRemoveEvent extends SyncEvent {
+  type: SyncType.Remove;
+  linkedIterationId: string;
+  linkedSourceId: string | number;
+}

@@ -47,8 +47,8 @@
               [style.height]="'100%'"
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad($event)"
-              (insert)="onInsert($event)"
-              (remove)="onRemove($event)"
+              (insert)="onInsert($event, rowIndex, columnIndex)"
+              (remove)="onRemove($event, rowIndex, columnIndex)"
               (dragOut)="onDragOut($event)"
               (dragIn)="onDragIn($event, rowIndex, columnIndex)"
             ></pim-card-container>

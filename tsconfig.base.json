@@ -18,6 +18,7 @@
     "paths": {
       "@pim/data": ["libs/data/src/index.ts"],
       "@pim/data/fluid": ["libs/data/src/lib/fluid/index.ts"],
+      "@pim/data/util": ["libs/data/src/lib/util/index.ts"],
       "@pim/ui": ["libs/ui/src/index.ts"]
     },
     "esModuleInterop": true,

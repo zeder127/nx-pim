@@ -23,7 +23,6 @@ import { WitService } from '../../../http';
 import { BoardService } from '../../services/board.service';
 
 const Drag_Out = 'dragOut';
-const Drag_Within = 'dragWithin';
 
 /**
  * Container component in every cell of board, to hold a list of cards
@@ -43,10 +42,10 @@ export class CardContainerComponent implements OnInit {
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
-  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
+  @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
   @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
   @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
-  @Output() dragIn = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into current card-container
+  @Output() dragIn = new EventEmitter<ICard[]>(); // cards to drag into current card-container
   constructor(
     private boardService: BoardService,
     private witService: WitService,
@@ -62,13 +61,14 @@ export class CardContainerComponent implements OnInit {
       // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
       this.zone.run(() => {
         this.doUpdate();
-        const deltaCardIds = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
+        const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
           event
-        ).map((c) => c.linkedWitId);
+        );
+        const deltaCardIds = deltaCards.map((c) => c.linkedWitId);
 
         if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
           // TODO just using boardService??
-          this.insert.emit(deltaCardIds);
+          this.insert.emit(deltaCards);
         }
         if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
           if (event.opArgs.op.register === Drag_Out) {
@@ -164,7 +164,7 @@ export class CardContainerComponent implements OnInit {
     }
     currentSeq.insert(currentIndex, cardsToMove);
 
-    this.dragIn.emit(cardsToMove.map((c) => c.linkedWitId));
+    this.dragIn.emit(cardsToMove);
   }
 
   private moveItemInSequence(

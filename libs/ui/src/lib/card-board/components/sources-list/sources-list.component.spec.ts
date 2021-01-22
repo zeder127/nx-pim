@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { SourcesListComponent } from './sources-list.component';
 
 describe('SourcesListComponent', () => {
@@ -8,9 +7,8 @@ describe('SourcesListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SourcesListComponent ]
-    })
-    .compileComponents();
+      declarations: [SourcesListComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {
