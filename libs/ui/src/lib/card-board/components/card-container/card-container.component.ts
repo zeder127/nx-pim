@@ -44,8 +44,9 @@ export class CardContainerComponent implements OnInit {
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
   @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
+  // TODO check, maybe remove, only for connections
   @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
-  @Output() dragIn = new EventEmitter<ICard[]>(); // cards to drag into current card-container
+
   constructor(
     private boardService: BoardService,
     private witService: WitService,
@@ -67,7 +68,6 @@ export class CardContainerComponent implements OnInit {
         const deltaCardIds = deltaCards.map((c) => c.linkedWitId);
 
         if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
-          // TODO just using boardService??
           this.insert.emit(deltaCards);
         }
         if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
@@ -163,8 +163,6 @@ export class CardContainerComponent implements OnInit {
       previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
     }
     currentSeq.insert(currentIndex, cardsToMove);
-
-    this.dragIn.emit(cardsToMove);
   }
 
   private moveItemInSequence(
@@ -172,9 +170,9 @@ export class CardContainerComponent implements OnInit {
     previousIndex: number,
     currentIndex: number
   ) {
-    const itemsToMove = seq.getItems(previousIndex, previousIndex + 1);
+    const itemToMove = seq.getItems(previousIndex, previousIndex + 1);
     seq.removeRange(previousIndex, previousIndex + 1);
-    seq.insert(currentIndex, itemsToMove);
+    seq.insert(currentIndex, itemToMove);
   }
 
   public dragStart(event: CdkDragStart<ICard>) {

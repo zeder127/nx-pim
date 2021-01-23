@@ -132,6 +132,11 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     const iterationId = this.rows[rowIndex].linkedIterationId;
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
 
+    this.boardService.updateIterationAndTeam(
+      cards.map((c) => c.linkedWitId),
+      iterationId,
+      colLinkedSourceId
+    );
     this.boardService.cardsInsert$.next(cardIds);
     this.sync.emit({
       type: SyncType.Insert,
@@ -165,9 +170,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public onDragOut(ids: number[], rowIndex: number, colIndex: number) {
+    this.boardService.cardsRemove$.next(ids);
     const iterationId = this.rows[rowIndex].linkedIterationId;
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
-    this.boardService.cardsRemove$.next(ids);
+
     this.sync.emit({
       type: SyncType.Remove,
       linkedWitIds: ids,
@@ -176,23 +182,23 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
-  public onDragIn(cards: ICard[], rowIndex: number, colIndex: number) {
-    // get current IterationPath and AreaPath(Team)
-    const iterationId = this.rows[rowIndex].linkedIterationId;
-    const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
-    this.boardService.updateIterationAndTeam(
-      cards.map((c) => c.linkedWitId),
-      iterationId,
-      colLinkedSourceId
-    );
+  // public onDragIn(cards: ICard[], rowIndex: number, colIndex: number) {
+  //   // get current IterationPath and AreaPath(Team)
+  //   const iterationId = this.rows[rowIndex].linkedIterationId;
+  //   const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
+  //   this.boardService.updateIterationAndTeam(
+  //     cards.map((c) => c.linkedWitId),
+  //     iterationId,
+  //     colLinkedSourceId
+  //   );
 
-    this.sync.emit({
-      type: SyncType.Insert,
-      linkedWitIds: cards.map((c) => c.linkedWitId),
-      linkedIterationId: iterationId,
-      linkedSourceId: colLinkedSourceId,
-    });
-  }
+  //   this.sync.emit({
+  //     type: SyncType.Insert,
+  //     linkedWitIds: cards.map((c) => c.linkedWitId),
+  //     linkedIterationId: iterationId,
+  //     linkedSourceId: colLinkedSourceId,
+  //   });
+  // }
 
   public updateConnections() {
     this.connectionBuilder.update$.next();

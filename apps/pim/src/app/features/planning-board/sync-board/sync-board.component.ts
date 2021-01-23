@@ -38,22 +38,20 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
       .subscribe((board) => (this.cardBoard = board));
   }
 
-  public onSync(event: SyncEvent) {
+  public syncWithTeamBoard(event: SyncEvent) {
     switch (event.type) {
       case SyncType.Insert:
-        this.syncInsertEvent(event as SyncInsertEvent);
+        this.boardSyncService.syncProgramBoardInsertEvent(
+          event as SyncInsertEvent,
+          this.piName
+        );
         break;
       case SyncType.Remove:
-        this.syncRemoveEvent(event as SyncRemoveEvent);
+        this.boardSyncService.syncProgrammBoardRemoveEvent(
+          event as SyncRemoveEvent,
+          this.piName
+        );
         break;
     }
-  }
-
-  private syncInsertEvent(event: SyncInsertEvent) {
-    this.boardSyncService.syncProgramBoardInsertEvent(event, this.piName);
-  }
-
-  private syncRemoveEvent(event: SyncRemoveEvent) {
-    this.boardSyncService.syncProgrammBoardRemoveEvent(event, this.piName);
   }
 }
