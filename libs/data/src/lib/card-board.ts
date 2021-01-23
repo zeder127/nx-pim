@@ -72,23 +72,21 @@ export interface Cell {
 export enum SyncType {
   Insert = 'insert',
   Remove = 'remove',
-  Move = 'move',
+  Move = 'move', // TODO useless?
   ValueChange = 'valueChange',
 }
 
 export interface SyncEvent {
   type: SyncType;
   linkedWitIds: number[];
+  linkedIterationId: string;
+  linkedSourceId: string | number;
 }
 
 export interface SyncInsertEvent extends SyncEvent {
   type: SyncType.Insert;
-  linkedIterationId: string;
-  linkedSourceId: string | number;
 }
 
 export interface SyncRemoveEvent extends SyncEvent {
   type: SyncType.Remove;
-  linkedIterationId: string;
-  linkedSourceId: string | number;
 }

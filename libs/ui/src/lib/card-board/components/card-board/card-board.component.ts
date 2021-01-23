@@ -164,11 +164,15 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
-  public onDragOut(ids: number[]) {
+  public onDragOut(ids: number[], rowIndex: number, colIndex: number) {
+    const iterationId = this.rows[rowIndex].linkedIterationId;
+    const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
     this.boardService.cardsRemove$.next(ids);
     this.sync.emit({
       type: SyncType.Remove,
       linkedWitIds: ids,
+      linkedIterationId: iterationId,
+      linkedSourceId: colLinkedSourceId,
     });
   }
 
@@ -184,8 +188,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
 
     // TODO move
     this.sync.emit({
-      type: SyncType.Move,
+      type: SyncType.Insert,
       linkedWitIds: cards.map((c) => c.linkedWitId),
+      linkedIterationId: iterationId,
+      linkedSourceId: colLinkedSourceId,
     });
   }
 

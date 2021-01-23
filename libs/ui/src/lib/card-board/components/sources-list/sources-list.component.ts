@@ -54,6 +54,6 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public onTeamChange(selectedTeam: Team) {
-    //
+    console.log(`🚀 ~ SourcesListComponent ~ selectedTeam`, selectedTeam);
   }
 }

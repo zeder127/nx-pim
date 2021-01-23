@@ -105,9 +105,9 @@ export class PiService {
       rowHeaders,
       columnHeaders
     );
-    // Every columnHeader represents a team, every team has a TeamBoard.
-    // A new TeamBoard has the same rows(iterations) as ProgrammBoard,
-    // but only has a demo column. Every team could add his own columns individually with UI.
+    // Every columnHeader represents a team, every team should have its own TeamBoard.
+    // A new TeamBoard has the same rows(iterations) as ProgrammBoard, but only has a placeholder column.
+    // Every team could add his own columns individually with UI.
     const newTeamBoards: ICardBoard[] = columnHeaders?.map((columnHeader) => {
       return createCardBoardModel(columnHeader.text, rowHeaders);
     });
