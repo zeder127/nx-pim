@@ -45,7 +45,7 @@ export class BoardSyncService extends AutoUnsubscriber {
         if (diffCards.length > 0) {
           const targetSequenceLength = cardSequence.getItemCount();
           targetSequenceLength > 0
-            ? cardSequence.insert(targetSequenceLength - 1, diffCards)
+            ? cardSequence.insert(targetSequenceLength, diffCards)
             : cardSequence.insert(0, diffCards);
         }
       });

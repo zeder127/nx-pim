@@ -186,7 +186,6 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
       colLinkedSourceId
     );
 
-    // TODO move
     this.sync.emit({
       type: SyncType.Insert,
       linkedWitIds: cards.map((c) => c.linkedWitId),
