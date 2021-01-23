@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   CardBoardDDS,
+  ICard,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
@@ -9,6 +10,7 @@ import {
 } from '@pim/data';
 import { toCard } from '@pim/data/util';
 import { AutoUnsubscriber, TeamService, WitService } from '@pim/ui';
+import { differenceBy } from 'lodash';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { PiService } from '../../../shared/services/pi.service';
@@ -109,11 +111,18 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
         // NOTE Sync from ProgrammBoard to TeamBoard, ProgrammBoard doesn't know the new Item should be insert which column in TeamBoard
         // Just insert to the first column on TeamBoard, so colNumber is 0.
-        const targetSequence = await teamBoard.cells.getCell(rowNumber, 0).get();
-        const targetSequenceLength = targetSequence.getItemCount();
-        targetSequenceLength > 0
-          ? targetSequence.insert(targetSequenceLength - 1, newCards)
-          : targetSequence.insert(0, newCards);
+        const cardSequence = await teamBoard.cells.getCell(rowNumber, 0).get();
+        const diffCards = this.findDiffCard(cardSequence.getItems(0), newCards);
+        if (diffCards.length > 0) {
+          const targetSequenceLength = cardSequence.getItemCount();
+          targetSequenceLength > 0
+            ? cardSequence.insert(targetSequenceLength - 1, diffCards)
+            : cardSequence.insert(0, diffCards);
+        }
       });
+  }
+
+  private findDiffCard(sourceCards: ICard[], newCards: ICard[]): ICard[] {
+    return differenceBy(newCards, sourceCards, 'linkedWitId');
   }
 }
