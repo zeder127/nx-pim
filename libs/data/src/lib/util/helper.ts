@@ -1,4 +1,6 @@
-import { CardType, ICard } from '../card-board';
+import { v4 as uuidv4 } from 'uuid';
+import { CardType, ICard, ICardBoard, IColumnHeader, IRowHeader } from '../card-board';
+import { Constants } from '../constants';
 import { WorkItem } from '../work-item';
 
 export function toCard(wit: WorkItem): ICard {
@@ -29,4 +31,30 @@ function getCardTypeFromTags(tags: string[]): CardType {
   if (tags.some((tag) => tag.toLocaleLowerCase() === CardType.Milestone))
     return CardType.Milestone;
   return CardType.PBI;
+}
+
+export const PlaceholderRow: IRowHeader = {
+  linkedIterationId: undefined,
+  text: Constants.Default_Row_Text,
+};
+
+export const PlaceholderColumn: IColumnHeader = {
+  linkedSourceId: undefined,
+  text: Constants.Default_Column_Text,
+};
+
+export function createCardBoardModel(
+  name: string,
+  rowHeaders = [PlaceholderRow],
+  columnHeaders = [PlaceholderColumn]
+): ICardBoard {
+  const id = uuidv4();
+  return {
+    id,
+    name: name ?? `${Constants.Default_Board_Name}_${id}`,
+    columnHeaders,
+    rowHeaders,
+    cards: [],
+    connections: [],
+  };
 }
