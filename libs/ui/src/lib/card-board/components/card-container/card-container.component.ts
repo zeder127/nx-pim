@@ -43,9 +43,9 @@ export class CardContainerComponent implements OnInit {
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
-  @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
+  @Output() remove = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
   // TODO check, maybe remove, only for connections
-  @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
+  @Output() dragOut = new EventEmitter<ICard[]>(); // linkedWitId of the cards to drag into another card-container
 
   constructor(
     private boardService: BoardService,
@@ -65,16 +65,14 @@ export class CardContainerComponent implements OnInit {
         const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
           event
         );
-        const deltaCardIds = deltaCards.map((c) => c.linkedWitId);
-
         if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
           this.insert.emit(deltaCards);
         }
         if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
           if (event.opArgs.op.register === Drag_Out) {
-            this.dragOut.emit(deltaCardIds);
+            this.dragOut.emit(deltaCards);
           } else {
-            this.remove.emit(deltaCardIds);
+            this.remove.emit(deltaCards);
           }
         }
       });

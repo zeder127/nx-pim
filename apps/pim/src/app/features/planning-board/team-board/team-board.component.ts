@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   CardBoardDDS,
+  CardType,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
@@ -9,6 +10,7 @@ import {
 } from '@pim/data';
 import { AutoUnsubscriber, TeamService } from '@pim/ui';
 import { PiService } from '../../../shared/services/pi.service';
+import { BoardSettingsService } from '../services/board-settings.service';
 import { BoardSyncService } from '../services/board-sync.service';
 
 @Component({
@@ -18,15 +20,18 @@ import { BoardSyncService } from '../services/board-sync.service';
 })
 export class TeamBoardComponent extends AutoUnsubscriber implements OnInit {
   public cardBoard: CardBoardDDS;
+  public typesAllowedToSync: CardType[];
   public piName: string;
   public teamId: string;
   constructor(
     private route: ActivatedRoute,
     private piService: PiService,
     private boardSyncService: BoardSyncService,
-    private teamService: TeamService
+    private teamService: TeamService,
+    private boardSettingsServcie: BoardSettingsService
   ) {
     super();
+    this.typesAllowedToSync = this.boardSettingsServcie.cardTypesAllowedToSync;
   }
 
   ngOnInit() {

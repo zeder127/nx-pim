@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   CardBoardDDS,
+  CardType,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
@@ -9,6 +10,7 @@ import {
 } from '@pim/data';
 import { AutoUnsubscriber } from '@pim/ui';
 import { PiService } from '../../../shared/services/pi.service';
+import { BoardSettingsService } from '../services/board-settings.service';
 import { BoardSyncService } from '../services/board-sync.service';
 
 // const API_WITS = 'https://dev.azure.com/xw-sandbox/pi-manager-dev/_apis/wit/workitems?ids=1';
@@ -21,13 +23,17 @@ import { BoardSyncService } from '../services/board-sync.service';
 })
 export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
   public cardBoard: CardBoardDDS;
+  public typesAllowedToSync: CardType[];
   private piName: string;
   constructor(
     private route: ActivatedRoute,
     private piService: PiService,
-    private boardSyncService: BoardSyncService
+    private boardSyncService: BoardSyncService,
+    private boardSettingsServcie: BoardSettingsService
   ) {
     super();
+    // TODO muss be constructor?
+    this.typesAllowedToSync = this.boardSettingsServcie.cardTypesAllowedToSync;
   }
 
   ngOnInit() {

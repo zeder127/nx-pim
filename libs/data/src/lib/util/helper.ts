@@ -58,3 +58,8 @@ export function createCardBoardModel(
     connections: [],
   };
 }
+
+export function enumToArray(eInst, valueType: 'string' | 'number' = 'string') {
+  const keys = Object.keys(eInst).filter((k) => typeof eInst[k] === valueType);
+  return keys.map((k) => eInst[k]);
+}

@@ -27,7 +27,7 @@ export class WitService {
 
   public getWorkItems(ids: number[]): Observable<WorkItem[]> {
     return this.devOpsClient
-      .fetchByPost(`/_apis/wit/workitemsbatch`, {
+      .fetchByPost(`_apis/wit/workitemsbatch`, {
         ids: ids,
         fields: ['System.Id', 'System.Title', 'System.WorkItemType', 'System.Tags'],
       })
@@ -113,11 +113,11 @@ export class WitService {
     return this.getWorkItemById(id).pipe(
       switchMap((wi) => {
         const payload = [
-          {
-            op: 'test',
-            path: '/rev',
-            value: wi.rev,
-          } as JsonPatchDocument,
+          // {
+          //   op: 'test',
+          //   path: '/rev',
+          //   value: wi.rev,
+          // } as JsonPatchDocument,
           ...newValues,
         ];
         return this.devOpsClient
