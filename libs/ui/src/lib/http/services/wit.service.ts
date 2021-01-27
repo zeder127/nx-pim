@@ -110,23 +110,11 @@ export class WitService {
   }
 
   private update(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
-    return this.getWorkItemById(id).pipe(
-      switchMap((wi) => {
-        const payload = [
-          // {
-          //   op: 'test',
-          //   path: '/rev',
-          //   value: wi.rev,
-          // } as JsonPatchDocument,
-          ...newValues,
-        ];
-        return this.devOpsClient
-          .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
-            headers: { 'content-type': 'application/json-patch+json' },
-          })
-          .pipe(map((awi) => this.toWorkItem(awi)));
+    return this.devOpsClient
+      .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, newValues, {
+        headers: { 'content-type': 'application/json-patch+json' },
       })
-    );
+      .pipe(map((awi) => this.toWorkItem(awi)));
   }
 
   private toWorkItem(awi: AzureWorkItem): WorkItem {

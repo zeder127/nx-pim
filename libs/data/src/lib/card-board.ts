@@ -78,7 +78,7 @@ export enum SyncType {
 
 export interface SyncEvent {
   type: SyncType;
-  linkedWitIds: number[];
+  cards: ICard[];
   linkedIterationId: string;
   linkedSourceId: string | number;
 }

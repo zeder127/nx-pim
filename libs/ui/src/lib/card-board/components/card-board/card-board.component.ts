@@ -134,11 +134,13 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     const iterationId = this.rows[rowIndex].linkedIterationId;
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
 
-    this.boardService.updateIterationAndTeam(
-      cards.map((c) => c.linkedWitId),
-      iterationId,
-      colLinkedSourceId
-    );
+    this.boardService
+      .updateIterationAndTeam(
+        cards.map((c) => c.linkedWitId),
+        iterationId,
+        colLinkedSourceId
+      )
+      .subscribe();
     this.boardService.cardsInsert$.next(cardIds);
 
     const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
@@ -185,7 +187,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
     this.sync.emit({
       type: syncType,
-      linkedWitIds: cardsToSync.map((c) => c.linkedWitId),
+      cards: cardsToSync,
       linkedIterationId: iterationId,
       linkedSourceId: colLinkedSourceId,
     });

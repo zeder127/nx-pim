@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { CardBoardDDS, ICard, SyncInsertEvent, SyncRemoveEvent } from '@pim/data';
-import { toCard } from '@pim/data/util';
 import { AutoUnsubscriber, TeamService, WitService } from '@pim/ui';
 import { differenceBy } from 'lodash';
-import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { PiService } from '../../../shared/services/pi.service';
 
@@ -27,22 +25,17 @@ export class BoardSyncService extends AutoUnsubscriber {
         this.autoUnsubscribe(),
         switchMap((team) => {
           const teamName = team.name;
-          return forkJoin([
-            this.piService.getTeamBoardOfPI(piName, teamName),
-            this.witService.getWorkItems(event.linkedWitIds),
-          ]);
+          return this.piService.getTeamBoardOfPI(piName, teamName);
         })
       )
-      .subscribe(async (result) => {
-        const teamBoard = result[0];
-        const newCards = result[1].map((wit) => toCard(wit));
+      .subscribe(async (teamBoard) => {
         const rowNumber = teamBoard.rowHeaders
           .getItems(0)
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
         // NOTE Sync from ProgrammBoard to TeamBoard, ProgrammBoard doesn't know the new Item should be insert which column in TeamBoard
         // Just insert to the first column on TeamBoard, so colNumber is 0.
         const cardSequence = await teamBoard.cells.getCell(rowNumber, 0).get();
-        this.insertCardInCell(cardSequence, newCards);
+        this.insertCardInCell(cardSequence, event.cards);
       });
   }
 
@@ -61,8 +54,8 @@ export class BoardSyncService extends AutoUnsubscriber {
           .getItems(0)
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
 
-        event.linkedWitIds.forEach((witId) => {
-          this.removeCardFromRow(witId, rowNumber, teamBoard);
+        event.cards.forEach((c) => {
+          this.removeCardFromRow(c.linkedWitId, rowNumber, teamBoard);
         });
       });
   }
@@ -72,20 +65,15 @@ export class BoardSyncService extends AutoUnsubscriber {
     piName: string,
     teamId: string
   ) {
-    forkJoin([
-      this.piService.getProgrammBoardOfPI(piName),
-      this.witService.getWorkItems(event.linkedWitIds),
-    ]).subscribe(async (result) => {
-      const programmBoard = result[0];
-      const newCards = result[1].map((wit) => toCard(wit));
-      const rowNumber = programmBoard.rowHeaders
+    this.piService.getProgrammBoardOfPI(piName).subscribe(async (board) => {
+      const rowNumber = board.rowHeaders
         .getItems(0)
         .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
-      const colNumber = programmBoard.columnHeaders
+      const colNumber = board.columnHeaders
         .getItems(0)
         .findIndex((c) => c.linkedSourceId === teamId);
-      const cardSequence = await programmBoard.cells.getCell(rowNumber, colNumber).get();
-      this.insertCardInCell(cardSequence, newCards);
+      const cardSequence = await board.cells.getCell(rowNumber, colNumber).get();
+      this.insertCardInCell(cardSequence, event.cards);
     });
   }
 
@@ -97,8 +85,8 @@ export class BoardSyncService extends AutoUnsubscriber {
         const rowNumber = programmBoard.rowHeaders
           .getItems(0)
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
-        event.linkedWitIds.forEach((witId) => {
-          this.removeCardFromRow(witId, rowNumber, programmBoard);
+        event.cards.forEach((c) => {
+          this.removeCardFromRow(c.linkedWitId, rowNumber, programmBoard);
         });
       });
   }

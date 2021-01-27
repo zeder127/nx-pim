@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { ICard, Iteration, Team } from '@pim/data';
-import { BehaviorSubject, forkJoin, Observable, Subject } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import * as DataUtil from '@pim/data/util';
+import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { IterationService, TeamService, WitService } from '../../http';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class BoardService {
 
   /** Current team name, read from current url. Be null if it is a programm-board */
   public currentTeamName: string;
+
   constructor(
     private iterationService: IterationService,
     private teamService: TeamService,
@@ -34,32 +36,28 @@ export class BoardService {
     ids: number[],
     newIterationId: string,
     newSourceId: string | number
-  ) {
+  ): Observable<ICard[]> {
     if (!newIterationId && !newSourceId) return;
     if (!newIterationId && !!newSourceId) {
-      this.assignToTeam(ids, newSourceId);
+      return this.assignToTeam(ids, newSourceId);
     } else if (!!newIterationId && !newSourceId) {
-      this.assignToIteration(ids, newIterationId);
+      return this.assignToIteration(ids, newIterationId);
     } else {
-      this.assignToIterationAndTeam(ids, newIterationId, newSourceId);
+      return this.assignToIterationAndTeam(ids, newIterationId, newSourceId);
     }
-  }
-
-  public syncBoard(cards: ICard[]) {
-    //
   }
 
   private assignToIterationAndTeam(
     ids: number[],
     newIterationId: string,
     newSourceId: string | number
-  ) {
-    ids?.forEach((id) => {
-      forkJoin([
-        this.getIterationById(newIterationId),
-        this.getTeamById(`${newSourceId}`),
-      ])
-        .pipe(
+  ): Observable<ICard[]> {
+    return zip(
+      ...ids?.map((id) => {
+        return forkJoin([
+          this.getIterationById(newIterationId),
+          this.getTeamById(`${newSourceId}`),
+        ]).pipe(
           switchMap(([iteration, team]) => {
             return this.witService.updateIterationAndTeam(
               id,
@@ -67,33 +65,33 @@ export class BoardService {
               `${team.projectName}\\${team.name}`
             );
           })
-        )
-        .subscribe();
-    });
+        );
+      })
+    ).pipe(map((values) => values.map((v) => DataUtil.toCard(v))));
   }
 
-  private assignToIteration(ids: number[], newIterationId: string) {
-    ids?.forEach((id) => {
-      this.getIterationById(`${newIterationId}`)
-        .pipe(
+  private assignToIteration(ids: number[], newIterationId: string): Observable<ICard[]> {
+    return zip(
+      ...ids?.map((id) => {
+        return this.getIterationById(`${newIterationId}`).pipe(
           switchMap((iteration) => {
             return this.witService.updateIteration(id, iteration.path);
           })
-        )
-        .subscribe();
-    });
+        );
+      })
+    ).pipe(map((values) => values.map((v) => DataUtil.toCard(v))));
   }
 
   private assignToTeam(ids: number[], newSourceId: string | number) {
-    ids?.forEach((id) => {
-      this.getTeamById(`${newSourceId}`)
-        .pipe(
+    return zip(
+      ...ids?.map((id) => {
+        return this.getTeamById(`${newSourceId}`).pipe(
           switchMap((team) => {
             return this.witService.updateTeam(id, `${team.projectName}\\${team.name}`);
           })
-        )
-        .subscribe();
-    });
+        );
+      })
+    ).pipe(map((values) => values.map((v) => DataUtil.toCard(v))));
   }
 
   public openSourceUrl(id: number) {
