@@ -1,3 +1,12 @@
+html,
+body {
+    height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
 .leader-line {
   z-index: 1; // because z-index of mat-sidenav-container is 1
 }

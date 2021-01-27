@@ -1,27 +1,17 @@
 import { Injectable } from '@angular/core';
-import { CardBoardDDS, Pi } from '@pim/data';
+import {
+  CardBoardDDS,
+  Constants,
+  ICardBoard,
+  IColumnHeader,
+  IRowHeader,
+  Pi,
+} from '@pim/data';
+import { createCardBoardModel } from '@pim/data/util';
 import { from, Observable, of } from 'rxjs';
 import { delay, filter, map, switchMap } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { PimDataObjectRefService } from './data-object-ref.service';
-
-// const piconfig: PiConfiguration = {
-//   id: '111222334455',
-//   name: 'demo pi',
-//   teamIds: [
-//     'adc65352-4bef-4702-9e13-b819b3a34ead',
-//     '52f0bcb4-7117-4370-b1c1-0ffa9a54295b',
-//     '66e85cef-d37b-481f-b966-5f8af51d8df2'
-//   ],
-//   iterationIds: [
-//     '479afcc4-d6d5-489b-8857-5e729b25283f',
-//     '0e0c20f8-3ca4-4fe6-9891-0376eba8802f',
-//     '5f167e8b-8acc-4263-89f3-67cc92e11323',
-//     '4ef05253-3a92-4659-aceb-0270affe8c26',
-//     '4ee23779-9e43-422a-b24e-10a99f6bc988'
-//   ],
-//   witIds: []
-// }
 
 /**
  * Apdapter between UI and DataObject
@@ -30,28 +20,18 @@ import { PimDataObjectRefService } from './data-object-ref.service';
   providedIn: 'root',
 })
 export class PiService {
+  private pisObservable: Observable<Pi[]>;
+
   constructor(private pimDORef: PimDataObjectRefService) {}
 
-  // getPiConfiguration(id: string): Observable<PiConfiguration> {
-  //   return of(piconfig).pipe(
-  //     switchMap(() => forkJoin([this.teamService.getAll(), this.iterationService.getAll()])),
-  //     map(value => {
-  //       piconfig.teams = value[0].filter(team => piconfig.teamIds.includes(team.id));
-  //       piconfig.iterations = value[1].filter(iteration => piconfig.iterationIds.includes(iteration.id));
-  //       return piconfig;
-  //     })
-  //   );
-  // }
   /**
    * Get all PIs asychronlly. Used to get PIs, if DataObject has not been loaded.
    */
   public getPisAsync(): Observable<Pi[]> {
-    return from(this.pimDORef.getInstanceAsync()).pipe(
-      delay(0), // work-around to wait for resolve of all promises while loading DataObject
-      switchMap((pim) => {
-        return of(pim.getPis());
-      })
-    );
+    if (!this.pisObservable) {
+      this.pisObservable = this.doGetPisAsync();
+    }
+    return this.pisObservable;
   }
 
   /**
@@ -71,31 +51,74 @@ export class PiService {
   }
 
   /**
-   * Get ProgrammBoard definition of the PI by a given PI name. Convert internally DDS to UI model.
-   * @param name Name of a PI
+   * Get ProgrammBoard definition of the PI by a given PI name.
+   * @param piName Name of a PI
    */
-  public getProgrammBoardOfPI(name: string): Observable<CardBoardDDS> {
-    return this.getPiByName(name).pipe(
+  public getProgrammBoardOfPI(piName: string): Observable<CardBoardDDS> {
+    return this.getPiByName(piName).pipe(
       filter((pi) => !!pi),
       map((pi) => {
         return this.pimDORef.instance.boardRefsMap.get(pi.programBoardId);
       })
     );
   }
+
+  /**
+   * Get a board definition of a given team in a given PI.
+   * @param piName id of a PI
+   * @param teamName name of a team
+   */
+  public getTeamBoardOfPI(piName: string, teamName: string): Observable<CardBoardDDS> {
+    return this.getPiByName(piName).pipe(
+      map((pi) => {
+        const boardId = pi.teamBoardIds.find(
+          (id) => this.getBoardById(id)?.name === teamName
+        );
+        return this.getBoardById(boardId);
+      })
+    );
+  }
+
+  /**
+   * Get Board definitions from PI DataObject.
+   * @param id id of a board
+   */
+  public getBoardById(id: string): CardBoardDDS {
+    return this.pimDORef.instance.boardRefsMap.get(id);
+  }
   /**
    * Create a new PI DDS
    * @param name name of a new PI, this name muss be unique
    */
-  public createPi(name: string) {
+  public createPi(
+    name: string,
+    rowHeaders: IRowHeader[],
+    columnHeaders: IColumnHeader[]
+  ) {
     if (this.getPis()?.some((pi) => pi.name === name)) {
       alert(`Name exists already, please enter another name.`);
       return;
     }
+
+    const newProgrammBoard: ICardBoard = createCardBoardModel(
+      Constants.Default_Programm_Board_Name,
+      rowHeaders,
+      columnHeaders
+    );
+    // Every columnHeader represents a team, every team should have its own TeamBoard.
+    // A new TeamBoard has the same rows(iterations) as ProgrammBoard, but only has a placeholder column.
+    // Every team could add his own columns individually with UI.
+    const newTeamBoards: ICardBoard[] = columnHeaders?.map((columnHeader) => {
+      return createCardBoardModel(columnHeader.text, rowHeaders);
+    });
+
     this.pimDORef.instance.createPi({
       id: uuidv4(),
       name: name,
-      teamBoardIds: [],
-      programBoardId: uuidv4(),
+      teamBoardIds: newTeamBoards.map((board) => board.id),
+      programBoardId: newProgrammBoard.id,
+      programBoard: newProgrammBoard,
+      teamBoards: newTeamBoards,
     });
   }
 
@@ -105,5 +128,14 @@ export class PiService {
    */
   public remove(piId: string) {
     this.pimDORef.instance.removePi(piId);
+  }
+
+  private doGetPisAsync(): Observable<Pi[]> {
+    return from(this.pimDORef.getInstanceAsync()).pipe(
+      delay(0), // work-around to wait for resolve of all promises while loading DataObject
+      switchMap((pim) => {
+        return of(pim.getPis());
+      })
+    );
   }
 }

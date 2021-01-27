@@ -11,19 +11,24 @@ import {
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
-import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
-import { ICard } from '@pim/data';
-import { PimDataObjectHelper } from '@pim/data/fluid';
+import {
+  SequenceDeltaEvent,
+  SequenceEvent,
+  SharedObjectSequence,
+} from '@fluidframework/sequence';
+import { CardType, ICard } from '@pim/data';
+import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
+import { toCard } from '@pim/data/util';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ConnectionBuilderService,
   ConnectionRef,
 } from '../../../connection/connection-builder.service';
 import { WitService } from '../../../http';
+import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
 const Drag_Out = 'dragOut';
-const Drag_Within = 'dragWithin';
 
 /**
  * Container component in every cell of board, to hold a list of cards
@@ -34,7 +39,7 @@ const Drag_Within = 'dragWithin';
   styleUrls: ['./card-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardContainerComponent implements OnInit {
+export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   private relatedConnections: ConnectionRef[] = [];
   private draggingConnections: ConnectionRef[];
   public cardsSeq: SharedObjectSequence<ICard>;
@@ -43,41 +48,45 @@ export class CardContainerComponent implements OnInit {
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
-  @Output() insert = new EventEmitter<number[]>(); // linkedWitIds of the new cards inserted
-  @Output() remove = new EventEmitter<number[]>(); // linkedWitId of the cards to remove
-  @Output() dragOut = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into another card-container
-  @Output() dragIn = new EventEmitter<number[]>(); // linkedWitId of the cards to drag into current card-container
+  @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
+  // @Output() insertBySync = new EventEmitter<ICard[]>(); // the new cards inserted by Sync
+  @Output() remove = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
+  // TODO check, maybe remove, only for connections
+  @Output() dragOut = new EventEmitter<ICard[]>(); // linkedWitId of the cards to drag into another card-container
+
   constructor(
     private boardService: BoardService,
     private witService: WitService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone
-  ) {}
+    private zone: NgZone,
+    private fluidLoaderService: FluidLoaderService
+  ) {
+    super();
+  }
 
   async ngOnInit() {
-    // FIXME sometimems cardsSeqHandle is null
-    console.log(`🚀 ~ CardContainerComponent ~ this.cardsSeqHandle`, this.cardsSeqHandle);
-    this.cardsSeq = await this.cardsSeqHandle?.get();
+    this.cardsSeq = await this.cardsSeqHandle.get();
 
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
       this.zone.run(() => {
         this.doUpdate();
-
-        const deltaCardIds = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
+        const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
           event
-        ).map((c) => c.linkedWitId);
+        );
 
-        if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
-          // TODO just using boardService??
-          this.insert.emit(deltaCardIds);
-        }
+        // TODO to delete??
+        // if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
+        //   this.insertBySync.emit(deltaCards);
+        // }
         if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
           if (event.opArgs.op.register === Drag_Out) {
-            this.dragOut.emit(deltaCardIds);
+            // TODO still useful for connections?
+            this.dragOut.emit(deltaCards);
           } else {
-            this.remove.emit(deltaCardIds);
+            // TODO to delete??
+            //this.remove.emit(deltaCards);
           }
         }
       });
@@ -87,11 +96,13 @@ export class CardContainerComponent implements OnInit {
     // If no card in container, have to emit load event manully
     if (this.cardsSeq.getItemCount() === 0) this.load.next();
   }
+
   public addCard() {
     const DemoCard: ICard = {
       id: uuidv4(),
       text: `New card ${Math.floor(Math.random() * 10)}`,
       linkedWitId: 100,
+      type: CardType.PBI,
       x: undefined, // TODO
       y: undefined, // TODO
     };
@@ -111,6 +122,7 @@ export class CardContainerComponent implements OnInit {
     // remove from SharedObjectSequence
     const indexToRemove = this.cards.findIndex((c) => c.linkedWitId === card.linkedWitId);
     if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
+    this.remove.emit([card]);
   }
 
   public openSourceUrl(id: number) {
@@ -121,6 +133,10 @@ export class CardContainerComponent implements OnInit {
     this.cards = this.cardsSeq.getRange(0);
     this.cdr.markForCheck();
     this.connectionBuilder.update$.next();
+  }
+
+  private isSelf(event: SequenceEvent) {
+    return this.fluidLoaderService.clientId === event.clientId;
   }
 
   // *******************************************************/
@@ -164,9 +180,7 @@ export class CardContainerComponent implements OnInit {
       // Its related connection should not be removed
       previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
     }
-    currentSeq.insert(currentIndex, cardsToMove);
-
-    this.dragIn.emit(cardsToMove.map((c) => c.linkedWitId));
+    this.updateAndInsertCard(cardsToMove, currentSeq, currentIndex);
   }
 
   private moveItemInSequence(
@@ -174,9 +188,23 @@ export class CardContainerComponent implements OnInit {
     previousIndex: number,
     currentIndex: number
   ) {
-    const itemsToMove = seq.getItems(previousIndex, previousIndex + 1);
+    const itemToMove = seq.getItems(previousIndex, previousIndex + 1);
     seq.removeRange(previousIndex, previousIndex + 1);
-    seq.insert(currentIndex, itemsToMove);
+    this.updateAndInsertCard(itemToMove, seq, currentIndex);
+  }
+
+  private updateAndInsertCard(
+    itemToMove: ICard[],
+    seq: SharedObjectSequence<ICard>,
+    currentIndex: number
+  ) {
+    this.witService
+      .getWorkItems(itemToMove.map((c) => c.linkedWitId))
+      .subscribe((wits) => {
+        const updatedCards = wits.map((wit) => toCard(wit));
+        seq.insert(currentIndex, itemToMove);
+        this.insert.emit(updatedCards);
+      });
   }
 
   public dragStart(event: CdkDragStart<ICard>) {

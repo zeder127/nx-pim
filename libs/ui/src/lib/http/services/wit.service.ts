@@ -27,9 +27,9 @@ export class WitService {
 
   public getWorkItems(ids: number[]): Observable<WorkItem[]> {
     return this.devOpsClient
-      .fetchByPost(`/_apis/wit/workitemsbatch`, {
+      .fetchByPost(`_apis/wit/workitemsbatch`, {
         ids: ids,
-        fields: ['System.Id', 'System.Title', 'System.WorkItemType'],
+        fields: ['System.Id', 'System.Title', 'System.WorkItemType', 'System.Tags'],
       })
       .pipe(
         map((result: { value: AzureWorkItem[] }) => {
@@ -110,23 +110,11 @@ export class WitService {
   }
 
   private update(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
-    return this.getWorkItemById(id).pipe(
-      switchMap((wi) => {
-        const payload = [
-          {
-            op: 'test',
-            path: '/rev',
-            value: wi.rev,
-          } as JsonPatchDocument,
-          ...newValues,
-        ];
-        return this.devOpsClient
-          .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, payload, {
-            headers: { 'content-type': 'application/json-patch+json' },
-          })
-          .pipe(map((awi) => this.toWorkItem(awi)));
+    return this.devOpsClient
+      .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, newValues, {
+        headers: { 'content-type': 'application/json-patch+json' },
       })
-    );
+      .pipe(map((awi) => this.toWorkItem(awi)));
   }
 
   private toWorkItem(awi: AzureWorkItem): WorkItem {
@@ -134,6 +122,7 @@ export class WitService {
       id: awi.id,
       title: awi.fields['System.Title'] as string,
       type: awi.fields['System.WorkItemType'] as string,
+      tags: (awi.fields['System.Tags'] as string)?.split(', '),
       url: awi.url,
       rev: awi.rev,
     };

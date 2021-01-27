@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
-import { PiService } from './pi.service';
 
-describe('PiService', () => {
-  let service: PiService;
+import { BoardSettingsService } from './board-settings.service';
+
+describe('BoardSettingsService', () => {
+  let service: BoardSettingsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(PiService);
+    service = TestBed.inject(BoardSettingsService);
   });
 
   it('should be created', () => {

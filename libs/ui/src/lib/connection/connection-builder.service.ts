@@ -136,7 +136,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
    * Execute update postions of all connections, internally all lines will be redrawed.
    */
   private updateConnections() {
-    this.connectionStore.forEach((ref) => {
+    this.connectionStore?.forEach((ref) => {
       // FIXME have to use settimeout to resolve some timing problem, maybe use ngZone is better
       setTimeout(() => {
         ref.line.remove();

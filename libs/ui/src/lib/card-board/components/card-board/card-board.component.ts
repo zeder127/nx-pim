@@ -7,17 +7,21 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IValueChanged } from '@fluidframework/map';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
+  CardType,
   ICard,
   IColumnHeader,
   IConnection,
   IRowHeader,
-  WorkItem,
+  SyncEvent,
+  SyncType,
 } from '@pim/data';
+import * as DataUtil from '@pim/data/util';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
@@ -41,10 +45,17 @@ export interface RowData {
 export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   @Input('model') board: CardBoardDDS;
   @Input() type: 'program' | 'team' = 'program';
+  @Input() typesAllowedToSync: CardType[];
+
   /**
    * Event will be triggered, when all cells has been loaded.
    */
   @Output() load = new EventEmitter();
+
+  /**
+   * Event will be triggered, when the changes of some cards need to be synchronised between SyncBoard and TeamBoard
+   */
+  @Output() sync = new EventEmitter<SyncEvent>();
 
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
@@ -63,22 +74,29 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
     private witService: WitService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {
     super();
   }
 
   ngOnInit(): void {
+    if (!this.typesAllowedToSync)
+      this.typesAllowedToSync = DataUtil.enumToArray(CardType);
     this.connections = [...this.board.connections.values()];
     this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
+    this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
+    this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
+
     this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
+        //type: 'Feature',
         type: 'Product Backlog Item',
         team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
       })
       .subscribe((workItems) => {
-        this.sourceCards = workItems.map((wi) => this.toCard(wi));
+        this.sourceCards = workItems.map((wi) => DataUtil.toCard(wi));
         console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
         this.cdr.markForCheck();
       });
@@ -90,15 +108,6 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
         this.connectionBuilder.update$.next();
       }
     });
-  }
-
-  private toCard(wi: WorkItem): ICard {
-    return {
-      text: wi.title,
-      linkedWitId: wi.id,
-      x: undefined,
-      y: undefined,
-    } as ICard;
   }
 
   public getCell(row: number, col: number): IFluidHandle<SharedObjectSequence<ICard>> {
@@ -120,12 +129,32 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     }
   }
 
-  public onInsert(ids: number[]) {
-    this.boardService.cardsInsert$.next(ids);
+  public onInsert(cards: ICard[], rowIndex: number, colIndex: number) {
+    const cardIds = cards.map((c) => c.linkedWitId);
+    const iterationId = this.rows[rowIndex].linkedIterationId;
+    const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
+
+    this.boardService
+      .updateIterationAndTeam(
+        cards.map((c) => c.linkedWitId),
+        iterationId,
+        colLinkedSourceId
+      )
+      .subscribe();
+    this.boardService.cardsInsert$.next(cardIds);
+
+    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
+    if (cardsToSync.length > 0)
+      this.emitSyncEvent(cardsToSync, SyncType.Insert, rowIndex, colIndex);
   }
 
-  public onRemove(ids: number[]) {
+  public onRemove(cards: ICard[], rowIndex: number, colIndex: number) {
+    const ids = cards.map((c) => c.linkedWitId);
     this.boardService.cardsRemove$.next(ids);
+
+    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
+    if (cardsToSync.length > 0)
+      this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
 
     // remove related connections from DDS
     ids.forEach((id) => {
@@ -139,15 +168,29 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
-  public onDragOut(ids: number[]) {
+  public onDragOut(cards: ICard[], rowIndex: number, colIndex: number) {
+    const ids = cards.map((c) => c.linkedWitId);
     this.boardService.cardsRemove$.next(ids);
+
+    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
+    if (cardsToSync.length > 0)
+      this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
   }
 
-  public onDragIn(ids: number[], rowIndex: number, colIndex: number) {
-    // get current IterationPath and AreaPath(Team)
+  private emitSyncEvent(
+    cardsToSync: ICard[],
+    syncType: SyncType,
+    rowIndex: number,
+    colIndex: number
+  ) {
     const iterationId = this.rows[rowIndex].linkedIterationId;
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
-    this.boardService.updateIterationAndTeam(ids, iterationId, colLinkedSourceId);
+    this.sync.emit({
+      type: syncType,
+      cards: cardsToSync,
+      linkedIterationId: iterationId,
+      linkedSourceId: colLinkedSourceId,
+    });
   }
 
   public updateConnections() {

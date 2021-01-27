@@ -1,1 +1,7 @@
-<pim-card-board *ngIf="cardBoard" [model]="cardBoard" type="program"></pim-card-board>
+<pim-card-board
+  *ngIf="cardBoard"
+  [model]="cardBoard"
+  [typesAllowedToSync]="typesAllowedToSync"
+  type="program"
+  (sync)="syncWithTeamBoard($event)"
+></pim-card-board>

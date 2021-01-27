@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ICard, Team } from '@pim/data';
 import { difference, unionWith } from 'lodash';
+import { TeamService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
@@ -12,6 +13,7 @@ import { BoardService } from '../../services/board.service';
 export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   public selectedTeam: Team;
   public filterText: string;
+  public teams: Team[];
   private mappedSourceIds: number[] = [];
 
   /**
@@ -19,13 +21,21 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
    */
   @Input('sources') sourceCards: ICard[];
 
-  @Input() teams: Team[];
-
-  constructor(private boardService: BoardService) {
+  constructor(private boardService: BoardService, private teamService: TeamService) {
     super();
   }
 
   ngOnInit(): void {
+    this.teamService
+      .getAll()
+      .pipe(this.autoUnsubscribe())
+      .subscribe((teams) => {
+        this.teams = teams;
+        this.selectedTeam = teams.find(
+          (team) => this.boardService.currentTeamName === team.name
+        );
+      });
+
     this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = ids;
     });
@@ -41,5 +51,9 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
   public isMapped(sourceId: number): boolean {
     return this.mappedSourceIds.includes(sourceId);
+  }
+
+  public onTeamChange(selectedTeam: Team) {
+    console.log(`🚀 ~ SourcesListComponent ~ selectedTeam`, selectedTeam);
   }
 }

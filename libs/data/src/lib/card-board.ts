@@ -23,8 +23,7 @@ export interface CardBoardDDS {
 
 interface IHeader {
   text: string;
-  description: string;
-  id: string;
+  description?: string;
 }
 
 export interface IColumnHeader extends IHeader {
@@ -40,6 +39,15 @@ export interface ICard extends Cell {
   id?: string;
   linkedWitId: number;
   text: string;
+  type: CardType;
+}
+
+export enum CardType {
+  Feature = 'feature',
+  Enabler = 'enabler',
+  Delivery = 'delivery',
+  Milestone = 'milestone',
+  PBI = 'pbi',
 }
 
 /**
@@ -59,4 +67,26 @@ export interface IConnection {
 export interface Cell {
   x: number;
   y: number;
+}
+
+export enum SyncType {
+  Insert = 'insert',
+  Remove = 'remove',
+  Move = 'move', // TODO useless?
+  ValueChange = 'valueChange',
+}
+
+export interface SyncEvent {
+  type: SyncType;
+  cards: ICard[];
+  linkedIterationId: string;
+  linkedSourceId: string | number;
+}
+
+export interface SyncInsertEvent extends SyncEvent {
+  type: SyncType.Insert;
+}
+
+export interface SyncRemoveEvent extends SyncEvent {
+  type: SyncType.Remove;
 }

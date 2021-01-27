@@ -1,4 +1,9 @@
-<p-dropdown [options]="teams" optionLabel="name" [(ngModel)]="selectedTeam"></p-dropdown>
+<p-dropdown
+  [options]="teams"
+  optionLabel="name"
+  [(ngModel)]="selectedTeam"
+  (onChange)="onTeamChange($event)"
+></p-dropdown>
 <!--Filter-->
 <span class="p-input-icon-left">
   <i class="pi pi-filter"></i>
@@ -15,6 +20,6 @@
     [class.is-mapped]="isMapped(card.linkedWitId)"
     [cdkDragDisabled]="isMapped(card.linkedWitId)"
   >
-    {{card.linkedWitId}} {{card.text}}
+    <p>{{card.linkedWitId}} {{card.text}} ({{card.type}})</p>
   </div>
 </div>

@@ -1,7 +1,23 @@
-.container {
-  padding: 10px;
+:host {
+  border: 1px blue solid;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  align-items: stretch;
+}
+
+.container {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.btn-new {
+  flex: 0 1 auto;
+  align-self: flex-start;
 }
 
 .card {

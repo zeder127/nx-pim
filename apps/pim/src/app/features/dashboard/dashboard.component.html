@@ -1,9 +1,27 @@
 <p>Dashboard with charts for statistic of all Pis</p>
 <ul>
   <li *ngFor="let pi of pis">
-    <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
-    <button (click)="removePi(pi.id)">X</button>
+    {{pi.name}}
+    <button (click)="removePi(pi.id)">delete</button>
+    <button [routerLink]="['/admin/' + pi.name +'/edit']">edit</button>
+    <ul>
+      <li>
+        <a [routerLink]="['/planning/' + pi.name +'/programm-board']">Programm Board</a>
+      </li>
+      <li *ngFor="let teamBoard of getBoards(pi.teamBoardIds)">
+        <a [routerLink]="['/planning/' + pi.name + '/team-board/' + teamBoard.name]">
+          {{teamBoard.name}}
+        </a>
+      </li>
+    </ul>
   </li>
 </ul>
-<input type="text" [(ngModel)]="newPiName" />
-<button (click)="createPi(newPiName); newPiName=undefined">New PI</button>
+
+<span class="p-float-label">
+  <input id="float-input" type="text" [(ngModel)]="newPiName" pInputText />
+  <label for="float-input">PI Name</label>
+</span>
+<div>
+  <button (click)="createPi(newPiName); newPiName=undefined">New PI(old)</button>
+  <button [routerLink]="['/admin/pi/new']">New PI</button>
+</div>

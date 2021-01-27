@@ -7,6 +7,7 @@
   (cdkDropListDropped)="drop($event)"
 >
   <pim-card
+    class="test-pim-card"
     [card]="card"
     id="{{card.linkedWitId}}"
     *ngFor="let card of cards"
@@ -21,4 +22,4 @@
   ></pim-card>
 </div>
 
-<button (click)="addCard()">+</button>
+<button class="btn-new" (click)="addCard()">+</button>
