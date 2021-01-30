@@ -5,8 +5,6 @@ import { CardType } from '@pim/data';
   providedIn: 'root',
 })
 export class BoardSettingsService {
-  constructor() {}
-
   /**
    * Define the card types that should be synchronised between programm- and team-board.
    */

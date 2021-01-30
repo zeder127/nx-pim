@@ -1,4 +1,10 @@
-import { CdkDragDrop, CdkDragMove, CdkDragStart } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  CdkDragEnter,
+  CdkDragMove,
+  CdkDragStart,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
@@ -45,6 +51,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   public cardsSeq: SharedObjectSequence<ICard>;
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
+  public containerId: string;
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
@@ -63,6 +70,11 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     private fluidLoaderService: FluidLoaderService
   ) {
     super();
+    this.containerId = uuidv4();
+  }
+
+  get ids() {
+    return this.cards.map((c) => c.linkedWitId).join(', ');
   }
 
   async ngOnInit() {
@@ -91,6 +103,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
         }
       });
     });
+
     this.doUpdate();
 
     // If no card in container, have to emit load event manully
@@ -98,10 +111,11 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public addCard() {
+    // this.witService.createWit();
     const DemoCard: ICard = {
       id: uuidv4(),
       text: `New card ${Math.floor(Math.random() * 10)}`,
-      linkedWitId: 100,
+      linkedWitId: 10000 + Math.floor(Math.random() * 10),
       type: CardType.PBI,
       x: undefined, // TODO
       y: undefined, // TODO
@@ -143,14 +157,10 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   // **************** Start: Drag and Drop *****************/
   // *******************************************************/
   public drop(event: CdkDragDrop<ICard[]>) {
-    if (event.previousContainer === event.container) {
+    if (event.previousContainer.connectedTo === event.container.connectedTo) {
       // Index really changed
       if (event.previousIndex !== event.currentIndex) {
-        this.moveItemInSequence(
-          event.container.data as never,
-          event.previousIndex,
-          event.currentIndex
-        );
+        this.moveItemInSequence(event.previousIndex, event.currentIndex);
       }
     } else {
       this.transferSequenceItem(
@@ -183,14 +193,10 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.updateAndInsertCard(cardsToMove, currentSeq, currentIndex);
   }
 
-  private moveItemInSequence(
-    seq: SharedObjectSequence<ICard>,
-    previousIndex: number,
-    currentIndex: number
-  ) {
-    const itemToMove = seq.getItems(previousIndex, previousIndex + 1);
-    seq.removeRange(previousIndex, previousIndex + 1);
-    this.updateAndInsertCard(itemToMove, seq, currentIndex);
+  private moveItemInSequence(previousIndex: number, currentIndex: number) {
+    const itemToMove = this.cardsSeq.getItems(previousIndex, previousIndex + 1);
+    this.cardsSeq.removeRange(previousIndex, previousIndex + 1);
+    this.updateAndInsertCard(itemToMove, this.cardsSeq, currentIndex);
   }
 
   private updateAndInsertCard(
@@ -205,6 +211,34 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
         seq.insert(currentIndex, itemToMove);
         this.insert.emit(updatedCards);
       });
+  }
+
+  dragContainerEnter(event: CdkDragEnter) {
+    console.log(`🚀 ~ CardContainerComponent ~ event`, event);
+  }
+
+  public dragEnter(event: CdkDragEnter<number>) {
+    const pI = event.item.data;
+    const nI = event.container.data;
+    if (event.item.dropContainer.connectedTo === event.container.connectedTo)
+      moveItemInArray(this.cards, event.item.data, event.container.data);
+    else {
+      this.moveItemInAnotherContainer(
+        this.cards,
+        event.item.data,
+        event.container.connectedTo as string,
+        event
+      );
+    }
+  }
+
+  private moveItemInAnotherContainer(
+    cards: ICard[],
+    currentIndex: number,
+    anotherContainerId: string,
+    event: CdkDragEnter<number>
+  ) {
+    console.log(`🚀 ~ CardContainerComponent ~ currentIndex`, currentIndex);
   }
 
   public dragStart(event: CdkDragStart<ICard>) {

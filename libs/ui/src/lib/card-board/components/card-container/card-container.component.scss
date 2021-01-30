@@ -8,6 +8,19 @@
   align-items: stretch;
 }
 
+pim-card {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+}
+
+// .cdk-drop-list {
+//   height: 100%;
+//   width: 100%;
+// }
+
 .container {
   flex: 1 1 auto;
   align-self: stretch;
@@ -37,7 +50,7 @@
 }
 
 .cdk-drag-animating {
-  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  //stransition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 .cdk-drop-list-dragging {

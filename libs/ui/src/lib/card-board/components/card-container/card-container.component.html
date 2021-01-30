@@ -1,4 +1,37 @@
-<div
+<mat-grid-list cols="3" rowHeight="1:1" gutterSize="15px">
+  <mat-grid-tile
+    *ngFor="let card of cards; let i = index;"
+    [colspan]="1"
+    [rowspan]="1"
+    cdkDropList
+    [cdkDropListData]="i"
+    [cdkDropListConnectedTo]="containerId"
+    (cdkDropListDropped)="drop($event)"
+    #cardContainer="cdkDropList"
+  >
+    {{containerId}}
+    <pim-card
+      cdkDrag
+      [cdkDragData]="i"
+      [card]="card"
+      id="{{card.linkedWitId}}"
+      (cdkDragEntered)="dragEnter($event)"
+      (load)="onLoad()"
+      (remove)="removeCard($event)"
+      (open)="openSourceUrl($event)"
+    ></pim-card>
+  </mat-grid-tile>
+</mat-grid-list>
+
+{{ids}}
+
+<!--TODO Connection-->
+<!-- Add into <pim-card>
+  (cdkDragStarted)="dragStart($event)"
+  (cdkDragMoved)="dragMove($event)"
+  (cdkDragDropped)="dragDropped($event)" -->
+
+<!-- <div
   class="container"
   cdkDropList
   #cardContainer="cdkDropList"
@@ -20,6 +53,6 @@
     (remove)="removeCard($event)"
     (open)="openSourceUrl($event)"
   ></pim-card>
-</div>
+</div> -->
 
 <button class="btn-new" (click)="addCard()">+</button>
