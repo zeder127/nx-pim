@@ -25,6 +25,7 @@ import {
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
+import { SortableOptions } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ConnectionBuilderService,
@@ -52,6 +53,12 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
   public containerId: string;
+  public sortableOptions: SortableOptions = {
+    group: 'card-container',
+    dragClass: 'sortable-drag',
+    ghostClass: 'sortable-ghost',
+    forceFallback: true,
+  };
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
@@ -218,27 +225,8 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public dragEnter(event: CdkDragEnter<number>) {
-    const pI = event.item.data;
-    const nI = event.container.data;
     if (event.item.dropContainer.connectedTo === event.container.connectedTo)
       moveItemInArray(this.cards, event.item.data, event.container.data);
-    else {
-      this.moveItemInAnotherContainer(
-        this.cards,
-        event.item.data,
-        event.container.connectedTo as string,
-        event
-      );
-    }
-  }
-
-  private moveItemInAnotherContainer(
-    cards: ICard[],
-    currentIndex: number,
-    anotherContainerId: string,
-    event: CdkDragEnter<number>
-  ) {
-    console.log(`🚀 ~ CardContainerComponent ~ currentIndex`, currentIndex);
   }
 
   public dragStart(event: CdkDragStart<ICard>) {

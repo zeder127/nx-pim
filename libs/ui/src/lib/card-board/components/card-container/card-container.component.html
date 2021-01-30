@@ -1,29 +1,21 @@
-<mat-grid-list cols="3" rowHeight="1:1" gutterSize="15px">
-  <mat-grid-tile
-    *ngFor="let card of cards; let i = index;"
-    [colspan]="1"
-    [rowspan]="1"
-    cdkDropList
-    [cdkDropListData]="i"
-    [cdkDropListConnectedTo]="containerId"
-    (cdkDropListDropped)="drop($event)"
-    #cardContainer="cdkDropList"
-  >
-    {{containerId}}
-    <pim-card
-      cdkDrag
-      [cdkDragData]="i"
-      [card]="card"
-      id="{{card.linkedWitId}}"
-      (cdkDragEntered)="dragEnter($event)"
-      (load)="onLoad()"
-      (remove)="removeCard($event)"
-      (open)="openSourceUrl($event)"
-    ></pim-card>
-  </mat-grid-tile>
-</mat-grid-list>
-
-{{ids}}
+<!-- <mat-grid-list
+  cols="3"
+  rowHeight="1:1"
+  gutterSize="15px"
+  sortablejsContainer=".mat-grid-list div"
+>
+  <div [sortablejs]="cards">
+    <mat-grid-tile *ngFor="let card of cards; let i = index;" [colspan]="1" [rowspan]="1">
+      <pim-card
+        [card]="card"
+        id="{{card.linkedWitId}}"
+        (load)="onLoad()"
+        (remove)="removeCard($event)"
+        (open)="openSourceUrl($event)"
+      ></pim-card>
+    </mat-grid-tile>
+  </div>
+</mat-grid-list> -->
 
 <!--TODO Connection-->
 <!-- Add into <pim-card>
@@ -31,28 +23,16 @@
   (cdkDragMoved)="dragMove($event)"
   (cdkDragDropped)="dragDropped($event)" -->
 
-<!-- <div
-  class="container"
-  cdkDropList
-  #cardContainer="cdkDropList"
-  [cdkDropListData]="cardsSeq"
-  cdkDropListOrientation="horizontal"
-  (cdkDropListDropped)="drop($event)"
->
+<div class="container" [sortablejs]="cards" [sortablejsOptions]="sortableOptions">
   <pim-card
+    *ngFor="let card of cards"
     class="test-pim-card"
     [card]="card"
     id="{{card.linkedWitId}}"
-    *ngFor="let card of cards"
-    cdkDrag
-    [cdkDragData]="card"
-    (cdkDragStarted)="dragStart($event)"
-    (cdkDragMoved)="dragMove($event)"
-    (cdkDragDropped)="dragDropped($event)"
     (load)="onLoad()"
     (remove)="removeCard($event)"
     (open)="openSourceUrl($event)"
   ></pim-card>
-</div> -->
+</div>
 
 <button class="btn-new" (click)="addCard()">+</button>

@@ -44,7 +44,7 @@
         <tr height="100px">
           <td height="1px" *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
-              [style.height]="'100%'"
+              [style.min-height]="'100%'"
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad($event)"
               (insert)="onInsert($event, rowIndex, columnIndex)"

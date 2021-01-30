@@ -8,17 +8,12 @@
   align-items: stretch;
 }
 
-pim-card {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
-}
-
-// .cdk-drop-list {
-//   height: 100%;
-//   width: 100%;
+// pim-card {
+//   position: absolute;
+//   top: 0px;
+//   left: 0px;
+//   right: 0px;
+//   bottom: 0px;
 // }
 
 .container {
@@ -36,6 +31,16 @@ pim-card {
 .card {
   display: flex;
   flex-direction: row;
+}
+
+.sortable-drag {
+  opacity: 1!important;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.sortable-ghost {
+  opacity: 0.3;
 }
 
 .cdk-drag-preview {

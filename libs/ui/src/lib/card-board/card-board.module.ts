@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { SortablejsModule } from 'ngx-sortablejs';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
@@ -28,6 +29,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     TableModule,
     DropdownModule,
     InputTextModule,
+    SortablejsModule,
   ],
   declarations: [
     CardBoardComponent,
