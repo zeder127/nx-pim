@@ -57,6 +57,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     group: 'card-container',
     dragClass: 'sortable-drag',
     ghostClass: 'sortable-ghost',
+    easing: 'cubic-bezier(1, 0, 0, 1)', // seems it doesn't work
     forceFallback: true,
   };
 

@@ -1,32 +1,7 @@
-<!-- <mat-grid-list
-  cols="3"
-  rowHeight="1:1"
-  gutterSize="15px"
-  sortablejsContainer=".mat-grid-list div"
->
-  <div [sortablejs]="cards">
-    <mat-grid-tile *ngFor="let card of cards; let i = index;" [colspan]="1" [rowspan]="1">
-      <pim-card
-        [card]="card"
-        id="{{card.linkedWitId}}"
-        (load)="onLoad()"
-        (remove)="removeCard($event)"
-        (open)="openSourceUrl($event)"
-      ></pim-card>
-    </mat-grid-tile>
-  </div>
-</mat-grid-list> -->
-
-<!--TODO Connection-->
-<!-- Add into <pim-card>
-  (cdkDragStarted)="dragStart($event)"
-  (cdkDragMoved)="dragMove($event)"
-  (cdkDragDropped)="dragDropped($event)" -->
-
-<div class="container" [sortablejs]="cards" [sortablejsOptions]="sortableOptions">
+<div class="p-gird container" [sortablejs]="cards" [sortablejsOptions]="sortableOptions">
   <pim-card
+    class="p-col"
     *ngFor="let card of cards"
-    class="test-pim-card"
     [card]="card"
     id="{{card.linkedWitId}}"
     (load)="onLoad()"
@@ -34,5 +9,4 @@
     (open)="openSourceUrl($event)"
   ></pim-card>
 </div>
-
 <button class="btn-new" (click)="addCard()">+</button>

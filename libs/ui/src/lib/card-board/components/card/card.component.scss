@@ -1,7 +1,11 @@
 :host {
   border-left: solid 3px;
   height: 100%;
+  width: 100%;
   min-height: 6em;
+  min-width: 10em;
+  max-width: calc(50% - 0.5em);
+  margin: 0.25em;
   display: flex;
 }
 
@@ -10,6 +14,7 @@
   border-right: 1px solid rgba(200,200,200,1);
   border-bottom: 1px solid rgba(200,200,200,1);
   padding: 4px 6px 6px 6px;
+  width: 100%;
 }
 
 .id {
