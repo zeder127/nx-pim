@@ -1,11 +1,16 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DoCheck,
+  ElementRef,
   EventEmitter,
   Input,
   OnInit,
   Output,
+  QueryList,
+  ViewChildren,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
@@ -42,7 +47,8 @@ export interface RowData {
   providers: [BoardService, ConnectionBuilderService],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
+export class CardBoardComponent extends AutoUnsubscriber
+  implements OnInit, AfterViewInit, DoCheck {
   @Input('model') board: CardBoardDDS;
   @Input() type: 'program' | 'team' = 'program';
   @Input() typesAllowedToSync: CardType[];
@@ -57,6 +63,9 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
    */
   @Output() sync = new EventEmitter<SyncEvent>();
 
+  @ViewChildren('bodyRow', { read: ElementRef })
+  private bodyRowRefs!: QueryList<ElementRef>;
+
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
 
@@ -69,6 +78,7 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
   public connections: IConnection[] = [];
   private loadedCellsCount = 0;
   private mappedSourceIds: number[] = [];
+  public bodyRowHeights: number[] = [];
 
   constructor(
     private boardService: BoardService,
@@ -78,6 +88,10 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
     private route: ActivatedRoute
   ) {
     super();
+  }
+  ngDoCheck(): void {
+    // workaround to solve misalignment issue of p-table
+    this.setBodyRowHeights(this.bodyRowRefs);
   }
 
   ngOnInit(): void {
@@ -108,6 +122,22 @@ export class CardBoardComponent extends AutoUnsubscriber implements OnInit {
         this.connectionBuilder.update$.next();
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    // insert a row
+    this.bodyRowRefs.changes.pipe(this.autoUnsubscribe()).subscribe(() => {
+      this.setBodyRowHeights(this.bodyRowRefs);
+    });
+  }
+
+  private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
+    const oldValueString = this.bodyRowHeights.toString();
+    this.bodyRowHeights =
+      rowRefs?.map((rowRef) => (rowRef.nativeElement as HTMLElement).offsetHeight) ?? [];
+    if (oldValueString !== this.bodyRowHeights.toString()) {
+      this.cdr.markForCheck();
+    }
   }
 
   public getCell(row: number, col: number): IFluidHandle<SharedObjectSequence<ICard>> {

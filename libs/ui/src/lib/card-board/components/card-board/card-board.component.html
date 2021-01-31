@@ -21,7 +21,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="frozenbody" let-row let-rowIndex="rowIndex">
-        <tr height="100px">
+        <tr [style.height.px]="bodyRowHeights[rowIndex]">
           <td><pim-row-header [model]="row"></pim-row-header></td>
         </tr>
       </ng-template>
@@ -41,7 +41,7 @@
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-row let-rowIndex="rowIndex" let-columns="columns">
-        <tr height="100px">
+        <tr #bodyRow>
           <td height="1px" *ngFor="let col of columns; index as columnIndex">
             <pim-card-container
               [style.min-height]="'100%'"
