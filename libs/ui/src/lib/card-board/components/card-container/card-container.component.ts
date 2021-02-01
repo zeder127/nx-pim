@@ -1,11 +1,4 @@
 import {
-  CdkDragDrop,
-  CdkDragEnter,
-  CdkDragMove,
-  CdkDragStart,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
-import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -25,7 +18,7 @@ import {
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
-import { SortableOptions } from 'sortablejs';
+import { SortableEvent, SortableOptions } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
 import {
   ConnectionBuilderService,
@@ -33,6 +26,7 @@ import {
 } from '../../../connection/connection-builder.service';
 import { WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
+import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
 
 const Drag_Out = 'dragOut';
@@ -53,19 +47,13 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
   public containerId: string;
-  public sortableOptions: SortableOptions = {
-    group: 'card-container',
-    dragClass: 'sortable-drag',
-    ghostClass: 'sortable-ghost',
-    easing: 'cubic-bezier(1, 0, 0, 1)', // seems it doesn't work
-    forceFallback: true,
-  };
+  public sortableOptions: SortableOptions;
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
   // @Output() insertBySync = new EventEmitter<ICard[]>(); // the new cards inserted by Sync
-  @Output() remove = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
+  @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
   // TODO check, maybe remove, only for connections
   @Output() dragOut = new EventEmitter<ICard[]>(); // linkedWitId of the cards to drag into another card-container
 
@@ -86,6 +74,17 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   }
 
   async ngOnInit() {
+    this.sortableOptions = {
+      group: Sortable_Group_Name,
+      dragClass: 'sortable-drag',
+      ghostClass: 'sortable-ghost',
+      easing: 'cubic-bezier(1, 0, 0, 1)', // seems it doesn't work
+      forceFallback: true,
+      onAdd: this.onAdd,
+      onRemove: this.onRemove,
+      onUpdate: this.onUpdate,
+    };
+
     this.cardsSeq = await this.cardsSeqHandle.get();
 
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
@@ -140,11 +139,11 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     }
   }
 
-  public removeCard(card: ICard) {
+  // TODO multi delete
+  public removeCard(card: ICard, index: number) {
     // remove from SharedObjectSequence
-    const indexToRemove = this.cards.findIndex((c) => c.linkedWitId === card.linkedWitId);
-    if (indexToRemove > -1) this.cardsSeq.removeRange(indexToRemove, indexToRemove + 1);
-    this.remove.emit([card]);
+    this.cardsSeq.removeRange(index, index + 1);
+    this.delete.emit([card]);
   }
 
   public openSourceUrl(id: number) {
@@ -164,125 +163,93 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   // *******************************************************/
   // **************** Start: Drag and Drop *****************/
   // *******************************************************/
-  public drop(event: CdkDragDrop<ICard[]>) {
-    if (event.previousContainer.connectedTo === event.container.connectedTo) {
-      // Index really changed
-      if (event.previousIndex !== event.currentIndex) {
-        this.moveItemInSequence(event.previousIndex, event.currentIndex);
-      }
-    } else {
-      this.transferSequenceItem(
-        event.previousContainer.data as never,
-        event.container.data as never,
-        event.previousIndex,
-        event.currentIndex
-      );
-    }
-  }
+  private onAdd = (event: SortableEvent) => {
+    const newId = event.item.id.replace(Source_ID_Prefix, '');
+    this.updateAndInsertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+  };
+  private onRemove = (event: SortableEvent) => {
+    const cardToRemove = this.cardsSeq.getItems(event.oldIndex, event.oldIndex + 1)[0];
+    this.removeCard(cardToRemove, event.oldIndex);
+  };
+  private onUpdate = (event: SortableEvent) => {
+    this.moveItemInSequence(event.oldIndex, event.newIndex);
+  };
 
-  private transferSequenceItem(
-    previousSeq: SharedObjectSequence<ICard> | Array<ICard>,
-    currentSeq: SharedObjectSequence<ICard>,
-    previousIndex: number,
-    currentIndex: number
-  ) {
-    let cardsToMove: ICard[];
-    if (Array.isArray(previousSeq)) {
-      // dragged from source-list
-      cardsToMove = [previousSeq[previousIndex]];
-    } else {
-      // dragged from another card-container
-      cardsToMove = previousSeq.getItems(previousIndex, previousIndex + 1);
-      // Use 'cut' instead of 'remove': possible to set a register name.
-      // Using it to tell other client, card will be just moved to another CardContainer.
-      // Its related connection should not be removed
-      previousSeq.cut(previousIndex, previousIndex + 1, Drag_Out);
-    }
-    this.updateAndInsertCard(cardsToMove, currentSeq, currentIndex);
-  }
-
-  private moveItemInSequence(previousIndex: number, currentIndex: number) {
-    const itemToMove = this.cardsSeq.getItems(previousIndex, previousIndex + 1);
-    this.cardsSeq.removeRange(previousIndex, previousIndex + 1);
-    this.updateAndInsertCard(itemToMove, this.cardsSeq, currentIndex);
+  private moveItemInSequence(oldIndex: number, newIndex: number) {
+    const itemsToMove = this.cardsSeq.getItems(oldIndex, oldIndex + 1);
+    this.cardsSeq.removeRange(oldIndex, oldIndex + 1);
+    this.updateAndInsertCard(
+      itemsToMove.map((item) => item.linkedWitId),
+      this.cardsSeq,
+      newIndex
+    );
   }
 
   private updateAndInsertCard(
-    itemToMove: ICard[],
+    cardIds: number[],
     seq: SharedObjectSequence<ICard>,
     currentIndex: number
   ) {
-    this.witService
-      .getWorkItems(itemToMove.map((c) => c.linkedWitId))
-      .subscribe((wits) => {
-        const updatedCards = wits.map((wit) => toCard(wit));
-        seq.insert(currentIndex, itemToMove);
-        this.insert.emit(updatedCards);
-      });
-  }
-
-  dragContainerEnter(event: CdkDragEnter) {
-    console.log(`🚀 ~ CardContainerComponent ~ event`, event);
-  }
-
-  public dragEnter(event: CdkDragEnter<number>) {
-    if (event.item.dropContainer.connectedTo === event.container.connectedTo)
-      moveItemInArray(this.cards, event.item.data, event.container.data);
-  }
-
-  public dragStart(event: CdkDragStart<ICard>) {
-    this.relatedConnections = this.connectionBuilder.getRelatedConnections(
-      `${event.source.data.linkedWitId}`
-    );
-    this.relatedConnections.forEach((ref) => {
-      // remove related connections
-      ref.line.remove();
+    this.witService.getWorkItems(cardIds).subscribe((wits) => {
+      const updatedCards = wits.map((wit) => toCard(wit));
+      seq.insert(currentIndex, updatedCards);
+      this.insert.emit(updatedCards);
     });
   }
 
-  public dragMove(event: CdkDragMove<ICard>) {
-    const draggedCard = event.source.data;
-    const draggedPreviewElement: HTMLElement = document.querySelector(
-      '.cdk-drag-preview'
-    );
+  // public dragStart(event: CdkDragStart<ICard>) {
+  //   this.relatedConnections = this.connectionBuilder.getRelatedConnections(
+  //     `${event.source.data.linkedWitId}`
+  //   );
+  //   this.relatedConnections.forEach((ref) => {
+  //     // remove related connections
+  //     ref.line.remove();
+  //   });
+  // }
 
-    if (!this.draggingConnections) {
-      this.draggingConnections = this.relatedConnections.map((ref) => {
-        // replace line with a new one that updates position while dragging
-        if (ref.connection.startPointId === `${draggedCard.linkedWitId}`) {
-          ref.line = this.connectionBuilder.drawLine(
-            draggedPreviewElement,
-            document.getElementById(ref.connection.endPointId)
-          );
-        } else {
-          ref.line = this.connectionBuilder.drawLine(
-            document.getElementById(ref.connection.startPointId),
-            draggedPreviewElement
-          );
-        }
-        return ref;
-      });
-    }
+  // public dragMove(event: CdkDragMove<ICard>) {
+  //   const draggedCard = event.source.data;
+  //   const draggedPreviewElement: HTMLElement = document.querySelector(
+  //     '.cdk-drag-preview'
+  //   );
 
-    this.draggingConnections.forEach((ref) => ref.line.position());
+  //   if (!this.draggingConnections) {
+  //     this.draggingConnections = this.relatedConnections.map((ref) => {
+  //       // replace line with a new one that updates position while dragging
+  //       if (ref.connection.startPointId === `${draggedCard.linkedWitId}`) {
+  //         ref.line = this.connectionBuilder.drawLine(
+  //           draggedPreviewElement,
+  //           document.getElementById(ref.connection.endPointId)
+  //         );
+  //       } else {
+  //         ref.line = this.connectionBuilder.drawLine(
+  //           document.getElementById(ref.connection.startPointId),
+  //           draggedPreviewElement
+  //         );
+  //       }
+  //       return ref;
+  //     });
+  //   }
 
-    // update non-related connetions
-    this.connectionBuilder
-      .getNonRelatedConnections(`${event.source.data.linkedWitId}`)
-      .forEach((ref) => {
-        ref.line.position(); // update position
-      });
-  }
+  //   this.draggingConnections.forEach((ref) => ref.line.position());
 
-  public dragDropped(event: CdkDragDrop<ICard>) {
-    // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
-    // Without setTimeout, all lines will get wrong startPoint or endPoint.
-    setTimeout(() => {
-      this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all related lines
-    }, 0);
-    this.draggingConnections.forEach((ref) => ref.line.remove());
-    this.draggingConnections = undefined;
-  }
+  //   // update non-related connetions
+  //   this.connectionBuilder
+  //     .getNonRelatedConnections(`${event.source.data.linkedWitId}`)
+  //     .forEach((ref) => {
+  //       ref.line.position(); // update position
+  //     });
+  // }
+
+  // public dragDropped(event: CdkDragDrop<ICard>) {
+  //   // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
+  //   // Without setTimeout, all lines will get wrong startPoint or endPoint.
+  //   setTimeout(() => {
+  //     this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all related lines
+  //   }, 0);
+  //   this.draggingConnections.forEach((ref) => ref.line.remove());
+  //   this.draggingConnections = undefined;
+  // }
   // *******************************************************/
   // ****************** End: Drag and Drop *****************/
   // *******************************************************/
