@@ -2,7 +2,7 @@
   [options]="teams"
   optionLabel="name"
   [(ngModel)]="selectedTeam"
-  (onChange)="onTeamChange($event)"
+  (onChange)="onTeamChange($event.value)"
 ></p-dropdown>
 <!--Filter-->
 <span class="p-input-icon-left">

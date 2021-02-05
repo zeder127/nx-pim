@@ -25,10 +25,11 @@ import {
   IRowHeader,
   SyncEvent,
   SyncType,
+  Team,
 } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
-import { WitService } from '../../../http';
+import { TeamService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
@@ -68,6 +69,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
+  public teamsOfSources: Team[];
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -83,7 +85,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
-    private witService: WitService,
+    private teamService: TeamService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
   ) {
@@ -102,18 +104,6 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
     this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
-
-    this.witService // TODO remove dependency of witservice, move it into boardservice
-      .queryWitByFilter({
-        //type: 'Feature',
-        type: 'Product Backlog Item',
-        team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
-      })
-      .subscribe((workItems) => {
-        this.sourceCards = workItems.map((wi) => DataUtil.toCard(wi));
-        console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
-        this.cdr.markForCheck();
-      });
 
     this.board.connections.on('valueChanged', (event: IValueChanged) => {
       // if true, one item muss be deleted

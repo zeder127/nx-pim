@@ -172,7 +172,9 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.removeCard(cardToRemove, event.oldIndex);
   };
   private onUpdate = (event: SortableEvent) => {
-    if (this.cards.length === 1) return;
+    // drag the last item and drop it at the last position again, no need to move it in sequence
+    if (event.oldIndex === this.cards.length - 1 && event.newIndex === this.cards.length)
+      return;
     this.moveItemInSequence(event.oldIndex, event.newIndex);
   };
 
