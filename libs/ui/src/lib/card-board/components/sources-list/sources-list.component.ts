@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ICard, Team } from '@pim/data';
 import { difference, unionWith } from 'lodash';
+import { SortableOptions } from 'sortablejs';
 import { TeamService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
+import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
 
 @Component({
@@ -14,7 +16,20 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   public selectedTeam: Team;
   public filterText: string;
   public teams: Team[];
+  public idPrefix = Source_ID_Prefix;
   private mappedSourceIds: number[] = [];
+  public cloneOption: SortableOptions = {
+    group: {
+      name: Sortable_Group_Name,
+      pull: 'clone',
+      put: false,
+    },
+    sort: false,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    forceFallback: true,
+    draggable: '.available',
+  };
 
   /**
    * Source cards to be dragged onto board

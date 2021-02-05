@@ -11,14 +11,13 @@
 </span>
 
 <!--List-->
-<div cdkDropList [cdkDropListData]="sourceCards" cdkDropListSortingDisabled>
+<div [sortablejs]="sourceCards" [sortablejsOptions]="cloneOption">
   <!--TODO call isMapped only once-->
   <div
     *ngFor="let card of sourceCards"
-    cdkDrag
-    [cdkDragData]="card"
     [class.is-mapped]="isMapped(card.linkedWitId)"
-    [cdkDragDisabled]="isMapped(card.linkedWitId)"
+    [class.available]="!isMapped(card.linkedWitId)"
+    id="{{idPrefix}}{{card.linkedWitId}}"
   >
     <p>{{card.linkedWitId}} {{card.text}} ({{card.type}})</p>
   </div>

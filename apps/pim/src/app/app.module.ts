@@ -12,6 +12,7 @@ import {
   MSAL_CONFIG_ANGULAR,
 } from '@azure/msal-angular';
 import { Configuration } from 'msal';
+import { SortablejsModule } from 'ngx-sortablejs';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
@@ -65,6 +66,7 @@ function MSALAngularConfigFactory(): MsalAngularConfiguration {
     HttpClientModule,
     MsalModule,
     CoreModule,
+    SortablejsModule.forRoot({ animation: 250 }),
   ],
   providers: [
     {

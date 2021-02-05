@@ -1,25 +1,12 @@
-<div
-  class="container"
-  cdkDropList
-  #cardContainer="cdkDropList"
-  [cdkDropListData]="cardsSeq"
-  cdkDropListOrientation="horizontal"
-  (cdkDropListDropped)="drop($event)"
->
+<div class="p-gird container" [sortablejs]="cards" [sortablejsOptions]="sortableOptions">
   <pim-card
-    class="test-pim-card"
+    class="p-col"
+    *ngFor="let card of cards; let i=index"
     [card]="card"
     id="{{card.linkedWitId}}"
-    *ngFor="let card of cards"
-    cdkDrag
-    [cdkDragData]="card"
-    (cdkDragStarted)="dragStart($event)"
-    (cdkDragMoved)="dragMove($event)"
-    (cdkDragDropped)="dragDropped($event)"
     (load)="onLoad()"
-    (remove)="removeCard($event)"
+    (remove)="removeCard($event, i)"
     (open)="openSourceUrl($event)"
   ></pim-card>
 </div>
-
 <button class="btn-new" (click)="addCard()">+</button>
