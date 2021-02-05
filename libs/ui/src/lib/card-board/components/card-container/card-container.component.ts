@@ -172,6 +172,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.removeCard(cardToRemove, event.oldIndex);
   };
   private onUpdate = (event: SortableEvent) => {
+    if (this.cards.length === 1) return;
     this.moveItemInSequence(event.oldIndex, event.newIndex);
   };
 
