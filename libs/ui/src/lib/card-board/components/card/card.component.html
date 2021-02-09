@@ -1,7 +1,28 @@
-<div class="card-content" @cardInsertRemoveTrigger>
+<div
+  class="card-content"
+  @cardInsertRemoveTrigger
+  sortablejs
+  [sortablejsOptions]="sortablejsOptions"
+>
   <div class="header">
     <b class="id">{{card.linkedWitId}}</b>
     <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
-    <a class="btn-close" (click)="onRemove()"><i class="pi pi-times"></i></a>
   </div>
+  <button
+    #anchor
+    pButton
+    class="btn-menu p-button-outlined"
+    icon="pi pi-times"
+    iconPos="left"
+    (click)="onRemove()"
+  ></button>
+  <button
+    sortablejs
+    pButton
+    class="btn-drag-handle p-button-outlined"
+    icon="pi pi-arrow-right"
+    iconPos="left"
+  ></button>
+  <!--TODO menu-->
+  <!-- <p-menu #menu [popup]="true" [appendTo]="anchor" [model]="menuItems"></p-menu> -->
 </div>

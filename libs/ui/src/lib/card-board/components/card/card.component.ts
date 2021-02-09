@@ -9,6 +9,8 @@ import {
   Output,
 } from '@angular/core';
 import { CardType, ICard } from '@pim/data';
+import { MenuItem } from 'primeng/api';
+import { SortableOptions } from 'sortablejs';
 
 @Component({
   selector: 'pim-card',
@@ -53,6 +55,20 @@ export class CardComponent implements OnInit, AfterViewInit {
       default:
         return '#009ccc';
     }
+  }
+
+  public menuItems: MenuItem[] = [
+    { label: 'Open', icon: 'pi pi-fw pi-download' },
+    { label: 'Remove', icon: 'pi pi-fw pi-time' },
+  ];
+
+  public sortablejsOptions: SortableOptions;
+
+  constructor() {
+    this.sortablejsOptions = {
+      group: 'card-connections',
+      handle: '.btn-drag-handle',
+    };
   }
 
   ngOnInit(): void {
