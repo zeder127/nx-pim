@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import {
   AfterViewInit,
   Component,
@@ -13,6 +14,15 @@ import { CardType, ICard } from '@pim/data';
   selector: 'pim-card',
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
+  animations: [
+    trigger('cardInsertRemoveTrigger', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('100ms', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [animate('100ms', style({ opacity: 0 }))]),
+    ]),
+  ],
 })
 export class CardComponent implements OnInit, AfterViewInit {
   @Input() card: ICard;

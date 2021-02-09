@@ -1,4 +1,4 @@
-<div class="card-content">
+<div class="card-content" @cardInsertRemoveTrigger>
   <div class="header">
     <b class="id">{{card.linkedWitId}}</b>
     <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
