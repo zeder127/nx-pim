@@ -8,7 +8,8 @@ import { CryptoUtils, Logger } from 'msal';
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent implements OnInit {
-  loggedIn = false;
+  public loggedIn = false;
+  public userName: string;
 
   constructor(
     private broadcastService: BroadcastService,
@@ -62,10 +63,7 @@ export class HeaderComponent implements OnInit {
 
   checkoutAccount() {
     this.loggedIn = !!this.authService.getAccount();
-    console.log(
-      `🚀 ~ HeaderComponent ~ this.authService.getAccount()`,
-      this.authService.getAccount()
-    );
+    this.userName = this.authService.getAccount().name;
     // this.authService.acquireTokenSilent({scopes: ['499b84ac-1321-427f-aa17-267ca6975798/.default']}).then(response => {
     //   console.log("🚀 ~ file: app.component.ts ~ line 47 ~ AppComponent ~ checkoutAccount ~ token", response)
 
