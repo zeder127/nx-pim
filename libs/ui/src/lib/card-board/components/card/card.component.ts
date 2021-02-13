@@ -106,7 +106,7 @@ export class CardComponent implements OnInit, AfterViewInit {
   public onDrag = (event: DragEvent) => {
     if (this.draggingConnection) {
       this.setDragAnchorPosition(event.clientX, event.clientY);
-      this.draggingConnection.position();
+      if (event.clientX + event.clientY) this.draggingConnection.position();
     } else {
       this.draggingConnection = this.connectionBuilder.drawLine(
         this.startElement,
@@ -115,22 +115,17 @@ export class CardComponent implements OnInit, AfterViewInit {
     }
   };
 
-  public onEnd = (event: DragEvent) => {
-    console.log(`🚀 ~ onEnd`, event);
+  public onEnd = () => {
     if (this.draggingConnection) {
       this.draggingConnection.remove();
       this.renderer.removeChild(document.body, this.dragAnchor);
       this.draggingConnection = undefined;
     }
-    this.boardService.createNewConnection();
   };
 
-  public onOver = () => {
+  public onDrop = () => {
     this.boardService.dragEndPointId = `${this.card.linkedWitId}`;
-  };
-
-  public onLeave = () => {
-    this.boardService.dragEndPointId = undefined;
+    this.boardService.createNewConnection();
   };
 
   private initDragAnchor(x: number, y: number) {

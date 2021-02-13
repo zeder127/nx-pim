@@ -3,8 +3,7 @@
   @cardInsertRemoveTrigger
   sortablejs
   [sortablejsOptions]="containerOptions"
-  (dragover)="onOver()"
-  (dragleave)="onLeave()"
+  (drop)="onDrop()"
 >
   <div class="header">
     <b class="id">{{card.linkedWitId}}</b>
@@ -23,7 +22,7 @@
     draggable="true"
     (dragstart)="onStart($event)"
     (drag)="onDrag($event)"
-    (dragend)="onEnd($event)"
+    (dragend)="onEnd()"
     pButton
     id="{{idPrefix + card.linkedWitId}}"
     class="btn-drag-handle p-button-outlined"
