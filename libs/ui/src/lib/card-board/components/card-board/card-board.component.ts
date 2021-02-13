@@ -104,12 +104,24 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
     this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
+    this.boardService.connectionInsert$
+      .pipe(this.autoUnsubscribe())
+      .subscribe((newConnection) => {
+        const newKey = `${newConnection.startPointId}-${newConnection.endPointId}`;
+        if (!this.board.connections.has(newKey))
+          this.board.connections.set(newKey, newConnection);
+      });
 
     this.board.connections.on('valueChanged', (event: IValueChanged) => {
-      // if true, one item muss be deleted
+      // one connection muss be deleted
       if (event.previousValue && !this.board.connections.has(event.key)) {
         this.connectionBuilder.remove(event.previousValue as IConnection);
         this.connectionBuilder.update$.next();
+      }
+      // one connection muss be inserted
+      if (!event.previousValue) {
+        const newConnection = this.board.connections.get(event.key);
+        this.connectionBuilder.drawLineByConnection(newConnection);
       }
     });
   }

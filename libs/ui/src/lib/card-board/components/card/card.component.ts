@@ -125,7 +125,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   public onDrop = () => {
     this.boardService.dragEndPointId = `${this.card.linkedWitId}`;
-    this.boardService.createNewConnection();
+    this.boardService.insertNewConnection();
   };
 
   private initDragAnchor(x: number, y: number) {

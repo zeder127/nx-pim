@@ -1,10 +1,9 @@
 import { CdkDragEnter } from '@angular/cdk/drag-drop';
 import { Injectable } from '@angular/core';
-import { ICard, Iteration, Team } from '@pim/data';
+import { ICard, IConnection, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { ConnectionBuilderService } from '../../connection/connection-builder.service';
 import { IterationService, TeamService, WitService } from '../../http';
 
 export interface DragIn {
@@ -19,6 +18,7 @@ export class BoardService {
   public cardsInsert$ = new Subject<number[]>();
   public cardsLoad$ = new BehaviorSubject<number[]>([]);
   public cardsRemove$ = new Subject<number[]>();
+  public connectionInsert$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
   public cardsMoveIn$ = new Subject<DragIn>();
   public dragStartPointId: string;
@@ -33,8 +33,7 @@ export class BoardService {
   constructor(
     private iterationService: IterationService,
     private teamService: TeamService,
-    private witService: WitService,
-    private connectionBuilder: ConnectionBuilderService
+    private witService: WitService
   ) {}
 
   public getIterationById(id: string): Observable<Iteration> {
@@ -45,13 +44,13 @@ export class BoardService {
     return this.teamService.getSingleByKey('id', id);
   }
 
-  public createNewConnection() {
+  public insertNewConnection() {
     if (
       this.dragStartPointId &&
       this.dragEndPointId &&
       this.dragStartPointId !== this.dragEndPointId
     ) {
-      this.connectionBuilder.drawLineByConnection({
+      this.connectionInsert$.next({
         startPointId: this.dragStartPointId,
         endPointId: this.dragEndPointId,
       });
