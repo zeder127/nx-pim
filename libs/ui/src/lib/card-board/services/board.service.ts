@@ -4,6 +4,7 @@ import { ICard, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { ConnectionBuilderService } from '../../connection/connection-builder.service';
 import { IterationService, TeamService, WitService } from '../../http';
 
 export interface DragIn {
@@ -20,6 +21,9 @@ export class BoardService {
   public cardsRemove$ = new Subject<number[]>();
   public sync$ = new Subject<ICard[]>();
   public cardsMoveIn$ = new Subject<DragIn>();
+  public dragStartPointId: string;
+  public dragEndPointId: string;
+
   /** Current PI name, read from current url */
   public currentPiName: string;
 
@@ -29,7 +33,8 @@ export class BoardService {
   constructor(
     private iterationService: IterationService,
     private teamService: TeamService,
-    private witService: WitService
+    private witService: WitService,
+    private connectionBuilder: ConnectionBuilderService
   ) {}
 
   public getIterationById(id: string): Observable<Iteration> {
@@ -38,6 +43,21 @@ export class BoardService {
 
   public getTeamById(id: string): Observable<Team> {
     return this.teamService.getSingleByKey('id', id);
+  }
+
+  public createNewConnection() {
+    if (
+      this.dragStartPointId &&
+      this.dragEndPointId &&
+      this.dragStartPointId !== this.dragEndPointId
+    ) {
+      this.connectionBuilder.drawLineByConnection({
+        startPointId: this.dragStartPointId,
+        endPointId: this.dragEndPointId,
+      });
+    }
+    this.dragStartPointId = undefined;
+    this.dragEndPointId = undefined;
   }
 
   public updateIterationAndTeam(

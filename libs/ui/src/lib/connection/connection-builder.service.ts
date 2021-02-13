@@ -62,8 +62,8 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
    * @param endPointElement
    */
   public drawLine(
-    startPointElement: HTMLElement,
-    endPointElement: HTMLElement
+    startPointElement: HTMLElement | LeaderLine.AnchorAttachment,
+    endPointElement: HTMLElement | LeaderLine.AnchorAttachment
   ): LeaderLine {
     if (startPointElement && endPointElement) {
       // create a new line

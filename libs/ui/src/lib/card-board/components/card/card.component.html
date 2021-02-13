@@ -2,7 +2,9 @@
   class="card-content"
   @cardInsertRemoveTrigger
   sortablejs
-  [sortablejsOptions]="sortablejsOptions"
+  [sortablejsOptions]="containerOptions"
+  (dragover)="onOver()"
+  (dragleave)="onLeave()"
 >
   <div class="header">
     <b class="id">{{card.linkedWitId}}</b>
@@ -16,13 +18,19 @@
     iconPos="left"
     (click)="onRemove()"
   ></button>
+
   <button
-    sortablejs
+    draggable="true"
+    (dragstart)="onStart($event)"
+    (drag)="onDrag($event)"
+    (dragend)="onEnd($event)"
     pButton
+    id="{{idPrefix + card.linkedWitId}}"
     class="btn-drag-handle p-button-outlined"
     icon="pi pi-arrow-right"
     iconPos="left"
   ></button>
+
   <!--TODO menu-->
   <!-- <p-menu #menu [popup]="true" [appendTo]="anchor" [model]="menuItems"></p-menu> -->
 </div>
