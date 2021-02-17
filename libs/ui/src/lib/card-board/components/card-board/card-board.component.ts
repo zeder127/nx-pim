@@ -77,7 +77,9 @@ export class CardBoardComponent extends AutoUnsubscriber
   public get columns(): IColumnHeader[] {
     return this.board.columnHeaders.getItems(0) ?? [];
   }
-  public connections: IConnection[] = [];
+  public get connections(): IConnection[] {
+    return [...this.board.connections.values()];
+  }
   private loadedCellsCount = 0;
   private mappedSourceIds: number[] = [];
   public bodyRowHeights: number[] = [];
@@ -99,7 +101,6 @@ export class CardBoardComponent extends AutoUnsubscriber
   ngOnInit(): void {
     if (!this.typesAllowedToSync)
       this.typesAllowedToSync = DataUtil.enumToArray(CardType);
-    this.connections = [...this.board.connections.values()];
     this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
@@ -200,13 +201,9 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   }
 
-  public onDragOut(cards: ICard[], rowIndex: number, colIndex: number) {
-    const ids = cards.map((c) => c.linkedWitId);
-    this.boardService.cardsRemove$.next(ids);
-
-    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
-    if (cardsToSync.length > 0)
-      this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
+  // TODO only update deltaCards
+  public onUpdate(cardIds: number[]) {
+    this.connectionBuilder.updateConnections_new(this.connections);
   }
 
   private emitSyncEvent(
@@ -223,9 +220,5 @@ export class CardBoardComponent extends AutoUnsubscriber
       linkedIterationId: iterationId,
       linkedSourceId: colLinkedSourceId,
     });
-  }
-
-  public updateConnections() {
-    this.connectionBuilder.update$.next();
   }
 }

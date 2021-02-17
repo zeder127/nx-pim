@@ -2,7 +2,6 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
 import { Subject } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
 import { AutoUnsubscriber } from '../util/base/auto-unsubscriber';
 
 export type ConnectionRef = { connection: IConnection; line: LeaderLine };
@@ -10,19 +9,19 @@ export type ConnectionRef = { connection: IConnection; line: LeaderLine };
 @Injectable()
 export class ConnectionBuilderService extends AutoUnsubscriber implements OnDestroy {
   private connectionStore: ConnectionRef[] = [];
+  private lines: LeaderLine[] = [];
 
   /**
    * Handle to update positions of all connections
    */
-  public update$ = new Subject();
+  public update$ = new Subject<boolean>();
 
   constructor() {
     super();
 
-    // Using debounceTime to avoid from frequently updating
     this.update$
-      .pipe(this.autoUnsubscribe(), debounceTime(50))
-      .subscribe(() => this.updateConnections());
+      .pipe(this.autoUnsubscribe())
+      .subscribe((forceRedraw) => this.updateConnections(forceRedraw));
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -72,6 +71,10 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
         endSocket: 'bottom',
         size: 3,
       });
+    } else {
+      // console.log('🚀*****************');
+      // console.log(`🚀 ~ ConnectionBuilderService ~ endPointElement`, endPointElement);
+      // console.log(`🚀 ~ ConnectionBuilderService ~ startPointElement`, startPointElement);
     }
   }
 
@@ -116,7 +119,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
    * Remove all lines on board
    */
   public destroy() {
-    this.connectionStore.forEach((ref) => ref.line.remove());
+    this.clearLines();
     this.connectionStore = undefined;
   }
 
@@ -135,13 +138,41 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Execute update postions of all connections, internally all lines will be redrawed.
    */
-  private updateConnections() {
+  public updateConnections(forceRedraw?: boolean) {
     this.connectionStore?.forEach((ref) => {
-      // FIXME have to use settimeout to resolve some timing problem, maybe use ngZone is better
-      setTimeout(() => {
+      if (forceRedraw) {
         ref.line.remove();
         ref.line = this.drawLineByConnection(ref.connection);
-      }, 0);
+      } else {
+        if (
+          this.elementExists(ref.connection.startPointId) &&
+          this.elementExists(ref.connection.endPointId)
+        ) {
+          ref.line.position();
+        } else {
+          ref.line.remove();
+        }
+      }
     });
+  }
+
+  public updateConnections_new(connections: IConnection[]) {
+    this.clearLines();
+    connections?.forEach((connection) => {
+      const line = this.drawLineByConnection(connection);
+      // add this connection in store
+      if (line) {
+        this.connectionStore.push({ connection, line });
+      }
+    });
+  }
+
+  private clearLines() {
+    this.connectionStore.forEach((ref) => ref.line.remove());
+    this.connectionStore = [];
+  }
+
+  private elementExists(id: string) {
+    return !!document.getElementById(id);
   }
 }

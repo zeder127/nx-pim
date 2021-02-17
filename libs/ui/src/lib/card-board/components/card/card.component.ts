@@ -37,7 +37,7 @@ export class CardComponent implements OnInit, AfterViewInit {
    * Event will be triggered, when this card has been loaded.
    */
   @Output() load = new EventEmitter();
-  @Output() remove = new EventEmitter<ICard>();
+  @Output() delete = new EventEmitter<ICard>();
   @Output() open = new EventEmitter<number>();
 
   @HostBinding('class')
@@ -93,8 +93,8 @@ export class CardComponent implements OnInit, AfterViewInit {
     this.open.emit(id);
   }
 
-  public onRemove() {
-    this.remove.emit(this.card);
+  public deleteCard() {
+    this.delete.emit(this.card);
   }
 
   public onStart = (event: DragEvent) => {

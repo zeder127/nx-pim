@@ -9,7 +9,6 @@ import {
   Output,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 import {
   SequenceDeltaEvent,
   SequenceEvent,
@@ -20,10 +19,7 @@ import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
 import { SortableEvent, SortableOptions } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ConnectionBuilderService,
-  ConnectionRef,
-} from '../../../connection/connection-builder.service';
+import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
@@ -41,8 +37,6 @@ const Drag_Out = 'dragOut';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
-  private relatedConnections: ConnectionRef[] = [];
-  private draggingConnections: ConnectionRef[];
   public cardsSeq: SharedObjectSequence<ICard>;
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
@@ -56,6 +50,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
   // TODO check, maybe remove, only for connections
   @Output() dragOut = new EventEmitter<ICard[]>(); // linkedWitId of the cards to drag into another card-container
+  @Output() update = new EventEmitter<number[]>();
 
   constructor(
     private boardService: BoardService,
@@ -84,6 +79,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
       onAdd: this.onAdd,
       onRemove: this.onRemove,
       onUpdate: this.onUpdate,
+      onChange: this.onChange,
     };
 
     this.cardsSeq = await this.cardsSeqHandle.get();
@@ -91,24 +87,10 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
       // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
       this.zone.run(() => {
-        this.doUpdate();
         const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
           event
         );
-
-        // TODO to delete??
-        // if (event.opArgs.op.type === MergeTreeDeltaType.INSERT) {
-        //   this.insertBySync.emit(deltaCards);
-        // }
-        if (event.opArgs.op.type === MergeTreeDeltaType.REMOVE) {
-          if (event.opArgs.op.register === Drag_Out) {
-            // TODO still useful for connections?
-            this.dragOut.emit(deltaCards);
-          } else {
-            // TODO to delete??
-            //this.remove.emit(deltaCards);
-          }
-        }
+        this.doUpdate(deltaCards);
       });
     });
 
@@ -141,8 +123,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   }
 
   // TODO multi delete
-  public removeCard(card: ICard, index: number) {
-    // remove from SharedObjectSequence
+  public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
     this.delete.emit([card]);
   }
@@ -151,16 +132,21 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.boardService.openSourceUrl(id);
   }
 
-  private doUpdate() {
+  // TODO: only update deltaCards
+  private doUpdate(deltaCards?: ICard[]) {
     this.cards = this.cardsSeq.getRange(0);
-    this.cdr.markForCheck();
-    this.connectionBuilder.update$.next();
+    this.cdr.detectChanges();
+    //use timeout have to wait for next change detection,
+    //otherwise drawing a line before rendering cards on board
+
+    this.update.emit(this.cards.map((c) => c.linkedWitId));
   }
 
   private isSelf(event: SequenceEvent) {
     return this.fluidLoaderService.clientId === event.clientId;
   }
 
+  // TODO move d&d code into a directive
   // *******************************************************/
   // **************** Start: Drag and Drop *****************/
   // *******************************************************/
@@ -168,15 +154,20 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     const newId = event.item.id.replace(Source_ID_Prefix, '');
     this.updateAndInsertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
   };
+
   private onRemove = (event: SortableEvent) => {
-    const cardToRemove = this.cardsSeq.getItems(event.oldIndex, event.oldIndex + 1)[0];
-    this.removeCard(cardToRemove, event.oldIndex);
+    this.cardsSeq.removeRange(event.oldIndex, event.oldIndex + 1);
   };
+
   private onUpdate = (event: SortableEvent) => {
     // drag the last item and drop it at the last position again, no need to move it in sequence
     if (event.oldIndex === this.cards.length - 1 && event.newIndex === this.cards.length)
       return;
     this.moveItemInSequence(event.oldIndex, event.newIndex);
+  };
+
+  public onChange = () => {
+    this.connectionBuilder.update$.next();
   };
 
   private moveItemInSequence(oldIndex: number, newIndex: number) {
@@ -201,59 +192,6 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
-  // public dragStart(event: CdkDragStart<ICard>) {
-  //   this.relatedConnections = this.connectionBuilder.getRelatedConnections(
-  //     `${event.source.data.linkedWitId}`
-  //   );
-  //   this.relatedConnections.forEach((ref) => {
-  //     // remove related connections
-  //     ref.line.remove();
-  //   });
-  // }
-
-  // public dragMove(event: CdkDragMove<ICard>) {
-  //   const draggedCard = event.source.data;
-  //   const draggedPreviewElement: HTMLElement = document.querySelector(
-  //     '.cdk-drag-preview'
-  //   );
-
-  //   if (!this.draggingConnections) {
-  //     this.draggingConnections = this.relatedConnections.map((ref) => {
-  //       // replace line with a new one that updates position while dragging
-  //       if (ref.connection.startPointId === `${draggedCard.linkedWitId}`) {
-  //         ref.line = this.connectionBuilder.drawLine(
-  //           draggedPreviewElement,
-  //           document.getElementById(ref.connection.endPointId)
-  //         );
-  //       } else {
-  //         ref.line = this.connectionBuilder.drawLine(
-  //           document.getElementById(ref.connection.startPointId),
-  //           draggedPreviewElement
-  //         );
-  //       }
-  //       return ref;
-  //     });
-  //   }
-
-  //   this.draggingConnections.forEach((ref) => ref.line.position());
-
-  //   // update non-related connetions
-  //   this.connectionBuilder
-  //     .getNonRelatedConnections(`${event.source.data.linkedWitId}`)
-  //     .forEach((ref) => {
-  //       ref.line.position(); // update position
-  //     });
-  // }
-
-  // public dragDropped(event: CdkDragDrop<ICard>) {
-  //   // Have to use setTimeout, because at this moment, the dropped item has not been rendered on Dom.
-  //   // Without setTimeout, all lines will get wrong startPoint or endPoint.
-  //   setTimeout(() => {
-  //     this.connectionBuilder.redrawConnections(`${event.item.data.linkedWitId}`); // Re-draw all related lines
-  //   }, 0);
-  //   this.draggingConnections.forEach((ref) => ref.line.remove());
-  //   this.draggingConnections = undefined;
-  // }
   // *******************************************************/
   // ****************** End: Drag and Drop *****************/
   // *******************************************************/
