@@ -172,12 +172,12 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
 
   private moveItemInSequence(oldIndex: number, newIndex: number) {
     const itemsToMove = this.cardsSeq.getItems(oldIndex, oldIndex + 1);
-    this.cardsSeq.removeRange(oldIndex, oldIndex + 1);
-    this.updateAndInsertCard(
-      itemsToMove.map((item) => item.linkedWitId),
-      this.cardsSeq,
-      newIndex
-    );
+    this.cardsSeq.remove(oldIndex, oldIndex + 1);
+
+    // try to avoid invalidRang error
+    const seqLength = this.cardsSeq.getLength();
+    if (newIndex === seqLength + itemsToMove.length) newIndex = seqLength;
+    this.cardsSeq.insert(newIndex, itemsToMove);
   }
 
   private updateAndInsertCard(
