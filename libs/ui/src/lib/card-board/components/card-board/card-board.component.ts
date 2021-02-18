@@ -10,6 +10,7 @@ import {
   OnInit,
   Output,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -28,6 +29,7 @@ import {
   Team,
 } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
+import AnimEvent from 'anim-event';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { TeamService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
@@ -66,6 +68,8 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   @ViewChildren('bodyRow', { read: ElementRef })
   private bodyRowRefs!: QueryList<ElementRef>;
+
+  @ViewChild('table', { read: ElementRef }) tableElementRef: ElementRef;
 
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
@@ -132,6 +136,18 @@ export class CardBoardComponent extends AutoUnsubscriber
     this.bodyRowRefs.changes.pipe(this.autoUnsubscribe()).subscribe(() => {
       this.setBodyRowHeights(this.bodyRowRefs);
     });
+
+    const scrollableBoardBody: HTMLElement = (this.tableElementRef
+      .nativeElement as HTMLElement).querySelector(
+      '.p-datatable-scrollable-view.p-datatable-unfrozen-view .p-datatable-scrollable-body'
+    );
+    // reference to https://github.com/anseki/anim-event
+    scrollableBoardBody.addEventListener(
+      'scroll',
+      AnimEvent.add(() => {
+        this.connectionBuilder.updateConnections();
+      })
+    );
   }
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {

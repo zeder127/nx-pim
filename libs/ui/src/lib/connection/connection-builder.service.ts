@@ -136,7 +136,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
-   * Execute update postions of all connections, internally all lines will be redrawed.
+   * Execute update all connections
    */
   public updateConnections(forceRedraw?: boolean) {
     this.connectionStore?.forEach((ref) => {
@@ -152,6 +152,20 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
         } else {
           ref.line.remove();
         }
+      }
+    });
+  }
+
+  /**
+   * Update positions all connections
+   */
+  public updateConnectionsPosition() {
+    this.connectionStore.forEach((ref) => {
+      if (
+        this.elementExists(ref.connection.startPointId) &&
+        this.elementExists(ref.connection.endPointId)
+      ) {
+        ref.line.position();
       }
     });
   }

@@ -30,7 +30,8 @@
               "node_modules/primeflex/primeflex.css"
             ],
             "scripts": [
-              "node_modules/leader-line-new/leader-line.min.js"
+              "node_modules/leader-line-new/leader-line.min.js",
+              "node_modules/anim-event/anim-event.min.js"
             ]
           },
           "configurations": {
