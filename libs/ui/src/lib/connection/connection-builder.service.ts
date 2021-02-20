@@ -21,7 +21,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
 
     this.update$
       .pipe(this.autoUnsubscribe())
-      .subscribe((forceRedraw) => this.updateConnections(forceRedraw));
+      .subscribe((forceRedraw) => this.updateExistingConnections(forceRedraw));
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -32,16 +32,12 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
-   * Draw lines based on given Connections.
+   * Draw lines based on given Connections and initiate a store to hold all references of lines
    * @param connections
    */
   public initConnections(connections: IConnection[]) {
-    connections?.forEach((connection) => {
-      const line = this.drawLineByConnection(connection);
-      // add this connection in store
-      if (line) {
-        this.connectionStore.push({ connection, line });
-      }
+    connections.forEach((connection) => {
+      this.drawConnection(connection);
     });
   }
 
@@ -53,6 +49,18 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
     return this.drawLine(startPointElement, endPointElement);
+  }
+
+  /**
+   * Draw a line base on the given connection and register the new line in store
+   * @param connection
+   */
+  public drawConnection(connection: IConnection) {
+    const line = this.drawLineByConnection(connection);
+    // add this connection in store
+    if (line) {
+      this.connectionStore.push({ connection, line });
+    }
   }
 
   /**
@@ -72,47 +80,10 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
         size: 3,
       });
     } else {
-      // console.log('🚀*****************');
-      // console.log(`🚀 ~ ConnectionBuilderService ~ endPointElement`, endPointElement);
-      // console.log(`🚀 ~ ConnectionBuilderService ~ startPointElement`, startPointElement);
+      console.error(
+        `😈 Failed to draw a line. start: ${startPointElement}, end: ${endPointElement}`
+      );
     }
-  }
-
-  /**
-   * Re-draw lines that connect to an element. If elementId is undefined, re-draw all lines.
-   * @param elementId
-   */
-  public redrawConnections(elementId?: string) {
-    this.getRelatedConnections(elementId).forEach(
-      (ref) => (ref.line = this.drawLineByConnection(ref.connection))
-    );
-  }
-
-  /**
-   * Get all related ConnectionRefs of a given element. If elementId is undefined, get all ConnectionRefs.
-   * @param elementId
-   */
-  public getRelatedConnections(elementId?: string): ConnectionRef[] {
-    if (!elementId) return this.connectionStore;
-    return this.connectionStore.filter(
-      (ref) =>
-        ref.connection.startPointId === elementId ||
-        ref.connection.endPointId === elementId
-    );
-  }
-
-  /**
-   * Get all non-related ConnectionRefs of a given element.
-   * @param elementId
-   */
-  public getNonRelatedConnections(elementId: string): ConnectionRef[] {
-    return this.connectionStore.filter(
-      (ref) =>
-        !(
-          ref.connection.startPointId === elementId ||
-          ref.connection.endPointId === elementId
-        )
-    );
   }
 
   /**
@@ -121,6 +92,10 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   public destroy() {
     this.clearLines();
     this.connectionStore = undefined;
+  }
+
+  public insert(conn: IConnection) {
+    if (this.has(conn)) return;
   }
 
   public remove(conn: IConnection) {
@@ -136,49 +111,27 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
-   * Execute update all connections
+   * Update all existing connections, as default, only position of lines will be updated. Set forceRedraw as true to redraw all lines
+   *  @param forceRedraw boolean, optinal
    */
-  public updateConnections(forceRedraw?: boolean) {
-    this.connectionStore?.forEach((ref) => {
+  public updateExistingConnections(forceRedraw?: boolean) {
+    this.connectionStore.forEach((ref) => {
       if (forceRedraw) {
         ref.line.remove();
         ref.line = this.drawLineByConnection(ref.connection);
       } else {
-        if (
-          this.elementExists(ref.connection.startPointId) &&
-          this.elementExists(ref.connection.endPointId)
-        ) {
-          ref.line.position();
-        } else {
-          ref.line.remove();
-        }
-      }
-    });
-  }
-
-  /**
-   * Update positions all connections
-   */
-  public updateConnectionsPosition() {
-    this.connectionStore.forEach((ref) => {
-      if (
-        this.elementExists(ref.connection.startPointId) &&
-        this.elementExists(ref.connection.endPointId)
-      ) {
         ref.line.position();
       }
     });
   }
 
-  public updateConnections_new(connections: IConnection[]) {
+  /**
+   * Clear existing connections and local store, then redraw connections
+   * @param connections
+   */
+  public redrawConnections(connections: IConnection[]) {
     this.clearLines();
-    connections?.forEach((connection) => {
-      const line = this.drawLineByConnection(connection);
-      // add this connection in store
-      if (line) {
-        this.connectionStore.push({ connection, line });
-      }
-    });
+    this.initConnections(connections);
   }
 
   private clearLines() {
@@ -186,7 +139,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     this.connectionStore = [];
   }
 
-  private elementExists(id: string) {
-    return !!document.getElementById(id);
+  private has(conn: IConnection) {
+    return this.connectionStore.some((ref) => ref.connection === conn);
   }
 }

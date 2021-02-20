@@ -126,7 +126,7 @@ export class CardBoardComponent extends AutoUnsubscriber
       // one connection muss be inserted
       if (!event.previousValue) {
         const newConnection = this.board.connections.get(event.key);
-        this.connectionBuilder.drawLineByConnection(newConnection);
+        this.connectionBuilder.drawConnection(newConnection);
       }
     });
   }
@@ -145,7 +145,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     scrollableBoardBody.addEventListener(
       'scroll',
       AnimEvent.add(() => {
-        this.connectionBuilder.updateConnections();
+        this.connectionBuilder.updateExistingConnections();
       })
     );
   }
@@ -219,7 +219,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   // TODO only update deltaCards
   public onUpdate(cardIds: number[]) {
-    this.connectionBuilder.updateConnections_new(this.connections);
+    this.connectionBuilder.redrawConnections(this.connections);
   }
 
   private emitSyncEvent(
