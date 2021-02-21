@@ -1,27 +1,31 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, Renderer2 } from '@angular/core';
 import { IConnection } from '@pim/data';
 import LeaderLine from 'leader-line-new';
 import { Subject } from 'rxjs';
 import { AutoUnsubscriber } from '../util/base/auto-unsubscriber';
 
-export type ConnectionRef = { connection: IConnection; line: LeaderLine };
+export type ConnectionRef = {
+  connection: IConnection;
+  line: LeaderLine;
+  svg: SVGElement;
+};
 
+const LineWrapperId = 'line-wrapper';
 @Injectable()
 export class ConnectionBuilderService extends AutoUnsubscriber implements OnDestroy {
   private connectionStore: ConnectionRef[] = [];
-  private lines: LeaderLine[] = [];
 
   /**
    * Handle to update positions of all connections
    */
-  public update$ = new Subject<boolean>();
+  public update$ = new Subject();
 
-  constructor() {
+  constructor(private render: Renderer2) {
     super();
 
     this.update$
       .pipe(this.autoUnsubscribe())
-      .subscribe((forceRedraw) => this.updateExistingConnections(forceRedraw));
+      .subscribe(() => this.updateExistingConnections());
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -48,7 +52,16 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   public drawLineByConnection(connection: IConnection): LeaderLine {
     const startPointElement = document.getElementById(connection.startPointId);
     const endPointElement = document.getElementById(connection.endPointId);
-    return this.drawLine(startPointElement, endPointElement);
+    const newLine = this.drawLine(startPointElement, endPointElement);
+    this.moveLineIntoWrapper(newLine);
+    return newLine;
+  }
+
+  private moveLineIntoWrapper(newLine: LeaderLine) {
+    if (!newLine) return;
+    const wrapper = document.getElementById(LineWrapperId);
+    const lineToMove = document.querySelector('body>.leader-line:last-of-type');
+    wrapper.appendChild(lineToMove);
   }
 
   /**
@@ -57,9 +70,10 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
    */
   public drawConnection(connection: IConnection) {
     const line = this.drawLineByConnection(connection);
+    const svg = document.querySelector('.leader-line:last-of-type') as SVGElement;
     // add this connection in store
     if (line) {
-      this.connectionStore.push({ connection, line });
+      this.connectionStore.push({ connection, line, svg });
     }
   }
 
@@ -79,10 +93,6 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
         endSocket: 'bottom',
         size: 3,
       });
-    } else {
-      console.error(
-        `😈 Failed to draw a line. start: ${startPointElement}, end: ${endPointElement}`
-      );
     }
   }
 
@@ -94,13 +104,21 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     this.connectionStore = undefined;
   }
 
-  public insert(conn: IConnection) {
-    if (this.has(conn)) return;
+  public createLineWrapper(bodyElement: HTMLElement) {
+    const lineWrapper = this.render.createElement('div');
+    this.render.setAttribute(lineWrapper, 'id', LineWrapperId);
+    this.render.setStyle(lineWrapper, 'position', 'absolute');
+    this.render.setStyle(lineWrapper, 'top', '0');
+    this.render.setStyle(lineWrapper, 'pointer-events', 'none');
+    this.render.appendChild(bodyElement, lineWrapper);
+    this.wrapperPosition();
   }
 
   public remove(conn: IConnection) {
     const index = this.connectionStore.findIndex((ref) => {
       if (ref.connection === conn) {
+        // move svg back to body
+        document.body.appendChild(ref.svg);
         // remove leaderline
         ref.line.remove();
         return true;
@@ -111,18 +129,11 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
-   * Update all existing connections, as default, only position of lines will be updated. Set forceRedraw as true to redraw all lines
-   *  @param forceRedraw boolean, optinal
+   * Update position of all existing connections
    */
-  public updateExistingConnections(forceRedraw?: boolean) {
-    this.connectionStore.forEach((ref) => {
-      if (forceRedraw) {
-        ref.line.remove();
-        ref.line = this.drawLineByConnection(ref.connection);
-      } else {
-        ref.line.position();
-      }
-    });
+  public updateExistingConnections() {
+    this.wrapperPosition();
+    this.connectionStore.forEach((ref) => ref.line.position());
   }
 
   /**
@@ -135,11 +146,29 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   private clearLines() {
-    this.connectionStore.forEach((ref) => ref.line.remove());
+    this.connectionStore.forEach((ref) => this.executeLineRemove(ref));
     this.connectionStore = [];
   }
 
-  private has(conn: IConnection) {
-    return this.connectionStore.some((ref) => ref.connection === conn);
+  private wrapperPosition() {
+    const wrapper = document.getElementById(LineWrapperId);
+    wrapper.style.transform = 'none';
+    const rectWrapper = wrapper.getBoundingClientRect();
+    // Move to the origin of coordinates as the document
+    wrapper.style.transform =
+      'translate(' +
+      -(rectWrapper.left + pageXOffset) +
+      'px, ' +
+      -(rectWrapper.top + pageYOffset) +
+      'px)';
+  }
+
+  /**
+   *
+   */
+  public executeLineRemove(ref: ConnectionRef) {
+    // have to move the svg element back to body from line-wrapper
+    document.body.appendChild(ref.svg);
+    ref.line.remove();
   }
 }

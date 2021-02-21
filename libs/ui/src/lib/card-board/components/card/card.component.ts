@@ -10,10 +10,12 @@ import {
   Renderer2,
 } from '@angular/core';
 import { CardType, ICard } from '@pim/data';
-import LeaderLine from 'leader-line-new';
 import { MenuItem } from 'primeng/api';
 import { SortableOptions } from 'sortablejs';
-import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
+import {
+  ConnectionBuilderService,
+  ConnectionRef,
+} from '../../../connection/connection-builder.service';
 import { Connection_Drag_Handle_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
 
@@ -73,7 +75,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   private startElement: HTMLElement;
   private dragAnchor: HTMLElement;
-  private draggingConnection: LeaderLine;
+  private draggingConnectionRef: ConnectionRef;
 
   constructor(
     private connectionBuilder: ConnectionBuilderService,
@@ -104,22 +106,23 @@ export class CardComponent implements OnInit, AfterViewInit {
   };
 
   public onDrag = (event: DragEvent) => {
-    if (this.draggingConnection) {
+    if (this.draggingConnectionRef) {
       this.setDragAnchorPosition(event.clientX, event.clientY);
-      if (event.clientX + event.clientY) this.draggingConnection.position();
+      if (event.clientX + event.clientY) this.draggingConnectionRef.line.position();
     } else {
-      this.draggingConnection = this.connectionBuilder.drawLine(
-        this.startElement,
-        this.dragAnchor
-      );
+      this.draggingConnectionRef = {
+        line: this.connectionBuilder.drawLine(this.startElement, this.dragAnchor),
+        svg: document.querySelector('body>.leader-line:last-of-type') as SVGElement,
+        connection: undefined, // dummy,
+      };
     }
   };
 
   public onEnd = () => {
-    if (this.draggingConnection) {
-      this.draggingConnection.remove();
+    if (this.draggingConnectionRef.line) {
+      this.connectionBuilder.executeLineRemove(this.draggingConnectionRef);
       this.renderer.removeChild(document.body, this.dragAnchor);
-      this.draggingConnection = undefined;
+      this.draggingConnectionRef = undefined;
     }
   };
 

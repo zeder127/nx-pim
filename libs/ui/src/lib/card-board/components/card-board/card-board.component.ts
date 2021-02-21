@@ -31,7 +31,6 @@ import {
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
-import { TeamService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
@@ -85,13 +84,13 @@ export class CardBoardComponent extends AutoUnsubscriber
     return [...this.board.connections.values()];
   }
   private loadedCellsCount = 0;
+  private loaded = false;
   private mappedSourceIds: number[] = [];
   public bodyRowHeights: number[] = [];
 
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
-    private teamService: TeamService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
   ) {
@@ -148,6 +147,9 @@ export class CardBoardComponent extends AutoUnsubscriber
         this.connectionBuilder.updateExistingConnections();
       })
     );
+
+    // initiate a line wrapper. All lines will move into this wrapper to avoid 'z-index' issue while scrolling
+    this.connectionBuilder.createLineWrapper(scrollableBoardBody);
   }
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
@@ -174,7 +176,9 @@ export class CardBoardComponent extends AutoUnsubscriber
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
       this.boardService.cardsLoad$.next(this.mappedSourceIds);
       this.load.emit();
+      this.loaded = true;
       this.connectionBuilder.initConnections(this.connections);
+      console.log(`🚀 ~ this.connections`, this.connections);
     }
   }
 
@@ -219,7 +223,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   // TODO only update deltaCards
   public onUpdate(cardIds: number[]) {
-    this.connectionBuilder.redrawConnections(this.connections);
+    if (this.loaded) this.connectionBuilder.redrawConnections(this.connections);
   }
 
   private emitSyncEvent(
