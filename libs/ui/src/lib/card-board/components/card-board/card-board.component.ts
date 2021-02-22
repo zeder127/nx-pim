@@ -144,7 +144,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     scrollableBoardBody.addEventListener(
       'scroll',
       AnimEvent.add(() => {
-        this.connectionBuilder.updateExistingConnections();
+        this.connectionBuilder.update$.next();
       })
     );
 
@@ -178,7 +178,6 @@ export class CardBoardComponent extends AutoUnsubscriber
       this.load.emit();
       this.loaded = true;
       this.connectionBuilder.initConnections(this.connections);
-      console.log(`🚀 ~ this.connections`, this.connections);
     }
   }
 
@@ -223,7 +222,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   // TODO only update deltaCards
   public onUpdate(cardIds: number[]) {
-    if (this.loaded) this.connectionBuilder.redrawConnections(this.connections);
+    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next(true);
   }
 
   private emitSyncEvent(

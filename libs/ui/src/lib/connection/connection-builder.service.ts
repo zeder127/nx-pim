@@ -18,14 +18,16 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Handle to update positions of all connections
    */
-  public update$ = new Subject();
+  public update$ = new Subject<boolean>();
 
   constructor(private render: Renderer2) {
     super();
 
     this.update$
       .pipe(this.autoUnsubscribe())
-      .subscribe(() => this.updateExistingConnections());
+      .subscribe((withUpdatingAnchorPoints) =>
+        this.updateExistingConnections(withUpdatingAnchorPoints)
+      );
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -117,10 +119,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   public remove(conn: IConnection) {
     const index = this.connectionStore.findIndex((ref) => {
       if (ref.connection === conn) {
-        // move svg back to body
-        document.body.appendChild(ref.svg);
-        // remove leaderline
-        ref.line.remove();
+        this.executeLineRemove(ref);
         return true;
       }
     });
@@ -131,9 +130,20 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Update position of all existing connections
    */
-  public updateExistingConnections() {
+  private updateExistingConnections(withUpdatingAnchorPoints = false) {
     this.wrapperPosition();
-    this.connectionStore.forEach((ref) => ref.line.position());
+    this.connectionStore.forEach((ref) => {
+      if (withUpdatingAnchorPoints) {
+        const start = document.getElementById(ref.connection.startPointId);
+        const end = document.getElementById(ref.connection.endPointId);
+        if (start && end) {
+          ref.line.setOptions({ start, end });
+          ref.line.position();
+        }
+      } else {
+        ref.line.position();
+      }
+    });
   }
 
   /**

@@ -25,8 +25,6 @@ import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
 
-const Drag_Out = 'dragOut';
-
 /**
  * Container component in every cell of board, to hold a list of cards
  */
@@ -46,10 +44,7 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
-  // @Output() insertBySync = new EventEmitter<ICard[]>(); // the new cards inserted by Sync
   @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
-  // TODO check, maybe remove, only for connections
-  @Output() dragOut = new EventEmitter<ICard[]>(); // linkedWitId of the cards to drag into another card-container
   @Output() update = new EventEmitter<number[]>();
 
   constructor(
@@ -135,10 +130,8 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
   // TODO: only update deltaCards
   private doUpdate(deltaCards?: ICard[]) {
     this.cards = this.cardsSeq.getRange(0);
+    // makeForChange doesn't work here, there would be timing problem with drawing a line.
     this.cdr.detectChanges();
-    //use timeout have to wait for next change detection,
-    //otherwise drawing a line before rendering cards on board
-
     this.update.emit(this.cards.map((c) => c.linkedWitId));
   }
 
