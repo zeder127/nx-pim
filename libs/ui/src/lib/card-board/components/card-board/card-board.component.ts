@@ -10,6 +10,7 @@ import {
   OnInit,
   Output,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -25,10 +26,11 @@ import {
   IRowHeader,
   SyncEvent,
   SyncType,
+  Team,
 } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
+import AnimEvent from 'anim-event';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
-import { WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
 
@@ -66,8 +68,11 @@ export class CardBoardComponent extends AutoUnsubscriber
   @ViewChildren('bodyRow', { read: ElementRef })
   private bodyRowRefs!: QueryList<ElementRef>;
 
+  @ViewChild('table', { read: ElementRef }) tableElementRef: ElementRef;
+
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
+  public teamsOfSources: Team[];
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -75,15 +80,17 @@ export class CardBoardComponent extends AutoUnsubscriber
   public get columns(): IColumnHeader[] {
     return this.board.columnHeaders.getItems(0) ?? [];
   }
-  public connections: IConnection[] = [];
+  public get connections(): IConnection[] {
+    return [...this.board.connections.values()];
+  }
   private loadedCellsCount = 0;
+  private loaded = false;
   private mappedSourceIds: number[] = [];
   public bodyRowHeights: number[] = [];
 
   constructor(
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
-    private witService: WitService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
   ) {
@@ -97,29 +104,28 @@ export class CardBoardComponent extends AutoUnsubscriber
   ngOnInit(): void {
     if (!this.typesAllowedToSync)
       this.typesAllowedToSync = DataUtil.enumToArray(CardType);
-    this.connections = [...this.board.connections.values()];
     this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
     this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
-
-    this.witService // TODO remove dependency of witservice, move it into boardservice
-      .queryWitByFilter({
-        //type: 'Feature',
-        type: 'Product Backlog Item',
-        team: 'pi-manager-dev\\Backend', // TODO dynamical value, team that current user belongs tos
-      })
-      .subscribe((workItems) => {
-        this.sourceCards = workItems.map((wi) => DataUtil.toCard(wi));
-        console.log(`🚀 ~ CardBoardComponent ~ workItems`, workItems);
-        this.cdr.markForCheck();
+    this.boardService.connectionInsert$
+      .pipe(this.autoUnsubscribe())
+      .subscribe((newConnection) => {
+        const newKey = `${newConnection.startPointId}-${newConnection.endPointId}`;
+        if (!this.board.connections.has(newKey))
+          this.board.connections.set(newKey, newConnection);
       });
 
     this.board.connections.on('valueChanged', (event: IValueChanged) => {
-      // if true, one item muss be deleted
+      // one connection muss be deleted
       if (event.previousValue && !this.board.connections.has(event.key)) {
         this.connectionBuilder.remove(event.previousValue as IConnection);
         this.connectionBuilder.update$.next();
+      }
+      // one connection muss be inserted
+      if (!event.previousValue) {
+        const newConnection = this.board.connections.get(event.key);
+        this.connectionBuilder.drawConnection(newConnection);
       }
     });
   }
@@ -129,6 +135,21 @@ export class CardBoardComponent extends AutoUnsubscriber
     this.bodyRowRefs.changes.pipe(this.autoUnsubscribe()).subscribe(() => {
       this.setBodyRowHeights(this.bodyRowRefs);
     });
+
+    const scrollableBoardBody: HTMLElement = (this.tableElementRef
+      .nativeElement as HTMLElement).querySelector(
+      '.p-datatable-scrollable-view.p-datatable-unfrozen-view .p-datatable-scrollable-body'
+    );
+    // reference to https://github.com/anseki/anim-event
+    scrollableBoardBody.addEventListener(
+      'scroll',
+      AnimEvent.add(() => {
+        this.connectionBuilder.update$.next();
+      })
+    );
+
+    // initiate a line wrapper. All lines will move into this wrapper to avoid 'z-index' issue while scrolling
+    this.connectionBuilder.createLineWrapper(scrollableBoardBody);
   }
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
@@ -155,6 +176,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     if (this.loadedCellsCount === this.columns.length * this.rows.length) {
       this.boardService.cardsLoad$.next(this.mappedSourceIds);
       this.load.emit();
+      this.loaded = true;
       this.connectionBuilder.initConnections(this.connections);
     }
   }
@@ -198,13 +220,9 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   }
 
-  public onDragOut(cards: ICard[], rowIndex: number, colIndex: number) {
-    const ids = cards.map((c) => c.linkedWitId);
-    this.boardService.cardsRemove$.next(ids);
-
-    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
-    if (cardsToSync.length > 0)
-      this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
+  // TODO only update deltaCards
+  public onUpdate(cardIds: number[]) {
+    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next(true);
   }
 
   private emitSyncEvent(
@@ -221,9 +239,5 @@ export class CardBoardComponent extends AutoUnsubscriber
       linkedIterationId: iterationId,
       linkedSourceId: colLinkedSourceId,
     });
-  }
-
-  public updateConnections() {
-    this.connectionBuilder.update$.next();
   }
 }

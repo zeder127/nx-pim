@@ -1,7 +1,35 @@
-<div class="card-content">
+<div
+  class="card-content"
+  @cardInsertRemoveTrigger
+  sortablejs
+  [sortablejsOptions]="containerOptions"
+  (drop)="onDrop()"
+>
   <div class="header">
     <b class="id">{{card.linkedWitId}}</b>
     <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
-    <a class="btn-close" (click)="onRemove()"><i class="pi pi-times"></i></a>
   </div>
+  <button
+    #anchor
+    pButton
+    class="btn-menu p-button-outlined"
+    icon="pi pi-times"
+    iconPos="left"
+    (click)="deleteCard()"
+  ></button>
+
+  <button
+    draggable="true"
+    (dragstart)="onStart($event)"
+    (drag)="onDrag($event)"
+    (dragend)="onEnd()"
+    pButton
+    id="{{idPrefix + card.linkedWitId}}"
+    class="btn-drag-handle p-button-outlined"
+    icon="pi pi-arrow-right"
+    iconPos="left"
+  ></button>
+
+  <!--TODO menu-->
+  <!-- <p-menu #menu [popup]="true" [appendTo]="anchor" [model]="menuItems"></p-menu> -->
 </div>

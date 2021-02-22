@@ -1,8 +1,15 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { ICard, Team } from '@pim/data';
+import { toCard } from '@pim/data/util';
 import { difference, unionWith } from 'lodash';
 import { SortableOptions } from 'sortablejs';
-import { TeamService } from '../../../http';
+import { TeamService, WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
@@ -11,13 +18,16 @@ import { BoardService } from '../../services/board.service';
   selector: 'pim-sources-list',
   templateUrl: './sources-list.component.html',
   styleUrls: ['./sources-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
+  private mappedSourceIds: number[] = [];
   public selectedTeam: Team;
   public filterText: string;
-  public teams: Team[];
+  public sourceCards: ICard[];
   public idPrefix = Source_ID_Prefix;
-  private mappedSourceIds: number[] = [];
+  public teams: Team[];
+
   public cloneOption: SortableOptions = {
     group: {
       name: Sortable_Group_Name,
@@ -34,21 +44,28 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   /**
    * Source cards to be dragged onto board
    */
-  @Input('sources') sourceCards: ICard[];
 
-  constructor(private boardService: BoardService, private teamService: TeamService) {
+  constructor(
+    private boardService: BoardService,
+    private witService: WitService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private teamService: TeamService
+  ) {
     super();
   }
 
   ngOnInit(): void {
+    const teamName = this.route.snapshot.paramMap.get('teamName');
     this.teamService
       .getAll()
       .pipe(this.autoUnsubscribe())
       .subscribe((teams) => {
-        this.teams = teams;
-        this.selectedTeam = teams.find(
-          (team) => this.boardService.currentTeamName === team.name
-        );
+        this.teams = !teamName
+          ? teams
+          : teams.filter((team) => this.boardService.currentTeamName === team.name);
+        this.selectedTeam = this.teams[0];
+        this.loadSourceCardsOfTeam(this.selectedTeam);
       });
 
     this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
@@ -64,11 +81,25 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
+  private loadSourceCardsOfTeam(team: Team) {
+    const teamPath = `${team.projectName}\\${team.name}`;
+    this.witService // TODO remove dependency of witservice, move it into boardservice
+      .queryWitByFilter({
+        //type: 'Feature',
+        type: 'Product Backlog Item',
+        team: teamPath,
+      })
+      .subscribe((workItems) => {
+        this.sourceCards = workItems.map((wi) => toCard(wi));
+        this.cdr.markForCheck();
+      });
+  }
+
   public isMapped(sourceId: number): boolean {
     return this.mappedSourceIds.includes(sourceId);
   }
 
   public onTeamChange(selectedTeam: Team) {
-    console.log(`🚀 ~ SourcesListComponent ~ selectedTeam`, selectedTeam);
+    this.loadSourceCardsOfTeam(selectedTeam);
   }
 }

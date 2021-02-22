@@ -1,6 +1,6 @@
 import { CdkDragEnter } from '@angular/cdk/drag-drop';
 import { Injectable } from '@angular/core';
-import { ICard, Iteration, Team } from '@pim/data';
+import { ICard, IConnection, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -18,8 +18,12 @@ export class BoardService {
   public cardsInsert$ = new Subject<number[]>();
   public cardsLoad$ = new BehaviorSubject<number[]>([]);
   public cardsRemove$ = new Subject<number[]>();
+  public connectionInsert$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
   public cardsMoveIn$ = new Subject<DragIn>();
+  public dragStartPointId: string;
+  public dragEndPointId: string;
+
   /** Current PI name, read from current url */
   public currentPiName: string;
 
@@ -38,6 +42,21 @@ export class BoardService {
 
   public getTeamById(id: string): Observable<Team> {
     return this.teamService.getSingleByKey('id', id);
+  }
+
+  public insertNewConnection() {
+    if (
+      this.dragStartPointId &&
+      this.dragEndPointId &&
+      this.dragStartPointId !== this.dragEndPointId
+    ) {
+      this.connectionInsert$.next({
+        startPointId: this.dragStartPointId,
+        endPointId: this.dragEndPointId,
+      });
+    }
+    this.dragStartPointId = undefined;
+    this.dragEndPointId = undefined;
   }
 
   public updateIterationAndTeam(

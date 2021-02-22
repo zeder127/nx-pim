@@ -3,6 +3,7 @@
   height: 100%;
   width: 100%;
   min-height: 6em;
+  max-height: 6em;
   min-width: 10em;
   max-width: calc(50% - 0.5em);
   margin: 0.25em;
@@ -15,6 +16,10 @@
   border-bottom: 1px solid rgba(200,200,200,1);
   padding: 4px 6px 6px 6px;
   width: 100%;
+  position: relative;
+}
+.header {
+  width: calc(100% - 1.2rem);
 }
 
 .id {
@@ -26,8 +31,26 @@
   white-space: pre-wrap;
 }
 
-.btn-close {
-  i.pi {
-    font-size: 0.8rem;
+.btn-drag-handle,
+.btn-menu {
+  position: absolute;
+  right: 5px;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  background-color: white;
+  :hover {
+    background-color: lightskyblue;
   }
+  ::ng-deep span.pi {
+    font-size: 0.7rem;
+  }
+}
+
+.btn-menu {
+  top: 5px;
+}
+
+.btn-drag-handle {
+  top: calc(5px + 1.2rem + 5px);
 }

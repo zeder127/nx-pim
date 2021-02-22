@@ -5,7 +5,7 @@
     [card]="card"
     id="{{card.linkedWitId}}"
     (load)="onLoad()"
-    (remove)="removeCard($event, i)"
+    (delete)="deleteCard($event, i)"
     (open)="openSourceUrl($event)"
   ></pim-card>
 </div>
