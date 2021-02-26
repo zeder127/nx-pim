@@ -59,10 +59,6 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     this.containerId = uuidv4();
   }
 
-  get ids() {
-    return this.cards.map((c) => c.linkedWitId).join(', ');
-  }
-
   async ngOnInit() {
     this.sortableOptions = {
       group: Sortable_Group_Name,

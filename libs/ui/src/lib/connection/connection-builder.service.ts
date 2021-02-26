@@ -93,7 +93,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
       return new LeaderLine(startPointElement, endPointElement, {
         startSocket: 'bottom',
         endSocket: 'bottom',
-        size: 3,
+        size: 2,
       });
     }
   }
