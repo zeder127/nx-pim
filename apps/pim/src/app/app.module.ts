@@ -13,6 +13,7 @@ import {
 } from '@azure/msal-angular';
 import { Configuration } from 'msal';
 import { SortablejsModule } from 'ngx-sortablejs';
+import { ToastModule } from 'primeng/toast';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
@@ -67,6 +68,7 @@ function MSALAngularConfigFactory(): MsalAngularConfiguration {
     MsalModule,
     CoreModule,
     SortablejsModule.forRoot({ animation: 250 }),
+    ToastModule,
   ],
   providers: [
     {
