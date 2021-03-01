@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Constants } from '@pim/data';
 import { FluidLoaderService, PiContainerFactory, PimDataObject } from '@pim/data/fluid';
 
 @Injectable({
@@ -6,7 +7,6 @@ import { FluidLoaderService, PiContainerFactory, PimDataObject } from '@pim/data
 })
 export class PimDataObjectRefService {
   private _instance: PimDataObject;
-  private _documentIdKey = 'pim.document';
   private _createNew = false; //change true only for debug
 
   constructor(private loader: FluidLoaderService) {}
@@ -27,19 +27,17 @@ export class PimDataObjectRefService {
       return Promise.resolve(this.instance);
     }
 
-    let documentId = localStorage.getItem(this._documentIdKey);
+    let documentId = localStorage.getItem(Constants.Storage_Key_DocumentId);
     if (!documentId) {
       this._createNew = true;
       documentId = Date.now().toString();
-      localStorage.setItem(this._documentIdKey, documentId);
+      localStorage.setItem(Constants.Storage_Key_DocumentId, documentId);
     }
     this.instance = await this.loader.loadDataObject<PimDataObject>(
       PiContainerFactory,
       documentId,
       this._createNew
     );
-    console.log(`🚀 ~ PimDataObjectRefService ~ this.instance`, this.instance);
-
     return this.instance;
   }
 }

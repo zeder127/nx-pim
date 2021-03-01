@@ -19,6 +19,7 @@ export interface CardBoardDDS {
   rowHeaders: SharedObjectSequence<IRowHeader>;
   cells: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
   connections: SharedMap;
+  coworkers: SharedMap;
 }
 
 interface IHeader {
