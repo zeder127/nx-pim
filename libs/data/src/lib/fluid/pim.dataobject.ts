@@ -16,7 +16,8 @@ const Key_Boards_Rows = 'rows';
 const Key_Boards_Cols = 'cols';
 const Key_Boards_Cards = 'cards';
 const Key_Boards_Connectons = 'connections';
-const Key_Users = 'users';
+const Key_Boards_Coworkers = 'coworkers';
+// const Key_Coworkers = 'coworkers';
 const Key_WorkItems = 'workItems';
 
 // prototype, to be changes in future
@@ -31,8 +32,8 @@ export class PimDataObject extends DataObject {
     this.root.createSubDirectory(Key_Pis);
 
     // SharedMap to hold all collaborating users
-    const users = SharedMap.create(this.runtime);
-    this.root.set(Key_Users, users.handle);
+    // const coworkerMap = SharedMap.create(this.runtime);
+    // this.root.set(Key_Coworkers, coworkerMap.handle);
 
     // SharedMap to hold all related workitem objects
     const workItems = SharedMap.create(this.runtime);
@@ -55,9 +56,10 @@ export class PimDataObject extends DataObject {
     );
 
     // TODO load users
+    // this.coworkersMap = await this.root.get<IFluidHandle<SharedMap>>(Key_Coworkers).get();
 
     // load workItems
-    this.workItems = await this.root.get<IFluidHandle<SharedMap>>(Key_WorkItems).get();
+    // this.workItems = await this.root.get<IFluidHandle<SharedMap>>(Key_WorkItems).get();
 
     this.root.on('valueChanged', (changed: IDirectoryValueChanged) => {
       const result = [...this.pisDir.subdirectories()].find(
@@ -126,6 +128,7 @@ export class PimDataObject extends DataObject {
       boardDir
     );
     const connectionsMap = this.createMapInDirectory(Key_Boards_Connectons, boardDir);
+    const coworkersMap = this.createMapInDirectory(Key_Boards_Coworkers, boardDir);
     let cardsMatrix = this.createMatrixInDirectory(Key_Boards_Cards, boardDir);
 
     // insert initial data
@@ -146,6 +149,7 @@ export class PimDataObject extends DataObject {
       columnHeaders: colsSequence,
       cells: cardsMatrix,
       connections: connectionsMap,
+      coworkers: coworkersMap,
     };
   }
 
@@ -193,7 +197,7 @@ export class PimDataObject extends DataObject {
   }
 
   private async loadBoard(id: string, boardDir: IDirectory) {
-    const [rows, cols, matrix, connections] = await Promise.all([
+    const [rows, cols, matrix, connections, coworkers] = await Promise.all([
       await boardDir
         .get<IFluidHandle<SharedObjectSequence<IRowHeader>>>(Key_Boards_Rows)
         .get(),
@@ -206,6 +210,7 @@ export class PimDataObject extends DataObject {
         )
         .get(),
       await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Connectons).get(),
+      await boardDir.get<IFluidHandle<SharedMap>>(Key_Boards_Coworkers)?.get(),
     ]);
 
     const cardBoardTmp: CardBoardDDS = {
@@ -214,27 +219,13 @@ export class PimDataObject extends DataObject {
       rowHeaders: rows,
       columnHeaders: cols,
       cells: matrix,
-      connections: connections,
+      connections,
+      coworkers,
     };
-
-    // this.createEventListenersForSequence(boardDDS.rows);
-    // this.createEventListenersForSequence(boardDDS.cols);
-    // this.createEventListenersForSequence(boardDDS.cards);
-    // this.createEventListenersForSequence(boardDDS.connections);
 
     // add in BoardRefsMap
     this.boardRefsMap.set(id, cardBoardTmp);
   }
-
-  /**
-   * Helper function to set up event listeners for SharedObjectSequence
-   */
-  // private createEventListenersForSequence<T>(sequence: SharedObjectSequence<T>) {
-  //   sequence.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-  //     console.log(`🚀 ~ PiDataObject ~ SequenceDeltaEvent`, event);
-  //     console.log(`🚀 ~ PiDataObject ~ sequence.id`, sequence.id);
-  //   });
-  // }
 
   /**
    * Helper function to set up event listeners for SharedDirectory

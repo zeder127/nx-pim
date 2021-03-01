@@ -6,6 +6,7 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <!-- <button (click)="sidenav.toggle(); updateConnections()">Toggle</button> -->
+    <span>Coworkers: {{coworkers$ | async | json}}</span>
     <p-table
       #table
       [value]="rows"

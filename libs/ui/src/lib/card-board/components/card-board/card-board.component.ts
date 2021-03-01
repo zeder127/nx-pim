@@ -7,6 +7,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  NgZone,
+  OnDestroy,
   OnInit,
   Output,
   QueryList,
@@ -20,6 +22,7 @@ import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
   CardType,
+  Coworker,
   ICard,
   IColumnHeader,
   IConnection,
@@ -30,10 +33,11 @@ import {
 } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
+import { MessageService } from 'primeng/api';
+import { BehaviorSubject } from 'rxjs';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
-
 export interface RowData {
   header: IRowHeader;
   data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
@@ -50,10 +54,11 @@ export interface RowData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBoardComponent extends AutoUnsubscriber
-  implements OnInit, AfterViewInit, DoCheck {
+  implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   @Input('model') board: CardBoardDDS;
   @Input() type: 'program' | 'team' = 'program';
   @Input() typesAllowedToSync: CardType[];
+  @Input('coworker') currentUser: Coworker;
 
   /**
    * Event will be triggered, when all cells has been loaded.
@@ -73,6 +78,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
   public teamsOfSources: Team[];
+  public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -92,7 +98,9 @@ export class CardBoardComponent extends AutoUnsubscriber
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private messageService: MessageService,
+    private zone: NgZone
   ) {
     super();
   }
@@ -128,6 +136,34 @@ export class CardBoardComponent extends AutoUnsubscriber
         this.connectionBuilder.drawConnection(newConnection);
       }
     });
+
+    if (!this.board.coworkers.has(this.currentUser.id))
+      this.board.coworkers.set(this.currentUser.id, this.currentUser.name);
+    this.coworkers$.next([...this.board.coworkers.values()]);
+
+    this.board.coworkers.on('valueChanged', (event: IValueChanged) => {
+      // ignore self
+      if (event.key === this.currentUser.id) return;
+      this.zone.run(() => {
+        this.coworkers$.next([...this.board.coworkers.values()]);
+        const coworker = this.board.coworkers.get(event.key);
+        // one coworker has joined into collaboration
+        if (coworker) {
+          this.messageService.add({
+            severity: 'info',
+            summary: '🙋 Hello',
+            detail: `${coworker}` + ` has joined.`,
+          });
+        } else {
+          // one coworker has left
+          this.messageService.add({
+            severity: 'info',
+            summary: '👋 Bye',
+            detail: `${event.previousValue}` + ` has left.`,
+          });
+        }
+      });
+    });
   }
 
   ngAfterViewInit(): void {
@@ -150,6 +186,12 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     // initiate a line wrapper. All lines will move into this wrapper to avoid 'z-index' issue while scrolling
     this.connectionBuilder.createLineWrapper(scrollableBoardBody);
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    if (this.board.coworkers.has(this.currentUser.id))
+      this.board.coworkers.delete(this.currentUser.id);
   }
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {

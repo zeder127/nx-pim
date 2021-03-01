@@ -2,6 +2,7 @@
   *ngIf="cardBoard"
   [model]="cardBoard"
   [typesAllowedToSync]="typesAllowedToSync"
+  [coworker]="currentUser"
   type="program"
   (sync)="syncWithTeamBoard($event)"
 ></pim-card-board>
