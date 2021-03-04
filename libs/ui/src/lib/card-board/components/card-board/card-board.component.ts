@@ -124,46 +124,12 @@ export class CardBoardComponent extends AutoUnsubscriber
           this.board.connections.set(newKey, newConnection);
       });
 
-    this.board.connections.on('valueChanged', (event: IValueChanged) => {
-      // one connection muss be deleted
-      if (event.previousValue && !this.board.connections.has(event.key)) {
-        this.connectionBuilder.remove(event.previousValue as IConnection);
-        this.connectionBuilder.update$.next();
-      }
-      // one connection muss be inserted
-      if (!event.previousValue) {
-        const newConnection = this.board.connections.get(event.key);
-        this.connectionBuilder.drawConnection(newConnection);
-      }
-    });
+    this.board.connections.on('valueChanged', this.onConnectionValueChanged);
+    this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
 
     if (!this.board.coworkers.has(this.currentUser.id))
       this.board.coworkers.set(this.currentUser.id, this.currentUser.name);
     this.coworkers$.next([...this.board.coworkers.values()]);
-
-    this.board.coworkers.on('valueChanged', (event: IValueChanged) => {
-      // ignore self
-      if (event.key === this.currentUser.id) return;
-      this.zone.run(() => {
-        this.coworkers$.next([...this.board.coworkers.values()]);
-        const coworker = this.board.coworkers.get(event.key);
-        // one coworker has joined into collaboration
-        if (coworker) {
-          this.messageService.add({
-            severity: 'info',
-            summary: '🙋 Hello',
-            detail: `${coworker}` + ` has joined.`,
-          });
-        } else {
-          // one coworker has left
-          this.messageService.add({
-            severity: 'info',
-            summary: '👋 Bye',
-            detail: `${event.previousValue}` + ` has left.`,
-          });
-        }
-      });
-    });
   }
 
   ngAfterViewInit(): void {
@@ -192,7 +158,47 @@ export class CardBoardComponent extends AutoUnsubscriber
     super.ngOnDestroy();
     if (this.board.coworkers.has(this.currentUser.id))
       this.board.coworkers.delete(this.currentUser.id);
+
+    this.board.connections.off('valueChanged', this.onConnectionValueChanged);
+    this.board.coworkers.off('valueChanged', this.onCoworkerValueChanged);
   }
+
+  private onConnectionValueChanged = (event: IValueChanged) => {
+    // one connection muss be deleted
+    if (event.previousValue && !this.board.connections.has(event.key)) {
+      this.connectionBuilder.remove(event.previousValue as IConnection);
+      this.connectionBuilder.update$.next();
+    }
+    // one connection muss be inserted
+    if (!event.previousValue) {
+      const newConnection = this.board.connections.get(event.key);
+      this.connectionBuilder.drawConnection(newConnection);
+    }
+  };
+
+  private onCoworkerValueChanged = (event: IValueChanged) => {
+    // ignore self
+    if (event.key === this.currentUser.id) return;
+    this.zone.run(() => {
+      this.coworkers$.next([...this.board.coworkers.values()]);
+      const coworker = this.board.coworkers.get(event.key);
+      // one coworker has joined into collaboration
+      if (coworker) {
+        this.messageService.add({
+          severity: 'info',
+          summary: '🙋 Hello',
+          detail: `${coworker}` + ` has joined.`,
+        });
+      } else {
+        // one coworker has left
+        this.messageService.add({
+          severity: 'info',
+          summary: '👋 Bye',
+          detail: `${event.previousValue}` + ` has left.`,
+        });
+      }
+    });
+  };
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
     const oldValueString = this.bodyRowHeights.toString();
