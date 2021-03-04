@@ -34,7 +34,6 @@ import {
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
 import { MessageService } from 'primeng/api';
-import { BehaviorSubject } from 'rxjs';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
@@ -78,7 +77,6 @@ export class CardBoardComponent extends AutoUnsubscriber
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
   public teamsOfSources: Team[];
-  public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -129,7 +127,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     if (!this.board.coworkers.has(this.currentUser.id))
       this.board.coworkers.set(this.currentUser.id, this.currentUser.name);
-    this.coworkers$.next([...this.board.coworkers.values()]);
+    this.boardService.coworkers$.next([...this.board.coworkers.values()]);
   }
 
   ngAfterViewInit(): void {
@@ -177,24 +175,24 @@ export class CardBoardComponent extends AutoUnsubscriber
   };
 
   private onCoworkerValueChanged = (event: IValueChanged) => {
+    this.boardService.coworkers$.next([...this.board.coworkers.values()]);
     // ignore self
     if (event.key === this.currentUser.id) return;
     this.zone.run(() => {
-      this.coworkers$.next([...this.board.coworkers.values()]);
       const coworker = this.board.coworkers.get(event.key);
       // one coworker has joined into collaboration
       if (coworker) {
         this.messageService.add({
           severity: 'info',
           summary: '🙋 Hello',
-          detail: `${coworker}` + ` has joined.`,
+          detail: `${coworker}` + ` has joined the board.`,
         });
       } else {
         // one coworker has left
         this.messageService.add({
           severity: 'info',
           summary: '👋 Bye',
-          detail: `${event.previousValue}` + ` has left.`,
+          detail: `${event.previousValue}` + ` has left the board.`,
         });
       }
     });
