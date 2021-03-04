@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ICard, IConnection, Iteration, Team } from '@pim/data';
+import { Coworker, ICard, IConnection, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -11,6 +11,7 @@ export class BoardService {
   public cardsRemove$ = new Subject<number[]>();
   public connectionInsert$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
+  public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
   public dragStartPointId: string;
   public dragEndPointId: string;
 

@@ -1,0 +1,28 @@
+<p-toolbar class="card-board-toolbar">
+  <div class="p-toolbar-group-left">
+    dropdown for board
+  </div>
+  <div class="p-toolbar-group-right">
+    <span class="p-overlay-badge p-mr-2 coworker-badge">
+      <button
+        pButton
+        pRipple
+        type="button"
+        icon="pi pi-users"
+        class="p-button-rounded p-button-text"
+        (click)="menu.toggle($event)"
+        title="Show coworkers"
+      ></button>
+      <p-menu #menu [popup]="true" [model]="coworkers$ | async"></p-menu>
+      <span class="p-badge">{{(coworkers$ | async)?.length}}</span>
+    </span>
+    <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-angle-right"
+      class="p-button-rounded p-button-text"
+      title="Collapse Workitem sidebar"
+    ></button>
+  </div>
+</p-toolbar>
