@@ -7,13 +7,13 @@ import {
   NgZone,
   OnDestroy,
   OnInit,
-  Output,
+  Output
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import {
   SequenceDeltaEvent,
   SequenceEvent,
-  SharedObjectSequence,
+  SharedObjectSequence
 } from '@fluidframework/sequence';
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
