@@ -5,7 +5,7 @@
     </div>
   </mat-sidenav>
   <mat-sidenav-content>
-    <!-- <button (click)="sidenav.toggle(); updateConnections()">Toggle</button> -->
+    <pim-card-board-toolbar (toggleSidebar)="sidenav.toggle()"></pim-card-board-toolbar>
     <p-table
       #table
       [value]="rows"

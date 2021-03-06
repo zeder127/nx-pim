@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { MsalService } from '@azure/msal-angular';
 import {
   CardBoardDDS,
   CardType,
+  Coworker,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
@@ -24,12 +26,15 @@ import { BoardSyncService } from '../services/board-sync.service';
 export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
   public cardBoard: CardBoardDDS;
   public typesAllowedToSync: CardType[];
+  public currentUser: Coworker;
   private piName: string;
+
   constructor(
     private route: ActivatedRoute,
     private piService: PiService,
     private boardSyncService: BoardSyncService,
-    private boardSettingsServcie: BoardSettingsService
+    private boardSettingsServcie: BoardSettingsService,
+    private authService: MsalService
   ) {
     super();
     // TODO muss be constructor?
@@ -41,7 +46,14 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
     this.piService
       .getProgrammBoardOfPI(this.piName)
       .pipe(this.autoUnsubscribe())
-      .subscribe((board) => (this.cardBoard = board));
+      .subscribe((board) => {
+        this.cardBoard = board;
+        this.currentUser = {
+          name: this.authService.getAccount().name,
+          id: this.authService.getAccount().accountIdentifier,
+          boardId: board.id,
+        };
+      });
   }
 
   public syncWithTeamBoard(event: SyncEvent) {

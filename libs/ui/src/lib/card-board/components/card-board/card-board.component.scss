@@ -1,4 +1,10 @@
 :host ::ng-deep {
+
+  p-table {
+    height: calc(100% - 32px/*toolbar*/);
+    display: block;
+  }
+
   .p-datatable .p-datatable-tbody > tr > td {
     padding: 0.25em
   }

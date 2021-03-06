@@ -7,6 +7,8 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  NgZone,
+  OnDestroy,
   OnInit,
   Output,
   QueryList,
@@ -20,6 +22,7 @@ import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
   CardType,
+  Coworker,
   ICard,
   IColumnHeader,
   IConnection,
@@ -30,10 +33,10 @@ import {
 } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
+import { MessageService } from 'primeng/api';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
-
 export interface RowData {
   header: IRowHeader;
   data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
@@ -50,10 +53,11 @@ export interface RowData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBoardComponent extends AutoUnsubscriber
-  implements OnInit, AfterViewInit, DoCheck {
+  implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   @Input('model') board: CardBoardDDS;
   @Input() type: 'program' | 'team' = 'program';
   @Input() typesAllowedToSync: CardType[];
+  @Input('coworker') currentUser: Coworker;
 
   /**
    * Event will be triggered, when all cells has been loaded.
@@ -92,7 +96,9 @@ export class CardBoardComponent extends AutoUnsubscriber
     private boardService: BoardService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private messageService: MessageService,
+    private zone: NgZone
   ) {
     super();
   }
@@ -116,18 +122,12 @@ export class CardBoardComponent extends AutoUnsubscriber
           this.board.connections.set(newKey, newConnection);
       });
 
-    this.board.connections.on('valueChanged', (event: IValueChanged) => {
-      // one connection muss be deleted
-      if (event.previousValue && !this.board.connections.has(event.key)) {
-        this.connectionBuilder.remove(event.previousValue as IConnection);
-        this.connectionBuilder.update$.next();
-      }
-      // one connection muss be inserted
-      if (!event.previousValue) {
-        const newConnection = this.board.connections.get(event.key);
-        this.connectionBuilder.drawConnection(newConnection);
-      }
-    });
+    this.board.connections.on('valueChanged', this.onConnectionValueChanged);
+    this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
+
+    if (!this.board.coworkers.has(this.currentUser.id))
+      this.board.coworkers.set(this.currentUser.id, this.currentUser);
+    this.boardService.coworkers$.next([...this.board.coworkers.values()]);
   }
 
   ngAfterViewInit(): void {
@@ -151,6 +151,52 @@ export class CardBoardComponent extends AutoUnsubscriber
     // initiate a line wrapper. All lines will move into this wrapper to avoid 'z-index' issue while scrolling
     this.connectionBuilder.createLineWrapper(scrollableBoardBody);
   }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    if (this.board.coworkers.has(this.currentUser.id))
+      this.board.coworkers.delete(this.currentUser.id);
+
+    this.board.connections.off('valueChanged', this.onConnectionValueChanged);
+    this.board.coworkers.off('valueChanged', this.onCoworkerValueChanged);
+  }
+
+  private onConnectionValueChanged = (event: IValueChanged) => {
+    // one connection muss be deleted
+    if (event.previousValue && !this.board.connections.has(event.key)) {
+      this.connectionBuilder.remove(event.previousValue as IConnection);
+      this.connectionBuilder.update$.next();
+    }
+    // one connection muss be inserted
+    if (!event.previousValue) {
+      const newConnection = this.board.connections.get(event.key);
+      this.connectionBuilder.drawConnection(newConnection);
+    }
+  };
+
+  private onCoworkerValueChanged = (event: IValueChanged) => {
+    this.boardService.coworkers$.next([...this.board.coworkers.values()]);
+    // ignore self
+    if (event.key === this.currentUser.id) return;
+    this.zone.run(() => {
+      const coworker = this.board.coworkers.get(event.key);
+      // one coworker has joined into collaboration
+      if (coworker) {
+        this.messageService.add({
+          severity: 'info',
+          summary: '🙋 Hello',
+          detail: `${coworker.name}` + ` has joined the board.`,
+        });
+      } else {
+        // one coworker has left
+        this.messageService.add({
+          severity: 'info',
+          summary: '👋 Bye',
+          detail: `${(event.previousValue as Coworker).name}` + ` has left the board.`,
+        });
+      }
+    });
+  };
 
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
     const oldValueString = this.bodyRowHeights.toString();
