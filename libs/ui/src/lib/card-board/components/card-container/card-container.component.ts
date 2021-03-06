@@ -34,7 +34,8 @@ import { BoardService } from '../../services/board.service';
   styleUrls: ['./card-container.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
+export class CardContainerComponent extends AutoUnsubscriber
+  implements OnInit, OnDestroy {
   public cardsSeq: SharedObjectSequence<ICard>;
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
@@ -74,22 +75,24 @@ export class CardContainerComponent extends AutoUnsubscriber implements OnInit {
     };
 
     this.cardsSeq = await this.cardsSeqHandle.get();
-
-    this.cardsSeq.on('sequenceDelta', (event: SequenceDeltaEvent) => {
-      // Event is occuring outside of Angular, have to run in ngZone for korrect changedetection
-      this.zone.run(() => {
-        const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(
-          event
-        );
-        this.doUpdate(deltaCards);
-      });
-    });
-
+    this.cardsSeq.on('sequenceDelta', this.onCardsSeqChange);
     this.doUpdate();
 
     // If no card in container, have to emit load event manully
     if (this.cardsSeq.getItemCount() === 0) this.load.next();
   }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.cardsSeq.off('sequenceDelta', this.onCardsSeqChange);
+  }
+
+  private onCardsSeqChange = (event: SequenceDeltaEvent) => {
+    this.zone.run(() => {
+      const deltaCards = PimDataObjectHelper.getItemsFromSequenceDeltaEvent<ICard>(event);
+      this.doUpdate(deltaCards);
+    });
+  };
 
   public addCard() {
     // this.witService.createWit();
