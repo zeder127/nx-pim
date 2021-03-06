@@ -5,6 +5,7 @@ import {
   EventEmitter,
   Input,
   NgZone,
+  OnDestroy,
   OnInit,
   Output,
 } from '@angular/core';

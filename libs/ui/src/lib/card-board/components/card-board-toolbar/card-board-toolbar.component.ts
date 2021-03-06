@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Coworker } from '@pim/data';
-import { Observable } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { MenuItem } from 'primeng/api';
+import { Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { BoardService } from '../../services/board.service';
 
 @Component({
@@ -10,11 +17,25 @@ import { BoardService } from '../../services/board.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBoardToolbarComponent implements OnInit {
+  @Output() toggleSidebar = new EventEmitter();
+
   constructor(private boardService: BoardService) {}
 
-  get coworkers$(): Observable<Coworker[]> {
-    return this.boardService.coworkers$.asObservable();
+  get coworkerMenuItems$(): Observable<MenuItem[]> {
+    return this.boardService.coworkers$.asObservable().pipe(
+      switchMap((coworkers) => {
+        return of(
+          coworkers.map((coworker) => {
+            return { label: coworker.name } as MenuItem;
+          })
+        );
+      })
+    );
   }
 
   ngOnInit(): void {}
+
+  public toggleWitSidebar() {
+    this.toggleSidebar.emit();
+  }
 }

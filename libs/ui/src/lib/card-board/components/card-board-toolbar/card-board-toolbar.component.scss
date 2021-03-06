@@ -4,11 +4,27 @@
     height: 1rem;
     line-height: 1rem;
     font-size: 0.6rem;
-    transform: none;
+    transform: translate(0, 0);
   }
 }
 
 .p-button:focus {
   box-shadow: none;
+}
+
+.card-board-toolbar ::ng-deep {
+  .p-toolbar {
+    padding: 0!important;
+    border: none;
+  }
+
+  .p-button.p-button-icon-only {
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+  }
+  .pi {
+    font-size: 1.2rem;
+  }
 }
 

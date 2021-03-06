@@ -126,7 +126,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
 
     if (!this.board.coworkers.has(this.currentUser.id))
-      this.board.coworkers.set(this.currentUser.id, this.currentUser.name);
+      this.board.coworkers.set(this.currentUser.id, this.currentUser);
     this.boardService.coworkers$.next([...this.board.coworkers.values()]);
   }
 
@@ -185,14 +185,14 @@ export class CardBoardComponent extends AutoUnsubscriber
         this.messageService.add({
           severity: 'info',
           summary: '🙋 Hello',
-          detail: `${coworker}` + ` has joined the board.`,
+          detail: `${coworker.name}` + ` has joined the board.`,
         });
       } else {
         // one coworker has left
         this.messageService.add({
           severity: 'info',
           summary: '👋 Bye',
-          detail: `${event.previousValue}` + ` has left the board.`,
+          detail: `${(event.previousValue as Coworker).name}` + ` has left the board.`,
         });
       }
     });
