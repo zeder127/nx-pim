@@ -1,13 +1,17 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   OnInit,
   Output,
+  ViewChild,
 } from '@angular/core';
 import { IColumnHeader } from '@pim/data';
 import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 
 @Component({
   selector: 'pim-column-header',
@@ -15,14 +19,15 @@ import { MenuItem } from 'primeng/api';
   styleUrls: ['./column-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ColumnHeaderComponent implements OnInit {
+export class ColumnHeaderComponent implements OnInit, AfterViewInit {
   @Input('model') colHeader: IColumnHeader;
   @Input() linkedSourceType: 'team' | 'workitem' = 'team';
   @Output() insertColLeft = new EventEmitter();
   @Output() insertColRight = new EventEmitter();
   @Output() deleteCol = new EventEmitter();
+  @ViewChild('menu') menuComp: Menu;
   public menuItems: MenuItem[];
-  constructor() {
+  constructor(private cdr: ChangeDetectorRef) {
     //
   }
 
@@ -49,6 +54,17 @@ export class ColumnHeaderComponent implements OnInit {
         command: () => this.deleteCol.emit(),
       },
     ];
+  }
+
+  ngAfterViewInit() {
+    this.cdr.detectChanges();
+  }
+
+  public toggle(event: MouseEvent) {
+    this.menuComp.toggle(event);
+    // Have to detect changes, otherwise menu popup doesn't show,
+    // if this column was added by another client.
+    this.cdr.detectChanges();
   }
 
   private edit = () => {
