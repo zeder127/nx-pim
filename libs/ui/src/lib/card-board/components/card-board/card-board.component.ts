@@ -18,8 +18,8 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IValueChanged } from '@fluidframework/map';
-import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
-import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
+// import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
+// import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
@@ -213,19 +213,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   };
 
-  private onGridOp = (event: ISequencedDocumentMessage) => {
-    if (event.contents.target === 'cols') {
-      if (event.contents.type === MergeTreeDeltaType.INSERT) {
-        // const newColIndex = event.contents.pos1;
-        // const newCellValues = [];
-        // for (let i = 0; i < this.board.grid.rowCount; i++) {
-        //   const tmpSeq = SharedObjectSequence.create<ICard>(this.board.runtime);
-        //   newCellValues.push(tmpSeq.handle as IFluidHandle<SharedObjectSequence<ICard>>);
-        // }
-        // this.board.grid.setCells(0, newColIndex, 1, newCellValues);
-      }
-      //this.cdr.detectChanges();
-    }
+  private onGridOp = () => {
     this.cdr.detectChanges();
   };
 
