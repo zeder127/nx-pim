@@ -21,6 +21,7 @@ import { CardComponent } from './components/card/card.component';
 import { ColumnHeaderComponent } from './components/column-header/column-header.component';
 import { RowHeaderComponent } from './components/row-header/row-header.component';
 import { SourcesListComponent } from './components/sources-list/sources-list.component';
+import { HeaderEditorComponent } from './components/header-editor/header-editor.component';
 
 @NgModule({
   imports: [
@@ -48,6 +49,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     RowHeaderComponent,
     ColumnHeaderComponent,
     CardBoardToolbarComponent,
+    HeaderEditorComponent,
   ],
   exports: [CardBoardComponent, TableModule],
 })

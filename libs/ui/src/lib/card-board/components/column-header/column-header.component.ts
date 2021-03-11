@@ -11,15 +11,20 @@ import {
 } from '@angular/core';
 import { IColumnHeader } from '@pim/data';
 import { MenuItem } from 'primeng/api';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Menu } from 'primeng/menu';
+import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
+import { HeaderEditorComponent } from '../header-editor/header-editor.component';
 
 @Component({
   selector: 'pim-column-header',
   templateUrl: './column-header.component.html',
   styleUrls: ['./column-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [DialogService],
 })
-export class ColumnHeaderComponent implements OnInit, AfterViewInit {
+export class ColumnHeaderComponent extends AutoUnsubscriber
+  implements OnInit, AfterViewInit, OnDestroy {
   @Input('model') colHeader: IColumnHeader;
   @Input() linkedSourceType: 'team' | 'workitem' = 'team';
   @Output() insertColLeft = new EventEmitter();
@@ -27,8 +32,9 @@ export class ColumnHeaderComponent implements OnInit, AfterViewInit {
   @Output() deleteCol = new EventEmitter();
   @ViewChild('menu') menuComp: Menu;
   public menuItems: MenuItem[];
-  constructor(private cdr: ChangeDetectorRef) {
-    //
+  private editorDialogRef: DynamicDialogRef;
+  constructor(private cdr: ChangeDetectorRef, private dialogService: DialogService) {
+    super();
   }
 
   ngOnInit(): void {
@@ -56,8 +62,9 @@ export class ColumnHeaderComponent implements OnInit, AfterViewInit {
     ];
   }
 
-  ngAfterViewInit() {
-    this.cdr.detectChanges();
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.editorDialogRef?.close();
   }
 
   public toggle(event: MouseEvent) {
@@ -68,6 +75,14 @@ export class ColumnHeaderComponent implements OnInit, AfterViewInit {
   }
 
   private edit = () => {
-    alert('TODO...');
+    this.editorDialogRef = this.dialogService.open(HeaderEditorComponent, {
+      header: `Edit`,
+    });
+
+    this.editorDialogRef.onClose
+      .pipe(this.autoUnsubscribe())
+      .subscribe((model: IColumnHeader) => {
+        if (model) this.colHeader = model;
+      });
   };
 }
