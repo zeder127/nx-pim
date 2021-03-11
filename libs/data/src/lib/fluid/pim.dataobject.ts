@@ -147,9 +147,10 @@ export class PimDataObject extends DataObject {
       name: board.name,
       rowHeaders: rowsSequence,
       columnHeaders: colsSequence,
-      cells: cardsMatrix,
+      grid: cardsMatrix,
       connections: connectionsMap,
       coworkers: coworkersMap,
+      runtime: this.runtime,
     };
   }
 
@@ -218,9 +219,10 @@ export class PimDataObject extends DataObject {
       name: boardDir.get('name'),
       rowHeaders: rows,
       columnHeaders: cols,
-      cells: matrix,
+      grid: matrix,
       connections,
       coworkers,
+      runtime: this.runtime,
     };
 
     // add in BoardRefsMap

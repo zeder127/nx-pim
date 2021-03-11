@@ -9,6 +9,7 @@ import { SortablejsModule } from 'ngx-sortablejs';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
@@ -37,6 +38,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     ButtonModule,
     MenuModule,
     ToolbarModule,
+    DynamicDialogModule,
   ],
   declarations: [
     CardBoardComponent,

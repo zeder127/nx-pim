@@ -33,10 +33,13 @@
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr height="100px">
-          <th *ngFor="let col of columns">
+          <th *ngFor="let col of columns; index as columnIndex">
             <pim-column-header
               [model]="col"
               [linkedSourceType]="colLinkSourceType"
+              (insertColLeft)="insertColumnAt(columnIndex)"
+              (insertColRight)="insertColumnAt(columnIndex + 1)"
+              (deleteCol)="deleteColumnAt(columnIndex)"
             ></pim-column-header>
           </th>
         </tr>

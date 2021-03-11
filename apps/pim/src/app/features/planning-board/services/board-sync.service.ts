@@ -34,7 +34,7 @@ export class BoardSyncService extends AutoUnsubscriber {
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
         // NOTE Sync from ProgrammBoard to TeamBoard, ProgrammBoard doesn't know the new Item should be insert which column in TeamBoard
         // Just insert to the first column on TeamBoard, so colNumber is 0.
-        const cardSequence = await teamBoard.cells.getCell(rowNumber, 0).get();
+        const cardSequence = await teamBoard.grid.getCell(rowNumber, 0).get();
         this.insertCardInCell(cardSequence, event.cards);
       });
   }
@@ -72,7 +72,7 @@ export class BoardSyncService extends AutoUnsubscriber {
       const colNumber = board.columnHeaders
         .getItems(0)
         .findIndex((c) => c.linkedSourceId === teamId);
-      const cardSequence = await board.cells.getCell(rowNumber, colNumber).get();
+      const cardSequence = await board.grid.getCell(rowNumber, colNumber).get();
       this.insertCardInCell(cardSequence, event.cards);
     });
   }
@@ -107,7 +107,7 @@ export class BoardSyncService extends AutoUnsubscriber {
     teamBoard: CardBoardDDS
   ) {
     teamBoard.columnHeaders.getItems(0).forEach(async (col, index) => {
-      const targetSequence = await teamBoard.cells.getCell(rowNumber, index).get();
+      const targetSequence = await teamBoard.grid.getCell(rowNumber, index).get();
       const cardIndex = targetSequence
         .getItems(0)
         .findIndex((c) => c.linkedWitId === witId);

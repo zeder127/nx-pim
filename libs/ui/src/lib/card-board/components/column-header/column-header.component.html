@@ -1,1 +1,10 @@
 <div>{{colHeader.text}}</div>
+<button
+  pButton
+  pRipple
+  type="button"
+  icon="pi pi-ellipsis-h"
+  class="p-button-text"
+  (click)="menu.toggle($event)"
+></button>
+<p-menu #menu [popup]="true" [model]="menuItems" appendTo="body"></p-menu>

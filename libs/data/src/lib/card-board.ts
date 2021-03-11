@@ -1,4 +1,5 @@
 import { IFluidHandle } from '@fluidframework/core-interfaces';
+import { IFluidDataStoreRuntime } from '@fluidframework/datastore-definitions';
 import { SharedMap } from '@fluidframework/map';
 import { SharedMatrix } from '@fluidframework/matrix';
 import { SharedObjectSequence } from '@fluidframework/sequence';
@@ -17,9 +18,10 @@ export interface CardBoardDDS {
   name: string;
   columnHeaders: SharedObjectSequence<IColumnHeader>;
   rowHeaders: SharedObjectSequence<IRowHeader>;
-  cells: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
+  grid: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
   connections: SharedMap;
   coworkers: SharedMap;
+  runtime: IFluidDataStoreRuntime;
 }
 
 interface IHeader {

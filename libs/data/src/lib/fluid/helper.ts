@@ -22,21 +22,38 @@ export class PimDataObjectHelper {
     matrix.insertCols(0, colSize);
     for (let rowIndex = 0; rowIndex < rowSize; rowIndex++) {
       for (let colIndex = 0; colIndex < colSize; colIndex++) {
-        const newSeq = SharedObjectSequence.create<ICard>(runtime);
         const cardsForCell = board.cards.filter(
           (c) => c.y === rowIndex + 1 && c.x === colIndex + 1 // x, y start with 1
         );
-        if (cardsForCell.length > 0) {
-          newSeq.insert(0, cardsForCell);
-        }
-        matrix.setCell(
+        PimDataObjectHelper.initialCellWithValue(
+          runtime,
+          matrix,
           rowIndex,
           colIndex,
-          newSeq.handle as IFluidHandle<SharedObjectSequence<ICard>>
+          cardsForCell
         );
       }
     }
     return matrix;
+  }
+
+  private static initialCellWithValue(
+    runtime: IFluidDataStoreRuntime,
+    matrix: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>,
+    rowIndex: number,
+    colIndex: number,
+    cards?: ICard[]
+  ) {
+    const newSeq = SharedObjectSequence.create<ICard>(runtime);
+
+    if (cards?.length > 0) {
+      newSeq.insert(0, cards);
+    }
+    matrix.setCell(
+      rowIndex,
+      colIndex,
+      newSeq.handle as IFluidHandle<SharedObjectSequence<ICard>>
+    );
   }
 
   public static getRowAndColSize(cells: ICard[]): { rowSize: number; colSize: number } {

@@ -5,15 +5,17 @@ import {
   EventEmitter,
   Input,
   NgZone,
+  OnChanges,
   OnDestroy,
   OnInit,
-  Output
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import {
   SequenceDeltaEvent,
   SequenceEvent,
-  SharedObjectSequence
+  SharedObjectSequence,
 } from '@fluidframework/sequence';
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
@@ -36,7 +38,7 @@ import { BoardService } from '../../services/board.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardContainerComponent extends AutoUnsubscriber
-  implements OnInit, OnDestroy {
+  implements OnInit, OnChanges, OnDestroy {
   public cardsSeq: SharedObjectSequence<ICard>;
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
@@ -74,18 +76,43 @@ export class CardContainerComponent extends AutoUnsubscriber
       onUpdate: this.onUpdate,
       onChange: this.onChange,
     };
+    if (!this.cardsSeqHandle) {
+      //this.cdr.markForCheck();
+      return; // TODO remove, only for debug
+    }
+    await this.loadCardsSeq();
 
+    // If no card in container, have to emit load event manully
+    if (this.cardsSeq.getItemCount() === 0) {
+      this.load.next();
+      this.load.complete();
+    }
+  }
+
+  private async loadCardsSeq() {
     this.cardsSeq = await this.cardsSeqHandle.get();
     this.cardsSeq.on('sequenceDelta', this.onCardsSeqChange);
     this.doUpdate();
+  }
 
-    // If no card in container, have to emit load event manully
-    if (this.cardsSeq.getItemCount() === 0) this.load.next();
+  async ngOnChanges(changes: SimpleChanges) {
+    const inputChange = changes['cardsSeqHandle'];
+    if (
+      inputChange &&
+      !inputChange.isFirstChange() &&
+      inputChange.previousValue !== inputChange.currentValue &&
+      inputChange.currentValue?.IFluidHandle
+    ) {
+      console.log(`🚀 ~ loadCardsSeq in onChanges`);
+      await this.loadCardsSeq();
+      this.load.next();
+      this.load.complete();
+    }
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.cardsSeq.off('sequenceDelta', this.onCardsSeqChange);
+    this.cardsSeq?.off('sequenceDelta', this.onCardsSeqChange);
   }
 
   private onCardsSeqChange = (event: SequenceDeltaEvent) => {
