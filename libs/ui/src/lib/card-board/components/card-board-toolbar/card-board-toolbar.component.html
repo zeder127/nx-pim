@@ -3,7 +3,10 @@
     dropdown for board
   </div>
   <div class="p-toolbar-group-right">
-    <div class="p-overlay-badge p-mr-2 coworker-badge">
+    <div
+      class="p-overlay-badge p-mr-2 coworker-badge"
+      *ngIf="(coworkerMenuItems$ | async)?.length>1"
+    >
       <button
         pButton
         pRipple
