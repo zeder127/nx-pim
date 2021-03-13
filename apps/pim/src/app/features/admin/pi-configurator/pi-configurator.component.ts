@@ -33,10 +33,10 @@ export class PiConfiguratorComponent implements OnInit {
   public createPi(name: string, iterations: Iteration[], teams: Team[]) {
     // TODO validation: name is empty, name exists already
     const rowHeaders: IRowHeader[] = iterations.map((iteration) => {
-      return { linkedIterationId: iteration.id, text: iteration.name };
+      return { linkedIterationId: iteration.id, title: iteration.name };
     });
     const columnHeaders: IColumnHeader[] = teams.map((team) => {
-      return { linkedSourceId: team.id, text: team.name };
+      return { linkedSourceId: team.id, title: team.name };
     });
     this.piService.createPi(name, rowHeaders, columnHeaders);
   }
