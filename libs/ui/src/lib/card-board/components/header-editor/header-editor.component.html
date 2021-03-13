@@ -1,1 +1,28 @@
-<p>header-editor works!</p>
+<div class="p-fluid">
+  <div class="p-field">
+    <label for="title">Title</label>
+    <input id="title" type="text" pInputText [(ngModel)]="header.title" />
+  </div>
+  <div class="p-field">
+    <label for="linked-source">Linked Source</label>
+    <p-autoComplete
+      [(ngModel)]="selectedSourceId"
+      [suggestions]="filteredSources"
+      (completeMethod)="filterSources($event)"
+      field="id"
+      [minLength]="1"
+      inputId="linked-source"
+      placeholder="Enter a name or id to search"
+    ></p-autoComplete>
+  </div>
+  <div class="p-field">
+    <label for="description">Description</label>
+    <textarea
+      id="description"
+      rows="10"
+      pInputTextarea
+      [(ngModel)]="header.description"
+    ></textarea>
+  </div>
+</div>
+<button pButton pRipple type="button" label="Save" (click)="save()"></button>

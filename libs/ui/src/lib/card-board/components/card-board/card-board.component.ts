@@ -20,7 +20,7 @@ import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IValueChanged } from '@fluidframework/map';
 // import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
 // import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
-import { SharedObjectSequence } from '@fluidframework/sequence';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
   CardType,
@@ -128,7 +128,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.board.connections.on('valueChanged', this.onConnectionValueChanged);
     this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
-    this.board.grid.on('op', this.onGridOp);
+    this.board.columnHeaders.on('sequenceDelta', this.onColumnHeaderSeqChanged);
 
     if (!this.board.coworkers.has(this.currentUser.id))
       this.board.coworkers.set(this.currentUser.id, this.currentUser);
@@ -168,7 +168,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.board.connections.off('valueChanged', this.onConnectionValueChanged);
     this.board.coworkers.off('valueChanged', this.onCoworkerValueChanged);
-    this.board.grid.off('op', this.onGridOp);
+    this.board.columnHeaders.off('sequenceDelta', this.onColumnHeaderSeqChanged);
 
     this.scrollableBoardBody.removeEventListener(
       'scroll',
@@ -213,7 +213,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   };
 
-  private onGridOp = () => {
+  private onColumnHeaderSeqChanged = (event: SequenceDeltaEvent) => {
     this.cdr.detectChanges();
   };
 
@@ -307,9 +307,6 @@ export class CardBoardComponent extends AutoUnsubscriber
   }
 
   public insertColumnAt(position: number) {
-    this.board.columnHeaders.insert(position, [
-      { title: Constants.Default_Column_Text, linkedSourceId: undefined },
-    ]);
     this.board.grid.insertCols(position, 1);
     const newCellValues = [];
     for (let i = 0; i < this.board.grid.rowCount; i++) {
@@ -317,10 +314,24 @@ export class CardBoardComponent extends AutoUnsubscriber
       newCellValues.push(tmpSeq.handle as IFluidHandle<SharedObjectSequence<ICard>>);
     }
     this.board.grid.setCells(0, position, 1, newCellValues);
+
+    // Inserting header muss be after inserting a column,
+    // In this way could save a lot of unnecessary change detections.
+    this.board.columnHeaders.insert(position, [
+      { title: Constants.Default_Column_Text, linkedSourceId: undefined },
+    ]);
   }
 
   public deleteColumnAt(position: number) {
-    this.board.columnHeaders.remove(position, position + 1);
     this.board.grid.removeCols(position, 1);
+    this.board.columnHeaders.remove(position, position + 1);
+  }
+
+  public onColumnChange(index: number, newColHeader: IColumnHeader) {
+    const segment = this.board.columnHeaders.getContainingSegment(index);
+    let pos = this.board.columnHeaders.getPosition(segment);
+    pos = pos === -1 ? index : pos;
+    this.board.columnHeaders.remove(pos, pos + 1);
+    this.board.columnHeaders.insert(pos, [newColHeader]);
   }
 }

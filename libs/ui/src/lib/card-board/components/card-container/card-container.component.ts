@@ -95,13 +95,13 @@ export class CardContainerComponent extends AutoUnsubscriber
     this.doUpdate();
   }
 
-  async ngOnChanges(changes: SimpleChanges) {
-    const inputChange = changes['cardsSeqHandle'];
+  async ngOnChanges({ cardsSeqHandle }: SimpleChanges) {
     if (
-      inputChange &&
-      !inputChange.isFirstChange() &&
-      inputChange.previousValue !== inputChange.currentValue &&
-      inputChange.currentValue?.IFluidHandle
+      cardsSeqHandle &&
+      !cardsSeqHandle.isFirstChange() &&
+      !cardsSeqHandle.previousValue &&
+      cardsSeqHandle.currentValue &&
+      cardsSeqHandle.currentValue?.IFluidHandle
     ) {
       console.log(`🚀 ~ loadCardsSeq in onChanges`);
       await this.loadCardsSeq();

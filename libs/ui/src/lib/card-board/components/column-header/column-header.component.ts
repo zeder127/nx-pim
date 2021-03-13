@@ -1,10 +1,10 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -23,13 +23,13 @@ import { HeaderEditorComponent } from '../header-editor/header-editor.component'
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [DialogService],
 })
-export class ColumnHeaderComponent extends AutoUnsubscriber
-  implements OnInit, AfterViewInit, OnDestroy {
+export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, OnDestroy {
   @Input('model') colHeader: IColumnHeader;
   @Input() linkedSourceType: 'team' | 'workitem' = 'team';
   @Output() insertColLeft = new EventEmitter();
   @Output() insertColRight = new EventEmitter();
   @Output() deleteCol = new EventEmitter();
+  @Output() modelChange = new EventEmitter<IColumnHeader>();
   @ViewChild('menu') menuComp: Menu;
   public menuItems: MenuItem[];
   private editorDialogRef: DynamicDialogRef;
@@ -40,7 +40,7 @@ export class ColumnHeaderComponent extends AutoUnsubscriber
   ngOnInit(): void {
     this.menuItems = [
       {
-        label: 'Open',
+        label: 'Edit',
         icon: 'pi pi-pencil',
         command: this.edit,
       },
@@ -77,12 +77,18 @@ export class ColumnHeaderComponent extends AutoUnsubscriber
   private edit = () => {
     this.editorDialogRef = this.dialogService.open(HeaderEditorComponent, {
       header: `Edit`,
+      width: '30%',
+      data: this.colHeader,
     });
 
     this.editorDialogRef.onClose
       .pipe(this.autoUnsubscribe())
       .subscribe((model: IColumnHeader) => {
-        if (model) this.colHeader = model;
+        if (model) {
+          this.colHeader = model;
+          this.modelChange.emit(model);
+          this.cdr.markForCheck();
+        }
       });
   };
 }

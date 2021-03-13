@@ -40,6 +40,7 @@
               (insertColLeft)="insertColumnAt(columnIndex)"
               (insertColRight)="insertColumnAt(columnIndex + 1)"
               (deleteCol)="deleteColumnAt(columnIndex)"
+              (modelChange)="onColumnChange(columnIndex, $event)"
             ></pim-column-header>
           </th>
         </tr>
