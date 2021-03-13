@@ -25,7 +25,7 @@ export interface CardBoardDDS {
 }
 
 interface IHeader {
-  text: string;
+  title: string;
   description?: string;
 }
 

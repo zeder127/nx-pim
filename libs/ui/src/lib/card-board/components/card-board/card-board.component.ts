@@ -308,7 +308,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   public insertColumnAt(position: number) {
     this.board.columnHeaders.insert(position, [
-      { text: Constants.Default_Column_Text, linkedSourceId: undefined },
+      { title: Constants.Default_Column_Text, linkedSourceId: undefined },
     ]);
     this.board.grid.insertCols(position, 1);
     const newCellValues = [];
