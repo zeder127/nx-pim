@@ -6,14 +6,25 @@
   <div class="p-field">
     <label for="linked-source">Linked Source</label>
     <p-autoComplete
-      [(ngModel)]="selectedSourceId"
+      [(ngModel)]="header.linkedSourceId"
       [suggestions]="filteredSources"
       (completeMethod)="filterSources($event)"
       field="id"
       [minLength]="1"
+      [delay]="200"
       inputId="linked-source"
       placeholder="Enter a name or id to search"
-    ></p-autoComplete>
+      emptyMessage="No results found"
+      [forceSelection]="true"
+      panelStyleClass="popup-panel"
+    >
+      <ng-template let-workitem pTemplate="item">
+        <div class="work-item" title="{{workitem.title}}">
+          <i class="pi pi-circle-on" [ngClass]="getWitTypeClass(workitem)"></i>
+          #{{workitem.id}} {{workitem.title}}
+        </div>
+      </ng-template>
+    </p-autoComplete>
   </div>
   <div class="p-field">
     <label for="description">Description</label>

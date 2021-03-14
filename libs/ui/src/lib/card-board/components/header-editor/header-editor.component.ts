@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { IColumnHeader } from '@pim/data';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
+import { IColumnHeader, WorkItem } from '@pim/data';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { WitService } from '../../../http';
 
 @Component({
   selector: 'pim-header-editor',
@@ -11,20 +17,37 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 export class HeaderEditorComponent implements OnInit {
   public header: IColumnHeader; // TODO generic with IHeader
   public selectedSourceId: string;
-  public filteredSources: IColumnHeader[];
+  public filteredSources: WorkItem[];
   constructor(
     private dialogRef: DynamicDialogRef,
-    private dialogConfig: DynamicDialogConfig
+    private dialogConfig: DynamicDialogConfig,
+    private witService: WitService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    if (!this.header) {
-      this.header = this.dialogConfig.data as IColumnHeader;
-    }
+    const originalHeader: IColumnHeader = this.dialogConfig.data;
+    this.header = {
+      ...originalHeader,
+    };
   }
 
-  public filterSources(event) {
-    //
+  public filterSources({ query }) {
+    this.witService.queryWit(query).subscribe((wits) => {
+      this.filteredSources = [...wits];
+      this.cdr.markForCheck();
+    });
+  }
+
+  public getWitTypeClass(wit: WorkItem): string {
+    switch (wit.type) {
+      case 'Feature':
+        return 'feature';
+        break;
+      case 'Product Backlog Item':
+        return 'pbi';
+        break;
+    }
   }
 
   public save() {

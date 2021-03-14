@@ -329,7 +329,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   public onColumnChange(index: number, newColHeader: IColumnHeader) {
     const segment = this.board.columnHeaders.getContainingSegment(index);
-    let pos = this.board.columnHeaders.getPosition(segment);
+    let pos = this.board.columnHeaders.getPosition(segment.segment);
     pos = pos === -1 ? index : pos;
     this.board.columnHeaders.remove(pos, pos + 1);
     this.board.columnHeaders.insert(pos, [newColHeader]);
