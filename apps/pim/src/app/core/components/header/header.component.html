@@ -1,7 +1,25 @@
-<a [routerLink]="['dashboard']">Dashboard</a>
-<a [routerLink]="['planning/20Q1/programm-board']">Planning Board</a>
-<a [routerLink]="['planning/20Q1/team/1']">Team1</a>
+<p-toolbar>
+  <div class="p-toolbar-group-left">
+    <a [routerLink]="['dashboard']">Home</a>
+  </div>
 
-<button *ngIf="!loggedIn" (click)="login()">Login</button>
-<button *ngIf="loggedIn" (click)="logout()">Logout</button>
-{{userName}}
+  <div class="p-toolbar-group-right">
+    <button
+      *ngIf="!loggedIn"
+      pButton
+      type="button"
+      label="Login"
+      styleClass="p-button-sm"
+      (click)="login()"
+    ></button>
+    <button
+      *ngIf="loggedIn"
+      pButton
+      type="button"
+      label="Logout"
+      styleClass="p-button-sm"
+      (click)="logout()"
+    ></button>
+    {{userName}}
+  </div>
+</p-toolbar>
