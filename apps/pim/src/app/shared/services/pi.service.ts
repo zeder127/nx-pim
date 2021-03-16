@@ -109,7 +109,7 @@ export class PiService {
     // A new TeamBoard has the same rows(iterations) as ProgrammBoard, but only has a placeholder column.
     // Every team could add his own columns individually with UI.
     const newTeamBoards: ICardBoard[] = columnHeaders?.map((columnHeader) => {
-      return createCardBoardModel(columnHeader.text, rowHeaders);
+      return createCardBoardModel(columnHeader.title, rowHeaders);
     });
 
     this.pimDORef.instance.createPi({

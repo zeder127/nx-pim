@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { WorkItem } from '@pim/data';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import {
   AzureDevopsClientService,
@@ -53,21 +53,23 @@ export class WitService {
         filter.type ? `[System.WorkItemType]  IN ('${filter.type}') AND` : ''
       } ${
         filter.team ? `([System.AreaPath] = '${filter.team}') AND` : ''
-      } [System.State] IN ('New', 'In Progress', 'Proposed', 'New', 'Active', 'Approved', 'Committed', 'To Do', 'Doing') order by [Backlog Priority], [System.Id]`,
+      } [System.TeamProject] = @project AND [System.State] IN ('New', 'In Progress', 'Proposed', 'New', 'Active', 'Approved', 'Committed', 'To Do', 'Doing') order by [Backlog Priority], [System.Id]`,
     };
 
-    return this.devOpsClient.fetchByPost('_apis/wit/wiql', payload).pipe(
-      switchMap((result: { workItems: Array<{ id: number }> }) => {
-        const ids = result.workItems.map((wi) => {
-          return wi.id;
-        });
-        return this.getWorkItems(ids);
-      })
-    );
+    return this.doQuery(payload);
+  }
+
+  public queryWit(query: string): Observable<WorkItem[]> {
+    const payload = {
+      query: `SELECT [System.Id],[System.WorkItemType],[System.Title],[System.AssignedTo],[System.State],[System.Tags] FROM WorkItems WHERE [System.TeamProject] = @project AND [System.State] IN ('New', 'In Progress', 'Proposed', 'New', 'Active', 'Approved', 'Committed', 'To Do', 'Doing') AND ( [System.Title] CONTAINS WORDS '${query}' ${
+        Number.isInteger(parseInt(query)) ? 'OR [System.Id] = ' + query : ''
+      })`,
+    };
+    return this.doQuery(payload);
   }
 
   public updateIteration(id: number, newIterationPath: string): Observable<WorkItem> {
-    return this.update(id, [
+    return this.doUpdate(id, [
       {
         op: 'add',
         path: '/fields/System.IterationPath',
@@ -77,7 +79,7 @@ export class WitService {
   }
 
   public updateTeam(id: number, newTeamName: string): Observable<WorkItem> {
-    return this.update(id, [
+    return this.doUpdate(id, [
       {
         op: 'add',
         path: '/fields/System.AreaPath',
@@ -91,7 +93,7 @@ export class WitService {
     newIterationPath: string,
     newTeamName: string
   ): Observable<WorkItem> {
-    return this.update(id, [
+    return this.doUpdate(id, [
       {
         op: 'add',
         path: '/fields/System.IterationPath',
@@ -109,7 +111,19 @@ export class WitService {
     window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
   }
 
-  private update(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
+  private doQuery(payload: unknown) {
+    return this.devOpsClient.fetchByPost('_apis/wit/wiql', payload).pipe(
+      switchMap((result: { workItems: Array<{ id: number }> }) => {
+        const ids = result.workItems.map((wi) => {
+          return wi.id;
+        });
+        if (ids.length === 0) return of([]);
+        return this.getWorkItems(ids);
+      })
+    );
+  }
+
+  private doUpdate(id: number, newValues: JsonPatchDocument[]): Observable<WorkItem> {
     return this.devOpsClient
       .patch<AzureWorkItem>(`_apis/wit/workitems/${id}`, newValues, {
         headers: { 'content-type': 'application/json-patch+json' },

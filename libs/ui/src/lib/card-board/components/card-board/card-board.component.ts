@@ -18,10 +18,13 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
 import { IValueChanged } from '@fluidframework/map';
-import { SharedObjectSequence } from '@fluidframework/sequence';
+// import { MergeTreeDeltaType } from '@fluidframework/merge-tree';
+// import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import {
   CardBoardDDS,
   CardType,
+  Constants,
   Coworker,
   ICard,
   IColumnHeader,
@@ -89,6 +92,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   }
   private loadedCellsCount = 0;
   private loaded = false;
+  private scrollableBoardBody: HTMLElement;
   private mappedSourceIds: number[] = [];
   public bodyRowHeights: number[] = [];
 
@@ -124,6 +128,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.board.connections.on('valueChanged', this.onConnectionValueChanged);
     this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
+    this.board.columnHeaders.on('sequenceDelta', this.onColumnHeaderSeqChanged);
 
     if (!this.board.coworkers.has(this.currentUser.id))
       this.board.coworkers.set(this.currentUser.id, this.currentUser);
@@ -136,21 +141,25 @@ export class CardBoardComponent extends AutoUnsubscriber
       this.setBodyRowHeights(this.bodyRowRefs);
     });
 
-    const scrollableBoardBody: HTMLElement = (this.tableElementRef
+    this.scrollableBoardBody = (this.tableElementRef
       .nativeElement as HTMLElement).querySelector(
       '.p-datatable-scrollable-view.p-datatable-unfrozen-view .p-datatable-scrollable-body'
     );
     // reference to https://github.com/anseki/anim-event
-    scrollableBoardBody.addEventListener(
+    this.scrollableBoardBody.addEventListener(
       'scroll',
-      AnimEvent.add(() => {
-        this.connectionBuilder.update$.next();
-      })
+      this.updateConnectionWithAnimation
     );
 
     // initiate a line wrapper. All lines will move into this wrapper to avoid 'z-index' issue while scrolling
-    this.connectionBuilder.createLineWrapper(scrollableBoardBody);
+    this.connectionBuilder.createLineWrapper(this.scrollableBoardBody);
   }
+
+  private updateConnectionWithAnimation = () => {
+    AnimEvent.add(() => {
+      this.connectionBuilder.update$.next();
+    });
+  };
 
   ngOnDestroy() {
     super.ngOnDestroy();
@@ -159,6 +168,12 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     this.board.connections.off('valueChanged', this.onConnectionValueChanged);
     this.board.coworkers.off('valueChanged', this.onCoworkerValueChanged);
+    this.board.columnHeaders.off('sequenceDelta', this.onColumnHeaderSeqChanged);
+
+    this.scrollableBoardBody.removeEventListener(
+      'scroll',
+      this.updateConnectionWithAnimation
+    );
   }
 
   private onConnectionValueChanged = (event: IValueChanged) => {
@@ -198,6 +213,10 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   };
 
+  private onColumnHeaderSeqChanged = (event: SequenceDeltaEvent) => {
+    this.cdr.detectChanges();
+  };
+
   private setBodyRowHeights(rowRefs: QueryList<ElementRef>) {
     const oldValueString = this.bodyRowHeights.toString();
     this.bodyRowHeights =
@@ -208,7 +227,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   }
 
   public getCell(row: number, col: number): IFluidHandle<SharedObjectSequence<ICard>> {
-    return this.board.cells.getCell(row, col);
+    return this.board.grid.getCell(row, col);
   }
 
   public onLoad(mappedSourceIds: number[]) {
@@ -285,5 +304,34 @@ export class CardBoardComponent extends AutoUnsubscriber
       linkedIterationId: iterationId,
       linkedSourceId: colLinkedSourceId,
     });
+  }
+
+  public insertColumnAt(position: number) {
+    this.board.grid.insertCols(position, 1);
+    const newCellValues = [];
+    for (let i = 0; i < this.board.grid.rowCount; i++) {
+      const tmpSeq = SharedObjectSequence.create<ICard>(this.board.runtime);
+      newCellValues.push(tmpSeq.handle as IFluidHandle<SharedObjectSequence<ICard>>);
+    }
+    this.board.grid.setCells(0, position, 1, newCellValues);
+
+    // Inserting header muss be after inserting a column,
+    // In this way could save a lot of unnecessary change detections.
+    this.board.columnHeaders.insert(position, [
+      { title: Constants.Default_Column_Text, linkedSourceId: undefined },
+    ]);
+  }
+
+  public deleteColumnAt(position: number) {
+    this.board.grid.removeCols(position, 1);
+    this.board.columnHeaders.remove(position, position + 1);
+  }
+
+  public onColumnChange(index: number, newColHeader: IColumnHeader) {
+    const segment = this.board.columnHeaders.getContainingSegment(index);
+    let pos = this.board.columnHeaders.getPosition(segment.segment);
+    pos = pos === -1 ? index : pos;
+    this.board.columnHeaders.remove(pos, pos + 1);
+    this.board.columnHeaders.insert(pos, [newColHeader]);
   }
 }

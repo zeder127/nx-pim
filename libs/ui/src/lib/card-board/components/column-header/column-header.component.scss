@@ -1,0 +1,18 @@
+.header {
+  display: flex;
+  align-items: center;
+  .title {
+    flex: 1 0 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 2.5rem);
+  }
+}
+
+.item-preview {
+  font-size: 0.9rem;
+  .pi {
+    font-size: 0.8rem;
+  }
+}

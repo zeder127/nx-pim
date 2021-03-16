@@ -6,10 +6,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { SortablejsModule } from 'ngx-sortablejs';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -18,6 +21,7 @@ import { CardBoardComponent } from './components/card-board/card-board.component
 import { CardContainerComponent } from './components/card-container/card-container.component';
 import { CardComponent } from './components/card/card.component';
 import { ColumnHeaderComponent } from './components/column-header/column-header.component';
+import { HeaderEditorComponent } from './components/header-editor/header-editor.component';
 import { RowHeaderComponent } from './components/row-header/row-header.component';
 import { SourcesListComponent } from './components/sources-list/sources-list.component';
 
@@ -37,6 +41,9 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     ButtonModule,
     MenuModule,
     ToolbarModule,
+    DynamicDialogModule,
+    AutoCompleteModule,
+    InputTextareaModule,
   ],
   declarations: [
     CardBoardComponent,
@@ -46,6 +53,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     RowHeaderComponent,
     ColumnHeaderComponent,
     CardBoardToolbarComponent,
+    HeaderEditorComponent,
   ],
   exports: [CardBoardComponent, TableModule],
 })

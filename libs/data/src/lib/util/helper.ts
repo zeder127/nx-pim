@@ -35,12 +35,12 @@ function getCardTypeFromTags(tags: string[]): CardType {
 
 export const PlaceholderRow: IRowHeader = {
   linkedIterationId: undefined,
-  text: Constants.Default_Row_Text,
+  title: Constants.Default_Row_Text,
 };
 
 export const PlaceholderColumn: IColumnHeader = {
   linkedSourceId: undefined,
-  text: Constants.Default_Column_Text,
+  title: Constants.Default_Column_Text,
 };
 
 export function createCardBoardModel(

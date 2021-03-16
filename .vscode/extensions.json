@@ -4,6 +4,12 @@
     "angular.ng-template",
     "ms-vscode.vscode-typescript-tslint-plugin",
     "esbenp.prettier-vscode",
-    "firsttris.vscode-jest-runner"
+    "firsttris.vscode-jest-runner",
+    "johnpapa.angular-essentials",
+    "infinity1207.angular2-switcher",
+    "exodiusstudios.comment-anchors",
+    "editorconfig.editorconfig",
+    "2gua.rainbow-brackets",
+    "chakrounanas.turbo-console-log"
   ]
 }

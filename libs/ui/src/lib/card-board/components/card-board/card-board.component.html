@@ -1,5 +1,5 @@
 <mat-sidenav-container>
-  <mat-sidenav #sidenav mode="side" position="end" opened>
+  <mat-sidenav #sidenav mode="side" position="end">
     <div style="width: 200px;">
       <pim-sources-list></pim-sources-list>
     </div>
@@ -33,10 +33,14 @@
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr height="100px">
-          <th *ngFor="let col of columns">
+          <th *ngFor="let col of columns; index as columnIndex">
             <pim-column-header
               [model]="col"
               [linkedSourceType]="colLinkSourceType"
+              (insertColLeft)="insertColumnAt(columnIndex)"
+              (insertColRight)="insertColumnAt(columnIndex + 1)"
+              (deleteCol)="deleteColumnAt(columnIndex)"
+              (modelChange)="onColumnChange(columnIndex, $event)"
             ></pim-column-header>
           </th>
         </tr>
@@ -49,9 +53,9 @@
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad($event)"
               (insert)="onInsert($event, rowIndex, columnIndex)"
-              (delete)="onRemove($event, rowIndex, columnIndex)"
               (update)="onUpdate($event)"
-            ></pim-card-container>
+            ></pim-card-container
+            ><!--(delete)="onRemove($event, rowIndex, columnIndex)"-->
           </td>
         </tr>
       </ng-template>
