@@ -1,5 +1,11 @@
 <mat-sidenav-container>
-  <mat-sidenav #sidenav mode="side" position="end">
+  <mat-sidenav
+    #sidenav
+    mode="side"
+    position="end"
+    (openedStart)="updateConnection()"
+    (closedStart)="updateConnection()"
+  >
     <div style="width: 20rem;">
       <pim-sources-list></pim-sources-list>
     </div>

@@ -74,7 +74,7 @@ export class CardContainerComponent extends AutoUnsubscriber
       onAdd: this.onAdd,
       onRemove: this.onRemove,
       onUpdate: this.onUpdate,
-      onChange: this.onChange,
+      onChange: this.updateConnection,
     };
     if (!this.cardsSeqHandle) {
       //this.cdr.markForCheck();
@@ -188,8 +188,19 @@ export class CardContainerComponent extends AutoUnsubscriber
     this.moveItemInSequence(event.oldIndex, event.newIndex);
   };
 
-  public onChange = () => {
+  // Make updateing connections smoother
+  // Tried to move code to ConnectionBuilder,
+  // but there is a side-effect on drag&drop
+  private iterationCount = 0;
+  private repeater;
+  private updateConnection = () => {
     this.connectionBuilder.update$.next();
+    if (this.iterationCount++ > 20) {
+      cancelAnimationFrame(this.repeater);
+      this.iterationCount = 0;
+    } else {
+      this.repeater = requestAnimationFrame(this.updateConnection);
+    }
   };
 
   private moveItemInSequence(oldIndex: number, newIndex: number) {
