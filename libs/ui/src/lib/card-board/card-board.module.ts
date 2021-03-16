@@ -14,6 +14,7 @@ import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MenuModule } from 'primeng/menu';
+import { PanelModule } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { CardBoardToolbarComponent } from './components/card-board-toolbar/card-board-toolbar.component';
@@ -44,6 +45,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     DynamicDialogModule,
     AutoCompleteModule,
     InputTextareaModule,
+    PanelModule,
   ],
   declarations: [
     CardBoardComponent,

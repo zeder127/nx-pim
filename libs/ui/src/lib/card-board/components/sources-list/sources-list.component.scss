@@ -1,3 +1,27 @@
+.back-explorer-toolbar ::ng-deep .p-toolbar{
+  padding: 0 1rem!important;
+  border: none;
+  height: 2rem;
+  background-color: white;
+}
+
+.list {
+  padding: 1rem;
+}
+
+.team-dropdown ::ng-deep .p-dropdown {
+  width: 100%;
+}
+
+.filter {
+  display: flex;
+  margin-top: 1rem;
+
+  .filter-input {
+    flex: 1 0 auto;
+  }
+}
+
 .sortable-ghost {
   height: 6em;
   min-width: 10em;

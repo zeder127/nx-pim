@@ -81,6 +81,10 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
     });
   }
 
+  public addNewItem() {
+    //
+  }
+
   private loadSourceCardsOfTeam(team: Team) {
     const teamPath = `${team.projectName}\\${team.name}`;
     this.witService // TODO remove dependency of witservice, move it into boardservice
