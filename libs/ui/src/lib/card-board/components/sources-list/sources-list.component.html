@@ -41,15 +41,17 @@
   </div>
 
   <!--List-->
-  <div [sortablejs]="sourceCards" [sortablejsOptions]="cloneOption">
+  <ul class="source-items" [sortablejs]="sourceCards" [sortablejsOptions]="cloneOption">
     <!--TODO call isMapped only once-->
-    <div
+    <li
+      class="source-item"
       *ngFor="let card of sourceCards"
       [class.is-mapped]="isMapped(card.linkedWitId)"
       [class.available]="!isMapped(card.linkedWitId)"
+      [style.borderLeftColor]="getBorderLeftColorOf(card)"
       id="{{idPrefix}}{{card.linkedWitId}}"
     >
-      <p>{{card.linkedWitId}} {{card.text}} ({{card.type}})</p>
-    </div>
-  </div>
+      {{card.linkedWitId}} {{card.text}}
+    </li>
+  </ul>
 </div>

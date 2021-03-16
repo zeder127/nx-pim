@@ -28,6 +28,22 @@
   background-color: $color-background-new-item;
 }
 
+.source-items {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.source-item {
+  margin: 0.5rem 0;
+  padding: 0.25rem 0.5rem;
+  border-left: 3px solid;
+  color: #323130;
+  background: transparent;
+  transition: box-shadow 0.2s;
+  border-radius: 0;
+}
+
 .sortable-ghost {
   height: 6em;
   min-width: 10em;

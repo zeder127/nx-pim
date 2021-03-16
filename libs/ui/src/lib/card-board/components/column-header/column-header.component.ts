@@ -15,7 +15,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Menu } from 'primeng/menu';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
-import { getWitTypeClass } from '../../utils/wit-class';
+import { getWitTypeClass } from '../../utils/card-type-style';
 import { HeaderEditorComponent } from '../header-editor/header-editor.component';
 
 @Component({

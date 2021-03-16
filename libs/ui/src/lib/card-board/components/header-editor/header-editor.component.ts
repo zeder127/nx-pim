@@ -7,7 +7,7 @@ import {
 import { IColumnHeader, WorkItem } from '@pim/data';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { WitService } from '../../../http';
-import { getWitTypeClass } from '../../utils/wit-class';
+import { getWitTypeClass } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-header-editor',
