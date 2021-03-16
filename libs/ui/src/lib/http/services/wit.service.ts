@@ -107,6 +107,29 @@ export class WitService {
     ]);
   }
 
+  public addNewItem(type: string, title: string, team: string): Observable<WorkItem> {
+    return this.devOpsClient
+      .post<AzureWorkItem>(
+        `_apis/wit/workitems/$${type}`,
+        [
+          {
+            op: 'add',
+            path: '/fields/System.Title',
+            value: title,
+          },
+          {
+            op: 'add',
+            path: '/fields/System.AreaPath',
+            value: team,
+          },
+        ],
+        {
+          headers: { 'content-type': 'application/json-patch+json' },
+        }
+      )
+      .pipe(map((awi) => this.toWorkItem(awi)));
+  }
+
   public open(id: number) {
     window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
   }

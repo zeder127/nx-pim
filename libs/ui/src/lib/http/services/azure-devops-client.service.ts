@@ -56,6 +56,15 @@ export class AzureDevopsClientService {
     return this.httpClient.patch<T>(this.buildUrl(path), payload, options);
   }
 
+  /** Send a HttpPost request to create a new object */
+  public post<T>(
+    path: string,
+    payload: unknown,
+    options?: RequestOptions
+  ): Observable<T> {
+    return this.httpClient.post<T>(this.buildUrl(path), payload, options);
+  }
+
   private buildUrl(path: string): string {
     return `${this.baseUrl}/${path}?api-version=${DevOps.api_version}`;
   }
