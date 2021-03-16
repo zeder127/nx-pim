@@ -1,0 +1,6 @@
+@import "../../../styles/variables";
+
+:host {
+  display: flex;
+  background-color: $color-background-new-item;
+}

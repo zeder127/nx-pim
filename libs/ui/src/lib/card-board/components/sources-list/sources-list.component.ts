@@ -27,6 +27,7 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   public sourceCards: ICard[];
   public idPrefix = Source_ID_Prefix;
   public teams: Team[];
+  public newItemEditorOpened = false;
 
   public cloneOption: SortableOptions = {
     group: {

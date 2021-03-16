@@ -25,6 +25,7 @@ import { ColumnHeaderComponent } from './components/column-header/column-header.
 import { HeaderEditorComponent } from './components/header-editor/header-editor.component';
 import { RowHeaderComponent } from './components/row-header/row-header.component';
 import { SourcesListComponent } from './components/sources-list/sources-list.component';
+import { NewItemEditorComponent } from './components/new-item-editor/new-item-editor.component';
 
 @NgModule({
   imports: [
@@ -56,6 +57,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     ColumnHeaderComponent,
     CardBoardToolbarComponent,
     HeaderEditorComponent,
+    NewItemEditorComponent,
   ],
   exports: [CardBoardComponent, TableModule],
 })
