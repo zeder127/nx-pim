@@ -146,7 +146,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   // TODO multi delete
   public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
-    this.delete.emit([card]);
+    // this.delete.emit([card]);
   }
 
   public openSourceUrl(id: number) {
@@ -175,7 +175,9 @@ export class CardContainerComponent extends AutoUnsubscriber
   };
 
   private onRemove = (event: SortableEvent) => {
+    //const cardsToRemove = this.cardsSeq.getRange(event.oldIndex, event.oldIndex + 1);
     this.cardsSeq.removeRange(event.oldIndex, event.oldIndex + 1);
+    //this.delete.emit(cardsToRemove);
   };
 
   private onUpdate = (event: SortableEvent) => {

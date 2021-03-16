@@ -9,11 +9,13 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { IColumnHeader } from '@pim/data';
+import { IColumnHeader, WorkItem } from '@pim/data';
 import { MenuItem } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Menu } from 'primeng/menu';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
+import { BoardService } from '../../services/board.service';
+import { getWitTypeClass } from '../../utils/wit-class';
 import { HeaderEditorComponent } from '../header-editor/header-editor.component';
 
 @Component({
@@ -32,12 +34,18 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
   @Output() modelChange = new EventEmitter<IColumnHeader>();
   @ViewChild('menu') menuComp: Menu;
   public menuItems: MenuItem[];
+  public selectedSource: WorkItem;
   private editorDialogRef: DynamicDialogRef;
-  constructor(private cdr: ChangeDetectorRef, private dialogService: DialogService) {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private dialogService: DialogService,
+    private boardService: BoardService
+  ) {
     super();
   }
 
   ngOnInit(): void {
+    this.selectedSource = this.colHeader.data as WorkItem;
     this.menuItems = [
       {
         label: 'Edit',
@@ -45,12 +53,12 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
         command: this.edit,
       },
       {
-        label: 'Insert left',
+        label: 'Insert column left',
         icon: 'pi pi-plus',
         command: () => this.insertColLeft.emit(),
       },
       {
-        label: 'Insert right',
+        label: 'Insert column right',
         icon: 'pi pi-plus',
         command: () => this.insertColRight.emit(),
       },
@@ -91,4 +99,12 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
         }
       });
   };
+
+  public getColorClass(wit: WorkItem) {
+    return getWitTypeClass(wit);
+  }
+
+  public openSourceUrl(id: number) {
+    this.boardService.openSourceUrl(id);
+  }
 }

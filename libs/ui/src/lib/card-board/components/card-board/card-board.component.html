@@ -53,9 +53,9 @@
               [cards]="getCell(rowIndex, columnIndex)"
               (load)="onLoad($event)"
               (insert)="onInsert($event, rowIndex, columnIndex)"
-              (delete)="onRemove($event, rowIndex, columnIndex)"
               (update)="onUpdate($event)"
-            ></pim-card-container>
+            ></pim-card-container
+            ><!--(delete)="onRemove($event, rowIndex, columnIndex)"-->
           </td>
         </tr>
       </ng-template>

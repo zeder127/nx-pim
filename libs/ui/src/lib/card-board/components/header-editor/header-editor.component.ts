@@ -7,6 +7,7 @@ import {
 import { IColumnHeader, WorkItem } from '@pim/data';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { WitService } from '../../../http';
+import { getWitTypeClass } from '../../utils/wit-class';
 
 @Component({
   selector: 'pim-header-editor',
@@ -18,6 +19,7 @@ export class HeaderEditorComponent implements OnInit {
   public header: IColumnHeader; // TODO generic with IHeader
   public selectedSourceId: string;
   public filteredSources: WorkItem[];
+  public selectedSource: WorkItem;
   constructor(
     private dialogRef: DynamicDialogRef,
     private dialogConfig: DynamicDialogConfig,
@@ -30,6 +32,15 @@ export class HeaderEditorComponent implements OnInit {
     this.header = {
       ...originalHeader,
     };
+    // TODO depending on source type
+    if (this.header.linkedSourceId) {
+      this.witService
+        .getWorkItemById(this.header.linkedSourceId as number)
+        .subscribe((wit) => {
+          this.selectedSource = wit;
+          this.cdr.markForCheck();
+        });
+    }
   }
 
   public filterSources({ query }) {
@@ -39,15 +50,17 @@ export class HeaderEditorComponent implements OnInit {
     });
   }
 
-  public getWitTypeClass(wit: WorkItem): string {
-    switch (wit.type) {
-      case 'Feature':
-        return 'feature';
-        break;
-      case 'Product Backlog Item':
-        return 'pbi';
-        break;
+  public onSelect(wit: WorkItem) {
+    this.header.linkedSourceId = wit.id;
+    this.header.data = wit;
+    this.selectedSource = wit;
+    if (!this.header.title) {
+      this.header.title = wit.title;
     }
+  }
+
+  public getColorClass(wit: WorkItem): string {
+    return getWitTypeClass(wit);
   }
 
   public save() {

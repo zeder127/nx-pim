@@ -9,22 +9,26 @@
       [(ngModel)]="header.linkedSourceId"
       [suggestions]="filteredSources"
       (completeMethod)="filterSources($event)"
-      field="id"
+      (onSelect)="onSelect($event)"
       [minLength]="1"
       [delay]="200"
       inputId="linked-source"
       placeholder="Enter a name or id to search"
       emptyMessage="No results found"
-      [forceSelection]="true"
+      [forceSelection]="false"
       panelStyleClass="popup-panel"
     >
       <ng-template let-workitem pTemplate="item">
         <div class="work-item" title="{{workitem.title}}">
-          <i class="pi pi-circle-on" [ngClass]="getWitTypeClass(workitem)"></i>
+          <i class="pi pi-circle-on" [ngClass]="getColorClass(workitem)"></i>
           #{{workitem.id}} {{workitem.title}}
         </div>
       </ng-template>
     </p-autoComplete>
+    <div *ngIf="selectedSource" class="item-preview" title="{{selectedSource.title}}">
+      <i class="pi pi-circle-on" [ngClass]="getColorClass(selectedSource)"></i>
+      #{{selectedSource.id}} {{selectedSource.title}}
+    </div>
   </div>
   <div class="p-field">
     <label for="description">Description</label>
