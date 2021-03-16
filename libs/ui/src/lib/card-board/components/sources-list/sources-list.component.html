@@ -17,15 +17,21 @@
   <div class="filter">
     <span class="filter-input p-input-icon-left">
       <i class="pi pi-filter"></i>
-      <input type="text" pInputText [(ngModel)]="filterText" placeholder="Filter" />
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="filterText"
+        placeholder="Filter"
+        style="width: calc(100% - 1rem);"
+      />
     </span>
     <button
       pButton
       pRipple
       type="button"
       class="p-button-text"
+      icon="pi pi-{{newItemEditorOpened? 'times' :'plus'}}"
       (click)="newItemEditorOpened = !newItemEditorOpened"
-      label="New"
       [ngClass]="{'editor-opened': newItemEditorOpened}"
     ></button>
   </div>
