@@ -48,6 +48,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
+  @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
   @Output() update = new EventEmitter<number[]>();
 
   constructor(
@@ -146,7 +147,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   // TODO multi delete
   public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
-    // this.delete.emit([card]);
+    this.delete.emit([card]);
   }
 
   public openSourceUrl(id: number) {
