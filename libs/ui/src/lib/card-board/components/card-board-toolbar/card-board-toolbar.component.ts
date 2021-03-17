@@ -19,6 +19,8 @@ import { BoardService } from '../../services/board.service';
 export class CardBoardToolbarComponent implements OnInit {
   @Output() toggleSidebar = new EventEmitter();
 
+  public sidenavOpened = false;
+
   constructor(private boardService: BoardService) {}
 
   get coworkerMenuItems$(): Observable<MenuItem[]> {
@@ -37,5 +39,6 @@ export class CardBoardToolbarComponent implements OnInit {
 
   public toggleWitSidebar() {
     this.toggleSidebar.emit();
+    this.sidenavOpened = !this.sidenavOpened;
   }
 }

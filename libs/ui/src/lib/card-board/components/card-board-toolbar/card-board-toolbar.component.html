@@ -27,10 +27,10 @@
       pButton
       pRipple
       type="button"
-      icon="pi pi-bars"
+      icon="pi pi-{{sidenavOpened ? 'chevron-right' : 'chevron-left'}}"
       class="p-button-text"
       (click)="toggleWitSidebar()"
-      title="Expand/Collapse Backlog explorer"
+      title="{{sidenavOpened ? 'Collapse': 'Expand'}} Backlog explorer"
     ></button>
   </div>
 </p-toolbar>
