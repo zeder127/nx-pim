@@ -5,6 +5,10 @@
     display: block;
   }
 
+  .mat-drawer-inner-container {
+    overflow: hidden;
+  }
+
   .p-datatable .p-datatable-tbody > tr > td {
     padding: 0.25em
   }

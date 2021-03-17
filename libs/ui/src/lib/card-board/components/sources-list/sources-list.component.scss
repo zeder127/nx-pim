@@ -1,23 +1,23 @@
 @import "../../../styles/variables";
 
-.back-explorer-toolbar ::ng-deep .p-toolbar{
+.toolbar ::ng-deep .p-toolbar{
   padding: 0 1rem!important;
   border: none;
   height: 2rem;
   background-color: white;
 }
 
-.list {
+.filter {
   padding: 1rem;
 }
 
 .team-dropdown ::ng-deep .p-dropdown {
   width: 100%;
+  margin-bottom: 1rem;
 }
 
-.filter {
+.search-filter {
   display: flex;
-  margin-top: 1rem;
 
   .filter-input {
     flex: 1 0 auto;
@@ -28,10 +28,11 @@
   background-color: $color-background-new-item;
 }
 
-.source-items {
+.source-list {
   list-style-type: none;
   margin: 0;
-  padding: 0;
+  padding: 0 1rem;
+  overflow: auto;
 }
 
 .source-item {

@@ -1,10 +1,11 @@
-<p-toolbar class="back-explorer-toolbar">
+<p-toolbar class="toolbar">
   <div class="p-toolbar-group-left">
     <b>Backlog Explorer</b>
   </div>
 </p-toolbar>
-<div class="list">
+<div class="filter">
   <p-dropdown
+    *ngIf="showTeamFilter"
     [options]="teams"
     optionLabel="name"
     [(ngModel)]="selectedTeam"
@@ -12,9 +13,7 @@
     class="team-dropdown"
     scrollHeight="400px"
   ></p-dropdown>
-
-  <!--Filter-->
-  <div class="filter">
+  <div class="search-filter">
     <span class="filter-input p-input-icon-left">
       <i class="pi pi-filter"></i>
       <input
@@ -37,21 +36,27 @@
   </div>
 
   <div [style.display]="newItemEditorOpened? 'block': 'none'" class="new-item-editor">
-    <pim-new-item-editor [team]="selectedTeam"></pim-new-item-editor>
+    <pim-new-item-editor
+      [team]="selectedTeam"
+      (added)="onAddNewItem($event)"
+    ></pim-new-item-editor>
   </div>
-
-  <!--List-->
-  <ul class="source-items" [sortablejs]="sourceCards" [sortablejsOptions]="cloneOption">
-    <!--TODO call isMapped only once-->
-    <li
-      class="source-item"
-      *ngFor="let card of sourceCards"
-      [class.is-mapped]="isMapped(card.linkedWitId)"
-      [class.available]="!isMapped(card.linkedWitId)"
-      [style.borderLeftColor]="getBorderLeftColorOf(card)"
-      id="{{idPrefix}}{{card.linkedWitId}}"
-    >
-      {{card.linkedWitId}} {{card.text}}
-    </li>
-  </ul>
 </div>
+<ul
+  class="source-list"
+  [style.height.px]="calcSourceListHeight()"
+  [sortablejs]="sourceCards"
+  [sortablejsOptions]="cloneOption"
+>
+  <!--TODO call isMapped only once-->
+  <li
+    class="source-item"
+    *ngFor="let card of filteredSourceCards"
+    [class.is-mapped]="isMapped(card.linkedWitId)"
+    [class.available]="!isMapped(card.linkedWitId)"
+    [style.borderLeftColor]="getBorderLeftColorOf(card)"
+    id="{{idPrefix}}{{card.linkedWitId}}"
+  >
+    {{card.linkedWitId}} {{card.text}}
+  </li>
+</ul>

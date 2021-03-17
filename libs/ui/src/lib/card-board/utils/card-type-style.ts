@@ -1,11 +1,11 @@
-import { CardType, WorkItem } from '@pim/data';
+import { CardType, WitType, WorkItem } from '@pim/data';
 
 export function getWitTypeClass(wit: WorkItem): string {
   switch (wit.type) {
-    case 'Feature':
+    case WitType.Feature:
       return 'feature';
       break;
-    case 'Product Backlog Item':
+    case WitType.PBI:
       return 'pbi';
       break;
   }

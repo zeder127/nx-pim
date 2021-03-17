@@ -7,7 +7,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Team, WorkItem } from '@pim/data';
+import { Team, WitType, WorkItem } from '@pim/data';
 import { WitService } from '../../../http';
 
 @Component({
@@ -18,10 +18,10 @@ import { WitService } from '../../../http';
 })
 export class NewItemEditorComponent implements OnInit {
   public sourceTypes = [
-    { label: 'Product Backlog Item', type: 'Product Backlog Item' },
-    { label: 'Enabler', type: 'Product Backlog Item' },
-    { label: 'Delivery', type: 'Product Backlog Item' },
-    { label: 'Feature', type: 'Feature' },
+    { label: 'Product Backlog Item', type: WitType.PBI },
+    { label: 'Enabler', type: WitType.Enabler },
+    { label: 'Delivery', type: WitType.Delivery },
+    { label: 'Feature', type: WitType.Feature },
   ];
   public selectedSourceType = this.sourceTypes[0];
   public title: string;
