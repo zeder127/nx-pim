@@ -6,9 +6,7 @@
     (openedStart)="updateConnection()"
     (closedStart)="updateConnection()"
   >
-    <div style="width: 20rem;">
-      <pim-sources-list></pim-sources-list>
-    </div>
+    <pim-sources-list></pim-sources-list>
   </mat-sidenav>
   <mat-sidenav-content>
     <pim-card-board-toolbar (toggleSidebar)="sidenav.toggle()"></pim-card-board-toolbar>
@@ -61,8 +59,7 @@
               (insert)="onInsert($event, rowIndex, columnIndex)"
               (delete)="onRemove($event, rowIndex, columnIndex)"
               (update)="onUpdate($event)"
-            ></pim-card-container
-            ><!--(delete)="onRemove($event, rowIndex, columnIndex)"-->
+            ></pim-card-container>
           </td>
         </tr>
       </ng-template>

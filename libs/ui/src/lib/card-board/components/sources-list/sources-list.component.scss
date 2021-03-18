@@ -1,5 +1,10 @@
 @import "../../../styles/variables";
 
+:host {
+  width: 20rem;
+  display: block;
+}
+
 .toolbar ::ng-deep .p-toolbar{
   padding: 0 1rem!important;
   border: none;
