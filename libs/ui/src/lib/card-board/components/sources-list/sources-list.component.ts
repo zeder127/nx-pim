@@ -75,14 +75,17 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
     this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = ids;
+      this.cdr.markForCheck();
     });
 
     this.boardService.cardsInsert$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = unionWith(this.mappedSourceIds, ids);
+      this.cdr.markForCheck();
     });
 
     this.boardService.cardsRemove$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = difference(this.mappedSourceIds, ids);
+      this.cdr.markForCheck();
     });
   }
 
