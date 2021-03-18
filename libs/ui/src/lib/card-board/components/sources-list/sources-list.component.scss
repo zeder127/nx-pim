@@ -50,16 +50,8 @@
   border-radius: 0;
 }
 
-.sortable-ghost {
-  height: 6em;
-  min-width: 10em;
-  max-width: calc(50% - 0.5em);
-  opacity: 0.3;
-  border: 1px solid rgba(200,200,200,1);
-  margin: 0.25em;
-}
 
-.sortable-drag {
+.li-sortable-drag {
   opacity: 1!important;
   box-sizing: border-box;
   background-color: white;
@@ -69,5 +61,9 @@
 }
 
 .is-mapped {
-  color: lightgray;
+  opacity: 0.3;
+}
+
+.available:hover {
+  cursor: move;
 }

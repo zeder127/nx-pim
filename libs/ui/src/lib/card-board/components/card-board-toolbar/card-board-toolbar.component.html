@@ -3,14 +3,13 @@
     placeholder to board-switcher
   </div>
   <div class="p-toolbar-group-right">
-    <div class="p-overlay-badge p-mr-2 coworker-badge">
+    <div class="p-overlay-badge p-mr-2 coworker-badge" (click)="menu.toggle($event)">
       <button
         pButton
         pRipple
         type="button"
         icon="pi pi-users"
         class="p-button-text"
-        (click)="menu.toggle($event)"
         title="Show users working on this board"
       ></button>
       <span class="p-badge" *ngIf="(coworkerMenuItems$ | async)?.length>1">

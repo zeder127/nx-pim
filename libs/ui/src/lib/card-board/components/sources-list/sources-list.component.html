@@ -52,8 +52,7 @@
   <li
     class="source-item"
     *ngFor="let card of filteredSourceCards"
-    [class.is-mapped]="isMapped(card.linkedWitId)"
-    [class.available]="!isMapped(card.linkedWitId)"
+    [ngClass]="isMapped(card.linkedWitId) ? 'is-mapped' : 'available'"
     [style.borderLeftColor]="getBorderLeftColorOf(card)"
     id="{{idPrefix}}{{card.linkedWitId}}"
   >

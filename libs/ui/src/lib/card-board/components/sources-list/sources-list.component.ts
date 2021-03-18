@@ -39,8 +39,8 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
       put: false,
     },
     sort: false,
-    ghostClass: 'sortable-ghost',
-    dragClass: 'sortable-drag',
+    ghostClass: 'li-sortable-ghost',
+    dragClass: 'li-sortable-drag',
     forceFallback: true,
     draggable: '.available',
   };
