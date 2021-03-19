@@ -37,7 +37,7 @@
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr height="100px">
-          <th *ngFor="let col of columns; index as columnIndex">
+          <th height="1px" *ngFor="let col of columns; index as columnIndex">
             <pim-column-header
               [model]="col"
               [linkedSourceType]="colLinkSourceType"

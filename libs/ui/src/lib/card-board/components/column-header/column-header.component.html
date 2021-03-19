@@ -3,20 +3,21 @@
   <button
     pButton
     pRipple
+    pimShowOnHover
     type="button"
     icon="pi pi-ellipsis-h"
     class="p-button-text"
-    (click)="toggle($event)"
+    (click)="toggle($event);"
   ></button>
   <p-menu #menu [popup]="true" [model]="menuItems" appendTo="body"></p-menu>
 </div>
-
-<a
-  *ngIf="selectedSource"
-  class="item-preview"
-  title="{{selectedSource.title}}"
-  (click)="openSourceUrl(selectedSource.id)"
->
-  <i class="pi pi-circle-on" [ngClass]="getColorClass(selectedSource)"></i>
-  #{{selectedSource.id}} {{selectedSource.title}}
-</a>
+<div class="item-preview" [style.visibilty]="selectedSource ?  'visible' : 'hidden'">
+  <a
+    *ngIf="selectedSource"
+    title="{{selectedSource.title}}"
+    (click)="openSourceUrl(selectedSource.id)"
+  >
+    <i class="pi pi-circle-on" [ngClass]="getColorClass(selectedSource)"></i>
+    #{{selectedSource.id}} {{selectedSource.title}}
+  </a>
+</div>
