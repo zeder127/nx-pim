@@ -10,9 +10,7 @@ export class ShowOnHoverDirective implements OnInit, OnDestroy {
   private mouseenterSubscription: Subscription;
   private mouseleaveSubscription: Subscription;
 
-  constructor(private hostElementRef: ElementRef) {
-    console.log('directive');
-  }
+  constructor(private hostElementRef: ElementRef) {}
 
   ngOnInit() {
     const hostEl: HTMLElement = this.hostElementRef.nativeElement;

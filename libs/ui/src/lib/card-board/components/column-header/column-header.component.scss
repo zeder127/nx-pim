@@ -19,6 +19,9 @@
 .item-preview {
   height: 1.5rem;
   font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   .pi {
     font-size: 0.8rem;
   }

@@ -13,9 +13,6 @@
   display: flex;
   flex-wrap: wrap;
   min-height: calc(6em + 0.5em);
-  &:hover {
-    cursor: move;
-  }
 }
 
 .btn-new {
