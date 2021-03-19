@@ -11,6 +11,7 @@
   </div>
   <button
     #anchor
+    pimShowOnHover
     pButton
     class="btn-menu p-button-outlined"
     icon="pi pi-times"
@@ -23,6 +24,7 @@
     (dragstart)="onStart($event)"
     (drag)="onDrag($event)"
     (dragend)="onEnd()"
+    pimShowOnHover
     pButton
     id="{{idPrefix + card.linkedWitId}}"
     class="btn-drag-handle p-button-outlined"

@@ -14,14 +14,17 @@ import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MenuModule } from 'primeng/menu';
+import { PanelModule } from 'primeng/panel';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
+import { UtilModule } from '../util/util.module';
 import { CardBoardToolbarComponent } from './components/card-board-toolbar/card-board-toolbar.component';
 import { CardBoardComponent } from './components/card-board/card-board.component';
 import { CardContainerComponent } from './components/card-container/card-container.component';
 import { CardComponent } from './components/card/card.component';
 import { ColumnHeaderComponent } from './components/column-header/column-header.component';
 import { HeaderEditorComponent } from './components/header-editor/header-editor.component';
+import { NewItemEditorComponent } from './components/new-item-editor/new-item-editor.component';
 import { RowHeaderComponent } from './components/row-header/row-header.component';
 import { SourcesListComponent } from './components/sources-list/sources-list.component';
 
@@ -44,6 +47,8 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     DynamicDialogModule,
     AutoCompleteModule,
     InputTextareaModule,
+    PanelModule,
+    UtilModule,
   ],
   declarations: [
     CardBoardComponent,
@@ -54,6 +59,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     ColumnHeaderComponent,
     CardBoardToolbarComponent,
     HeaderEditorComponent,
+    NewItemEditorComponent,
   ],
   exports: [CardBoardComponent, TableModule],
 })

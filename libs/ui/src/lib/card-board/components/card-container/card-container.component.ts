@@ -48,6 +48,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
+  @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
   @Output() update = new EventEmitter<number[]>();
 
   constructor(
@@ -73,7 +74,7 @@ export class CardContainerComponent extends AutoUnsubscriber
       onAdd: this.onAdd,
       onRemove: this.onRemove,
       onUpdate: this.onUpdate,
-      onChange: this.onChange,
+      onChange: this.updateConnection,
     };
     if (!this.cardsSeqHandle) {
       //this.cdr.markForCheck();
@@ -146,7 +147,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   // TODO multi delete
   public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
-    // this.delete.emit([card]);
+    this.delete.emit([card]);
   }
 
   public openSourceUrl(id: number) {
@@ -187,8 +188,19 @@ export class CardContainerComponent extends AutoUnsubscriber
     this.moveItemInSequence(event.oldIndex, event.newIndex);
   };
 
-  public onChange = () => {
+  // Make updateing connections smoother
+  // Tried to move code to ConnectionBuilder,
+  // but there is a side-effect on drag&drop
+  private iterationCount = 0;
+  private repeater;
+  private updateConnection = () => {
     this.connectionBuilder.update$.next();
+    if (this.iterationCount++ > 20) {
+      cancelAnimationFrame(this.repeater);
+      this.iterationCount = 0;
+    } else {
+      this.repeater = requestAnimationFrame(this.updateConnection);
+    }
   };
 
   private moveItemInSequence(oldIndex: number, newIndex: number) {

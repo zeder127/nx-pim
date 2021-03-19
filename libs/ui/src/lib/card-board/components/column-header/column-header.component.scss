@@ -1,4 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 .header {
+  flex: 1 0 auto;
   display: flex;
   align-items: center;
   .title {
@@ -11,7 +17,11 @@
 }
 
 .item-preview {
+  height: 1.5rem;
   font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   .pi {
     font-size: 0.8rem;
   }

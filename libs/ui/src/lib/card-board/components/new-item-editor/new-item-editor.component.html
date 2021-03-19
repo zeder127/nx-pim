@@ -1,0 +1,23 @@
+<div class="p-fluid full-size">
+  <div class="p-field">
+    <label for="source-type">Work Item Type</label>
+    <p-dropdown
+      inputId="source-type"
+      [options]="sourceTypes"
+      [(ngModel)]="selectedSourceType"
+      optionLabel="label"
+      [style]="{width: '100%'}"
+    ></p-dropdown>
+  </div>
+  <div class="p-field">
+    <label for="new-item-title">Title</label>
+    <input id="new-item-title" [(ngModel)]="title" type="text" pInputText />
+  </div>
+  <button
+    pButton
+    type="button"
+    (click)="addNewItem()"
+    label="Add"
+    [disabled]="!title"
+  ></button>
+</div>

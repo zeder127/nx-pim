@@ -1,24 +1,61 @@
-<p-dropdown
-  [options]="teams"
-  optionLabel="name"
-  [(ngModel)]="selectedTeam"
-  (onChange)="onTeamChange($event.value)"
-></p-dropdown>
-<!--Filter-->
-<span class="p-input-icon-left">
-  <i class="pi pi-filter"></i>
-  <input type="text" pInputText [(ngModel)]="filterText" placeholder="Filter" />
-</span>
+<p-toolbar class="toolbar">
+  <div class="p-toolbar-group-left">
+    <b>Backlog Explorer</b>
+  </div>
+</p-toolbar>
+<div class="filter">
+  <p-dropdown
+    *ngIf="showTeamFilter"
+    [options]="teams"
+    optionLabel="name"
+    [(ngModel)]="selectedTeam"
+    (onChange)="onTeamChange($event.value)"
+    class="team-dropdown"
+    scrollHeight="400px"
+  ></p-dropdown>
+  <div class="search-filter">
+    <span class="filter-input p-input-icon-left">
+      <i class="pi pi-filter"></i>
+      <input
+        type="text"
+        pInputText
+        [(ngModel)]="filterText"
+        placeholder="Filter"
+        style="width: calc(100% - 1rem);"
+      />
+    </span>
+    <button
+      pButton
+      pRipple
+      type="button"
+      class="p-button-text"
+      icon="pi pi-{{newItemEditorOpened? 'times' :'plus'}}"
+      (click)="newItemEditorOpened = !newItemEditorOpened"
+      [ngClass]="{'editor-opened': newItemEditorOpened}"
+    ></button>
+  </div>
 
-<!--List-->
-<div [sortablejs]="sourceCards" [sortablejsOptions]="cloneOption">
-  <!--TODO call isMapped only once-->
-  <div
-    *ngFor="let card of sourceCards"
-    [class.is-mapped]="isMapped(card.linkedWitId)"
-    [class.available]="!isMapped(card.linkedWitId)"
-    id="{{idPrefix}}{{card.linkedWitId}}"
-  >
-    <p>{{card.linkedWitId}} {{card.text}} ({{card.type}})</p>
+  <div [style.display]="newItemEditorOpened? 'block': 'none'" class="new-item-editor">
+    <pim-new-item-editor
+      [team]="selectedTeam"
+      (added)="onAddNewItem($event)"
+    ></pim-new-item-editor>
   </div>
 </div>
+<ul
+  class="source-list"
+  [style.height.px]="calcSourceListHeight()"
+  [sortablejs]="sourceCards"
+  [sortablejsOptions]="cloneOption"
+>
+  <!--TODO call isMapped only once-->
+  <li
+    class="source-item"
+    *ngFor="let card of filteredSourceCards"
+    [ngClass]="isMapped(card.linkedWitId) ? 'is-mapped' : 'available'"
+    [style.borderLeftColor]="getBorderLeftColorOf(card)"
+    id="{{idPrefix}}{{card.linkedWitId}}"
+  >
+    {{card.linkedWitId}} {{card.text}}
+  </li>
+</ul>

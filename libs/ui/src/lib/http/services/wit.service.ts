@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { WorkItem } from '@pim/data';
+import { WitType, WorkItem } from '@pim/data';
 import { Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import {
@@ -107,6 +107,36 @@ export class WitService {
     ]);
   }
 
+  public addNewItem(type: WitType, title: string, team: string): Observable<WorkItem> {
+    const payload = [
+      {
+        op: 'add',
+        path: '/fields/System.Title',
+        value: title,
+      },
+      {
+        op: 'add',
+        path: '/fields/System.AreaPath',
+        value: team,
+      },
+    ];
+
+    if (type === WitType.Enabler || type === WitType.Delivery) {
+      payload.push({
+        op: 'add',
+        path: '/fields/System.Tags',
+        value: type.toLocaleLowerCase(),
+      });
+      type = WitType.PBI;
+    }
+
+    return this.devOpsClient
+      .post<AzureWorkItem>(`_apis/wit/workitems/$${type}`, payload, {
+        headers: { 'content-type': 'application/json-patch+json' },
+      })
+      .pipe(map((awi) => this.toWorkItem(awi)));
+  }
+
   public open(id: number) {
     window.open(`${this.devOpsClient.baseUrl}/_workitems/edit/${id}`);
   }
@@ -135,7 +165,7 @@ export class WitService {
     return {
       id: awi.id,
       title: awi.fields['System.Title'] as string,
-      type: awi.fields['System.WorkItemType'] as string,
+      type: awi.fields['System.WorkItemType'] as WitType,
       tags: (awi.fields['System.Tags'] as string)?.split(', '),
       url: awi.url,
       rev: awi.rev,

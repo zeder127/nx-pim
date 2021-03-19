@@ -1,13 +1,57 @@
-.sortable-ghost {
-  height: 6em;
-  min-width: 10em;
-  max-width: calc(50% - 0.5em);
-  opacity: 0.3;
-  border: 1px solid rgba(200,200,200,1);
-  margin: 0.25em;
+@import "../../../styles/variables";
+
+:host {
+  width: 20rem;
+  display: block;
 }
 
-.sortable-drag {
+.toolbar ::ng-deep .p-toolbar{
+  padding: 0 1rem!important;
+  border: none;
+  height: 2rem;
+  background-color: white;
+}
+
+.filter {
+  padding: 1rem;
+}
+
+.team-dropdown ::ng-deep .p-dropdown {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.search-filter {
+  display: flex;
+
+  .filter-input {
+    flex: 1 0 auto;
+  }
+}
+
+.editor-opened {
+  background-color: $color-background-new-item;
+}
+
+.source-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0 1rem;
+  overflow: auto;
+}
+
+.source-item {
+  margin: 0.5rem 0;
+  padding: 0.25rem 0.5rem;
+  border-left: 3px solid;
+  color: #323130;
+  background: transparent;
+  transition: box-shadow 0.2s;
+  border-radius: 0;
+}
+
+
+.li-sortable-drag {
   opacity: 1!important;
   box-sizing: border-box;
   background-color: white;
@@ -17,5 +61,9 @@
 }
 
 .is-mapped {
-  color: lightgray;
+  opacity: 0.3;
+}
+
+.available:hover {
+  cursor: move;
 }

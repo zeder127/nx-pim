@@ -161,6 +161,19 @@ export class CardBoardComponent extends AutoUnsubscriber
     });
   };
 
+  /** Workaround for updating connections while expanding/collaping sidenav */
+  private iterationCount = 0;
+  private repeater;
+  public updateConnection = () => {
+    this.connectionBuilder.update$.next();
+    if (this.iterationCount++ > 20) {
+      cancelAnimationFrame(this.repeater);
+      this.iterationCount = 0;
+    } else {
+      this.repeater = requestAnimationFrame(this.updateConnection);
+    }
+  };
+
   ngOnDestroy() {
     super.ngOnDestroy();
     if (this.board.coworkers.has(this.currentUser.id))

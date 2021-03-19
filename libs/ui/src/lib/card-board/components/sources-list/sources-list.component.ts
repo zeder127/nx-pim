@@ -2,10 +2,11 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  HostListener,
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ICard, Team } from '@pim/data';
+import { ICard, Team, WorkItem } from '@pim/data';
 import { toCard } from '@pim/data/util';
 import { difference, unionWith } from 'lodash';
 import { SortableOptions } from 'sortablejs';
@@ -13,6 +14,7 @@ import { TeamService, WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
+import { getBorderLeftColor } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-sources-list',
@@ -27,6 +29,8 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   public sourceCards: ICard[];
   public idPrefix = Source_ID_Prefix;
   public teams: Team[];
+  public newItemEditorOpened = false;
+  public showTeamFilter = false;
 
   public cloneOption: SortableOptions = {
     group: {
@@ -35,8 +39,8 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
       put: false,
     },
     sort: false,
-    ghostClass: 'sortable-ghost',
-    dragClass: 'sortable-drag',
+    ghostClass: 'li-sortable-ghost',
+    dragClass: 'li-sortable-drag',
     forceFallback: true,
     draggable: '.available',
   };
@@ -57,6 +61,7 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
   ngOnInit(): void {
     const teamName = this.route.snapshot.paramMap.get('teamName');
+    this.showTeamFilter = !teamName;
     this.teamService
       .getAll()
       .pipe(this.autoUnsubscribe())
@@ -70,14 +75,17 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
     this.boardService.cardsLoad$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = ids;
+      this.cdr.markForCheck();
     });
 
     this.boardService.cardsInsert$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = unionWith(this.mappedSourceIds, ids);
+      this.cdr.markForCheck();
     });
 
     this.boardService.cardsRemove$.pipe(this.autoUnsubscribe()).subscribe((ids) => {
       this.mappedSourceIds = difference(this.mappedSourceIds, ids);
+      this.cdr.markForCheck();
     });
   }
 
@@ -86,7 +94,7 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
     this.witService // TODO remove dependency of witservice, move it into boardservice
       .queryWitByFilter({
         //type: 'Feature',
-        type: 'Product Backlog Item',
+        //type: WitType.PBI,
         team: teamPath,
       })
       .subscribe((workItems) => {
@@ -101,5 +109,32 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
 
   public onTeamChange(selectedTeam: Team) {
     this.loadSourceCardsOfTeam(selectedTeam);
+  }
+
+  public getBorderLeftColorOf(card: ICard) {
+    return getBorderLeftColor(card.type);
+  }
+
+  public onAddNewItem(wit: WorkItem) {
+    this.loadSourceCardsOfTeam(this.selectedTeam);
+  }
+
+  // TODO only workaround, expecting a solution with pure css
+  @HostListener('window:resize')
+  public calcSourceListHeight() {
+    const containerHeight = document.querySelector('.mat-drawer-inner-container')
+      ?.clientHeight;
+    const toolbarHeight = document.querySelector('pim-sources-list .p-toolbar')
+      ?.clientHeight;
+    const filterHeight = document.querySelector('pim-sources-list .filter')?.clientHeight;
+
+    return containerHeight - toolbarHeight - filterHeight;
+  }
+
+  public get filteredSourceCards() {
+    if (!this.filterText) return this.sourceCards;
+    return this.sourceCards?.filter((card) =>
+      `${card.linkedWitId} ${card.text}`.includes(this.filterText)
+    );
   }
 }

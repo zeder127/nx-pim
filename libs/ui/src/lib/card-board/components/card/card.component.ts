@@ -9,7 +9,7 @@ import {
   Output,
   Renderer2,
 } from '@angular/core';
-import { CardType, ICard } from '@pim/data';
+import { ICard } from '@pim/data';
 import { MenuItem } from 'primeng/api';
 import { SortableOptions } from 'sortablejs';
 import {
@@ -18,6 +18,7 @@ import {
 } from '../../../connection/connection-builder.service';
 import { Connection_Drag_Handle_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
+import { getBorderLeftColor } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-card',
@@ -49,19 +50,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   @HostBinding('style.border-left-color')
   get borderLeftColor() {
-    // TODO Setting: CardType Color
-    switch (this.card.type) {
-      case CardType.Delivery:
-        return '#fbbc3d';
-      case CardType.Enabler:
-        return '#7ace64';
-      case CardType.Feature:
-        return '#602f70';
-      case CardType.Milestone:
-        return '#ec001d';
-      default:
-        return '#009ccc';
-    }
+    return getBorderLeftColor(this.card.type);
   }
 
   public menuItems: MenuItem[] = [
