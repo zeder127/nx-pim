@@ -37,9 +37,14 @@
       </ng-template>
       <ng-template pTemplate="header" let-columns>
         <tr height="100px">
-          <th height="1px" *ngFor="let col of columns; index as columnIndex">
+          <th
+            height="1px"
+            id="column-header-{{columnIndex}}"
+            *ngFor="let col of columns; index as columnIndex"
+          >
             <pim-column-header
               [model]="col"
+              [index]="columnIndex.toString()"
               [linkedSourceType]="colLinkSourceType"
               (insertColLeft)="insertColumnAt(columnIndex)"
               (insertColRight)="insertColumnAt(columnIndex + 1)"

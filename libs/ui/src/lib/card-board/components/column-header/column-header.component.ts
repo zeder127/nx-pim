@@ -28,6 +28,7 @@ import { HeaderEditorComponent } from '../header-editor/header-editor.component'
 export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, OnDestroy {
   @Input('model') colHeader: IColumnHeader;
   @Input() linkedSourceType: 'team' | 'workitem' = 'team';
+  @Input() index: string;
   @Output() insertColLeft = new EventEmitter();
   @Output() insertColRight = new EventEmitter();
   @Output() deleteCol = new EventEmitter();
