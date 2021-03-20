@@ -7,3 +7,9 @@
 .pbi {
   color: $color-pbi
 }
+
+.board-switcher-menu.p-menu {
+  .p-menuitem-link {
+    padding: 0.75rem 1rem;
+  }
+}

@@ -3,6 +3,7 @@
   [model]="cardBoard"
   [typesAllowedToSync]="typesAllowedToSync"
   [coworker]="currentUser"
-  type="program"
+  [availableBoards]="piBoards$"
+  type="programm"
   (sync)="syncWithTeamBoard($event)"
 ></pim-card-board>

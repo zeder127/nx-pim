@@ -5,12 +5,14 @@ import {
   CardBoardDDS,
   CardType,
   Coworker,
+  ICardBoardBase,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
   SyncType,
 } from '@pim/data';
 import { AutoUnsubscriber, TeamService } from '@pim/ui';
+import { Observable } from 'rxjs';
 import { PiService } from '../../../shared/services/pi.service';
 import { BoardSettingsService } from '../services/board-settings.service';
 import { BoardSyncService } from '../services/board-sync.service';
@@ -26,6 +28,7 @@ export class TeamBoardComponent extends AutoUnsubscriber implements OnInit {
   public piName: string;
   public teamId: string;
   public currentUser: Coworker;
+  public piBoards$: Observable<ICardBoardBase[]>;
   constructor(
     private route: ActivatedRoute,
     private piService: PiService,
@@ -41,6 +44,7 @@ export class TeamBoardComponent extends AutoUnsubscriber implements OnInit {
   ngOnInit() {
     this.piName = this.route.snapshot.paramMap.get('piName');
     const teamName = this.route.snapshot.paramMap.get('teamName');
+    this.piBoards$ = this.piService.getBoardBasesOfPI(this.piName);
     this.piService
       .getTeamBoardOfPI(this.piName, teamName)
       .pipe(this.autoUnsubscribe())
