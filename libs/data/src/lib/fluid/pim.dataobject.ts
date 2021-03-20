@@ -6,7 +6,7 @@ import { ISequencedDocumentMessage } from '@fluidframework/protocol-definitions'
 import { SharedObjectSequence } from '@fluidframework/sequence';
 import { ICard, IColumnHeader, IRowHeader } from '@pim/data';
 import { Subject } from 'rxjs';
-import { CardBoardDDS, ICardBoard } from '../card-board';
+import { CardBoardDDS, ICardBoard, ICardBoardBase } from '../card-board';
 import { Pi, PiWithDetails } from '../pi';
 import { PimDataObjectHelper } from './helper';
 
@@ -104,9 +104,7 @@ export class PimDataObject extends DataObject {
   }
 
   public getPis(): Pi[] {
-    return [...this.pisDir.subdirectories()].map((v) => {
-      const piId = v[0];
-      const piDir = v[1];
+    return [...this.pisDir.subdirectories()].map(([piId, piDir]) => {
       return {
         id: piId,
         name: piDir.get('name'),
@@ -114,6 +112,20 @@ export class PimDataObject extends DataObject {
         teamBoardIds: piDir.get('teamBoardIds'),
       };
     });
+  }
+
+  public getBoardBasesOfPI(piName: string): ICardBoardBase[] {
+    const [piId, piDir]: [string, IDirectory] = [...this.pisDir.subdirectories()].find(
+      ([id, dir]: [string, IDirectory]) => dir.get('name') === piName
+    );
+    if (piDir) {
+      return [piDir.get('programBoardId'), ...piDir.get('teamBoardIds')].map((id) => {
+        return {
+          id,
+          name: this.boardRefsMap.get(id).name,
+        };
+      });
+    } else return;
   }
 
   private createBoardForPI(piDir: IDirectory, board: ICardBoard): CardBoardDDS {
