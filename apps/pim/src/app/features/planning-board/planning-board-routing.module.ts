@@ -5,11 +5,11 @@ import { TeamBoardComponent } from './team-board/team-board.component';
 
 const routes: Routes = [
   {
-    path: ':piName/programm-board',
+    path: `:piName/board`,
     component: SyncBoardComponent,
   },
   {
-    path: ':piName/team-board/:teamName',
+    path: ':piName/board/:teamName',
     component: TeamBoardComponent,
   },
   {
