@@ -8,10 +8,10 @@
       iconPos="right"
       [label]="currentBoardName"
       class="p-button-text board-switcher"
-      (click)="menu.toggle($event)"
+      (click)="switcher.toggle($event)"
     ></button>
     <p-menu
-      #menu
+      #switcher
       [model]="boardItems"
       [popup]="true"
       appendTo="body"
