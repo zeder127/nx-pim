@@ -47,21 +47,26 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
     this.boardService.availableBoards$.pipe(this.autoUnsubscribe()).subscribe(
       (boardBases) =>
         (this.boardItems = boardBases.map((base) => {
-          return {
-            label: base.name,
-            disabled: base.name === this.currentBoardName,
-            routerLink: this.getRouterLink(base.name),
-          };
+          const shouldDisabled = base.name === this.currentBoardName;
+          if (shouldDisabled)
+            return {
+              label: base.name,
+              disabled: shouldDisabled,
+            };
+          else
+            return {
+              label: base.name,
+              routerLink: this.getRouterLink(base.name),
+            };
         }))
     );
   }
-
+  // FIXME Workaround to force reload a CardBoardComponent
+  // It would be better to re-use CardBoardComponent
   private getRouterLink(boardName): string {
-    return `../${
-      boardName === Constants.Default_Programm_Board_Name
-        ? Constants.Default_Programm_Board_Path
-        : Constants.Default_Team_Board_Path
-    }/${boardName}`;
+    return `${
+      this.currentBoardName === Constants.Default_Programm_Board_Name ? '' : `../`
+    }../board-switcher/${boardName}`;
   }
 
   public toggleWitSidebar() {

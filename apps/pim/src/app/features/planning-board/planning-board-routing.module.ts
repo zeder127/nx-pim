@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { BoardSwitcherComponent } from '../../shared/components/board-switcher/board-switcher.component';
 import { SyncBoardComponent } from './sync-board/sync-board.component';
 import { TeamBoardComponent } from './team-board/team-board.component';
 
@@ -11,6 +12,10 @@ const routes: Routes = [
   {
     path: ':piName/board/:teamName',
     component: TeamBoardComponent,
+  },
+  {
+    path: `:piName/board-switcher/:boardName`,
+    component: BoardSwitcherComponent,
   },
   {
     path: '**',
