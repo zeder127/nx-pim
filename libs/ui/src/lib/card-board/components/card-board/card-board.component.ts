@@ -27,6 +27,7 @@ import {
   Constants,
   Coworker,
   ICard,
+  ICardBoardBase,
   IColumnHeader,
   IConnection,
   IRowHeader,
@@ -37,6 +38,7 @@ import {
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
 import { MessageService } from 'primeng/api';
+import { Observable } from 'rxjs';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
@@ -58,9 +60,10 @@ export interface RowData {
 export class CardBoardComponent extends AutoUnsubscriber
   implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   @Input('model') board: CardBoardDDS;
-  @Input() type: 'program' | 'team' = 'program';
+  @Input() type: 'programm' | 'team' = 'programm';
   @Input() typesAllowedToSync: CardType[];
   @Input('coworker') currentUser: Coworker;
+  @Input('availableBoards') availableBoards$: Observable<ICardBoardBase[]>;
 
   /**
    * Event will be triggered, when all cells has been loaded.
@@ -114,10 +117,12 @@ export class CardBoardComponent extends AutoUnsubscriber
   ngOnInit(): void {
     if (!this.typesAllowedToSync)
       this.typesAllowedToSync = DataUtil.enumToArray(CardType);
-    this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
+    this.colLinkSourceType = this.type === 'programm' ? 'team' : 'workitem';
 
+    this.boardService.availableBoards$ = this.availableBoards$;
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
     this.boardService.currentTeamName = this.route.snapshot.paramMap.get('teamName');
+    this.boardService.currentBoardName = this.board.name;
     this.boardService.connectionInsert$
       .pipe(this.autoUnsubscribe())
       .subscribe((newConnection) => {

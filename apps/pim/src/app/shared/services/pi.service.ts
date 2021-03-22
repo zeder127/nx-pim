@@ -3,6 +3,7 @@ import {
   CardBoardDDS,
   Constants,
   ICardBoard,
+  ICardBoardBase,
   IColumnHeader,
   IRowHeader,
   Pi,
@@ -76,6 +77,17 @@ export class PiService {
         );
         return this.getBoardById(boardId);
       })
+    );
+  }
+
+  /**
+   * Get base infos of boards in a certain Pi
+   * @param piName
+   * @returns
+   */
+  public getBoardBasesOfPI(piName: string): Observable<ICardBoardBase[]> {
+    return from(this.pimDORef.getInstanceAsync()).pipe(
+      map((pimDO) => pimDO.getBoardBasesOfPI(piName))
     );
   }
 

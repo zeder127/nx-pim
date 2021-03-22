@@ -5,9 +5,11 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { Constants } from '@pim/data';
 import { MenuItem } from 'primeng/api';
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { AutoUnsubscriber } from '../../../util';
 import { BoardService } from '../../services/board.service';
 
 @Component({
@@ -16,12 +18,18 @@ import { BoardService } from '../../services/board.service';
   styleUrls: ['./card-board-toolbar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CardBoardToolbarComponent implements OnInit {
+export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnInit {
   @Output() toggleSidebar = new EventEmitter();
-
+  public boardItems: MenuItem[];
   public sidenavOpened = false;
 
-  constructor(private boardService: BoardService) {}
+  constructor(private boardService: BoardService) {
+    super();
+  }
+
+  get currentBoardName() {
+    return this.boardService.currentBoardName;
+  }
 
   get coworkerMenuItems$(): Observable<MenuItem[]> {
     return this.boardService.coworkers$.asObservable().pipe(
@@ -35,7 +43,31 @@ export class CardBoardToolbarComponent implements OnInit {
     );
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.boardService.availableBoards$.pipe(this.autoUnsubscribe()).subscribe(
+      (boardBases) =>
+        (this.boardItems = boardBases.map((base) => {
+          const shouldDisabled = base.name === this.currentBoardName;
+          if (shouldDisabled)
+            return {
+              label: base.name,
+              disabled: shouldDisabled,
+            };
+          else
+            return {
+              label: base.name,
+              routerLink: this.getRouterLink(base.name),
+            };
+        }))
+    );
+  }
+  // FIXME Workaround to force reload a CardBoardComponent
+  // It would be better to re-use CardBoardComponent
+  private getRouterLink(boardName): string {
+    return `${
+      this.currentBoardName === Constants.Default_Programm_Board_Name ? '' : `../`
+    }../board-switcher/${boardName}`;
+  }
 
   public toggleWitSidebar() {
     this.toggleSidebar.emit();

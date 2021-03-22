@@ -5,12 +5,14 @@ import {
   CardBoardDDS,
   CardType,
   Coworker,
+  ICardBoardBase,
   SyncEvent,
   SyncInsertEvent,
   SyncRemoveEvent,
   SyncType,
 } from '@pim/data';
 import { AutoUnsubscriber } from '@pim/ui';
+import { Observable } from 'rxjs';
 import { PiService } from '../../../shared/services/pi.service';
 import { BoardSettingsService } from '../services/board-settings.service';
 import { BoardSyncService } from '../services/board-sync.service';
@@ -27,6 +29,7 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
   public cardBoard: CardBoardDDS;
   public typesAllowedToSync: CardType[];
   public currentUser: Coworker;
+  public piBoards$: Observable<ICardBoardBase[]>;
   private piName: string;
 
   constructor(
@@ -43,6 +46,7 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
 
   ngOnInit() {
     this.piName = this.route.snapshot.paramMap.get('piName');
+    this.piBoards$ = this.piService.getBoardBasesOfPI(this.piName);
     this.piService
       .getProgrammBoardOfPI(this.piName)
       .pipe(this.autoUnsubscribe())

@@ -5,9 +5,10 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ListboxModule } from 'primeng/listbox';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { BoardSwitcherComponent } from './components/board-switcher/board-switcher.component';
 
 @NgModule({
-  declarations: [],
+  declarations: [BoardSwitcherComponent],
   imports: [
     CommonModule,
     FormsModule,

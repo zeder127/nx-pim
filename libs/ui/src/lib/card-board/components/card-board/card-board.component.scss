@@ -1,7 +1,9 @@
+@import '../../../styles/variables';
+
 :host ::ng-deep {
 
   p-table {
-    height: calc(100% - 32px/*toolbar*/);
+    height: calc(100% - #{$height-board-toolbar}/*toolbar*/);
     display: block;
   }
 

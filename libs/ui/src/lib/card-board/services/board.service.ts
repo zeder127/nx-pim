@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Coworker, ICard, IConnection, Iteration, Team } from '@pim/data';
+import { Coworker, ICard, ICardBoardBase, IConnection, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -12,6 +12,7 @@ export class BoardService {
   public connectionInsert$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
   public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
+  public availableBoards$: Observable<ICardBoardBase[]>;
   public dragStartPointId: string;
   public dragEndPointId: string;
 
@@ -20,6 +21,9 @@ export class BoardService {
 
   /** Current team name, read from current url. Be null if it is a programm-board */
   public currentTeamName: string;
+
+  /** Current board name, read from BoardDDS */
+  public currentBoardName: string;
 
   constructor(
     private iterationService: IterationService,

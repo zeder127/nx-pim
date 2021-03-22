@@ -4,18 +4,18 @@ import { SharedMap } from '@fluidframework/map';
 import { SharedMatrix } from '@fluidframework/matrix';
 import { SharedObjectSequence } from '@fluidframework/sequence';
 
-export interface ICardBoard {
+export interface ICardBoardBase {
   id: string;
   name: string;
+}
+export interface ICardBoard extends ICardBoardBase {
   columnHeaders: IColumnHeader[];
   rowHeaders: IRowHeader[];
   cards: ICard[];
   connections: IConnection[];
 }
 
-export interface CardBoardDDS {
-  id: string;
-  name: string;
+export interface CardBoardDDS extends ICardBoardBase {
   columnHeaders: SharedObjectSequence<IColumnHeader>;
   rowHeaders: SharedObjectSequence<IRowHeader>;
   grid: SharedMatrix<IFluidHandle<SharedObjectSequence<ICard>>>;
