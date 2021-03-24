@@ -12,11 +12,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import {
-  SequenceDeltaEvent,
-  SequenceEvent,
-  SharedObjectSequence,
-} from '@fluidframework/sequence';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
@@ -48,7 +44,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
-  @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
+  @Output() delete = new EventEmitter<[ICard[], boolean]>(); // the cards to remove, flag for isMoving
   @Output() update = new EventEmitter<number[]>();
 
   constructor(
@@ -77,7 +73,6 @@ export class CardContainerComponent extends AutoUnsubscriber
       onChange: this.updateConnection,
     };
     if (!this.cardsSeqHandle) {
-      //this.cdr.markForCheck();
       return; // TODO remove, only for debug
     }
     await this.loadCardsSeq();
@@ -103,7 +98,6 @@ export class CardContainerComponent extends AutoUnsubscriber
       cardsSeqHandle.currentValue &&
       cardsSeqHandle.currentValue?.IFluidHandle
     ) {
-      console.log(`🚀 ~ loadCardsSeq in onChanges`);
       await this.loadCardsSeq();
       this.load.next();
       this.load.complete();
@@ -122,8 +116,8 @@ export class CardContainerComponent extends AutoUnsubscriber
     });
   };
 
+  // TODO
   public addCard() {
-    // this.witService.createWit();
     const DemoCard: ICard = {
       id: uuidv4(),
       text: `New card ${Math.floor(Math.random() * 10)}`,
@@ -147,7 +141,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   // TODO multi delete
   public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
-    this.delete.emit([card]);
+    this.delete.emit([[card], false]);
   }
 
   public openSourceUrl(id: number) {
@@ -162,10 +156,6 @@ export class CardContainerComponent extends AutoUnsubscriber
     this.update.emit(this.cards.map((c) => c.linkedWitId));
   }
 
-  private isSelf(event: SequenceEvent) {
-    return this.fluidLoaderService.clientId === event.clientId;
-  }
-
   // TODO move d&d code into a directive
   // *******************************************************/
   // **************** Start: Drag and Drop *****************/
@@ -176,9 +166,9 @@ export class CardContainerComponent extends AutoUnsubscriber
   };
 
   private onRemove = (event: SortableEvent) => {
-    //const cardsToRemove = this.cardsSeq.getRange(event.oldIndex, event.oldIndex + 1);
+    const cardsToRemove = this.cardsSeq.getRange(event.oldIndex, event.oldIndex + 1);
     this.cardsSeq.removeRange(event.oldIndex, event.oldIndex + 1);
-    //this.delete.emit(cardsToRemove);
+    this.delete.emit([cardsToRemove, true]);
   };
 
   private onUpdate = (event: SortableEvent) => {

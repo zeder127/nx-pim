@@ -283,7 +283,11 @@ export class CardBoardComponent extends AutoUnsubscriber
       this.emitSyncEvent(cardsToSync, SyncType.Insert, rowIndex, colIndex);
   }
 
-  public onRemove(cards: ICard[], rowIndex: number, colIndex: number) {
+  public onRemove(
+    [cards, isMoving]: [ICard[], boolean],
+    rowIndex: number,
+    colIndex: number
+  ) {
     const ids = cards.map((c) => c.linkedWitId);
     this.boardService.cardsRemove$.next(ids);
 
@@ -291,16 +295,17 @@ export class CardBoardComponent extends AutoUnsubscriber
     if (cardsToSync.length > 0)
       this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
 
-    // remove related connections from DDS
-    ids.forEach((id) => {
-      [...this.board.connections.entries()].forEach((value) => {
-        const key = value[0];
-        const conn = value[1];
-        if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
-          this.board.connections.delete(key);
-        }
+    // remove related connections from DDS, if really to delete a card
+    if (!isMoving)
+      ids.forEach((id) => {
+        [...this.board.connections.entries()].forEach((value) => {
+          const key = value[0];
+          const conn = value[1];
+          if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
+            this.board.connections.delete(key);
+          }
+        });
       });
-    });
   }
 
   // TODO only update deltaCards
