@@ -27,9 +27,10 @@ export class PiService {
 
   /**
    * Get all PIs asychronlly. Used to get PIs, if DataObject has not been loaded.
+   * @param reload boolean. If true, Pis will reloaded from PimDataObject
    */
-  public getPisAsync(): Observable<Pi[]> {
-    if (!this.pisObservable) {
+  public getPisAsync(reload = false): Observable<Pi[]> {
+    if (!this.pisObservable || reload) {
       this.pisObservable = this.doGetPisAsync();
     }
     return this.pisObservable;
@@ -47,8 +48,8 @@ export class PiService {
   /**
    * Get PI by its name.
    */
-  public getPiByName(name: string): Observable<Pi> {
-    return this.getPisAsync().pipe(map((pis) => pis.find((pi) => pi.name === name)));
+  public getPiByName(name: string, isNew = false): Observable<Pi> {
+    return this.getPisAsync(isNew).pipe(map((pis) => pis.find((pi) => pi.name === name)));
   }
 
   /**

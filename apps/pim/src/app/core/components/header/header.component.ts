@@ -37,10 +37,10 @@ export class HeaderComponent extends AutoUnsubscriber implements OnInit {
         const params = this.getParams(this.route);
         this.currentPiName = params['piName'];
       }
-      this.loadPis();
+      this.loadPiMenuItems();
     });
 
-    this.loadPis();
+    this.loadPiMenuItems();
     this.checkoutAccount();
 
     this.broadcastService.subscribe('msal:loginSuccess', () => {
@@ -69,7 +69,7 @@ export class HeaderComponent extends AutoUnsubscriber implements OnInit {
     );
   }
 
-  private loadPis() {
+  private loadPiMenuItems() {
     this.piService
       .getPisAsync()
       .pipe(
