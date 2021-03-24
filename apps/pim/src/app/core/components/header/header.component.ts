@@ -37,33 +37,10 @@ export class HeaderComponent extends AutoUnsubscriber implements OnInit {
         const params = this.getParams(this.route);
         this.currentPiName = params['piName'];
       }
+      this.loadPis();
     });
 
-    this.piService
-      .getPisAsync()
-      .pipe(
-        this.autoUnsubscribe(),
-        filter((pis) => !!pis)
-      )
-      .subscribe((pis) => {
-        this.piMenuItems = pis.map((pi) => {
-          if (pi.name === this.currentPiName)
-            return {
-              label: pi.name,
-              disabled: true,
-            };
-          else
-            return {
-              label: pi.name,
-              routerLink: `${this.currentFeature}/${pi.name}/board`,
-            };
-        });
-        this.piMenuItems.push({
-          label: 'New PI',
-          icon: 'pi pi-plus',
-          routerLink: 'admin/pi/new',
-        });
-      });
+    this.loadPis();
     this.checkoutAccount();
 
     this.broadcastService.subscribe('msal:loginSuccess', () => {
@@ -90,6 +67,34 @@ export class HeaderComponent extends AutoUnsubscriber implements OnInit {
         }
       )
     );
+  }
+
+  private loadPis() {
+    this.piService
+      .getPisAsync()
+      .pipe(
+        this.autoUnsubscribe(),
+        filter((pis) => !!pis)
+      )
+      .subscribe((pis) => {
+        this.piMenuItems = pis.map((pi) => {
+          if (pi.name === this.currentPiName)
+            return {
+              label: pi.name,
+              disabled: true,
+            };
+          else
+            return {
+              label: pi.name,
+              routerLink: `${this.currentFeature}/${pi.name}/switcher`,
+            };
+        });
+        this.piMenuItems.push({
+          label: 'New PI',
+          icon: 'pi pi-plus',
+          routerLink: 'admin/pi/new',
+        });
+      });
   }
 
   /**
