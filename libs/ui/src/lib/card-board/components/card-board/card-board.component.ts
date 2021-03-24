@@ -305,7 +305,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   // TODO only update deltaCards
   public onUpdate(cardIds: number[]) {
-    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next(true);
+    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next();
   }
 
   private emitSyncEvent(

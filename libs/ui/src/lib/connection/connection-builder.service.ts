@@ -18,16 +18,14 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Handle to update positions of all connections
    */
-  public update$ = new Subject<boolean>();
+  public update$ = new Subject();
 
   constructor(private render: Renderer2) {
     super();
 
     this.update$
       .pipe(this.autoUnsubscribe())
-      .subscribe((withUpdatingAnchorPoints) =>
-        this.updateExistingConnections(withUpdatingAnchorPoints)
-      );
+      .subscribe(() => this.updateExistingConnections());
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -130,17 +128,13 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Update position of all existing connections
    */
-  private updateExistingConnections(withUpdatingAnchorPoints = false) {
+  private updateExistingConnections() {
     this.wrapperPosition();
     this.connectionStore.forEach((ref) => {
-      if (withUpdatingAnchorPoints) {
-        const start = document.getElementById(ref.connection.startPointId);
-        const end = document.getElementById(ref.connection.endPointId);
-        if (start && end) {
-          ref.line.setOptions({ start, end });
-          ref.line.position();
-        }
-      } else {
+      const start = document.getElementById(ref.connection.startPointId);
+      const end = document.getElementById(ref.connection.endPointId);
+      if (start && end) {
+        ref.line.setOptions({ start, end });
         ref.line.position();
       }
     });
