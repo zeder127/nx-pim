@@ -71,6 +71,7 @@ export class CardContainerComponent extends AutoUnsubscriber
       onRemove: this.onRemove,
       onUpdate: this.onUpdate,
       onChange: this.updateConnection,
+      onStart: this.onDragStart,
     };
     if (!this.cardsSeqHandle) {
       return; // TODO remove, only for debug
@@ -154,6 +155,7 @@ export class CardContainerComponent extends AutoUnsubscriber
     // makeForChange doesn't work here, there would be timing problem with drawing a line.
     this.cdr.detectChanges();
     this.update.emit(this.cards.map((c) => c.linkedWitId));
+    this.connectionBuilder.update$.next();
   }
 
   // TODO move d&d code into a directive
@@ -176,6 +178,13 @@ export class CardContainerComponent extends AutoUnsubscriber
     if (event.oldIndex === this.cards.length - 1 && event.newIndex === this.cards.length)
       return;
     this.moveItemInSequence(event.oldIndex, event.newIndex);
+  };
+
+  private onDragStart = (event: SortableEvent) => {
+    // dragged element get the same id as target element, have to set its id with a suffix
+    // in order to avoid drawing wrong lines while dragging
+    const draggedElement = document.querySelector('.sortable-chosen.sortable-drag');
+    draggedElement.id += '$';
   };
 
   // Make updateing connections smoother

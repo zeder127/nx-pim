@@ -43,6 +43,8 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     connections.forEach((connection) => {
       this.drawConnection(connection);
     });
+    // Have to update connection, because sometimes new added connection get some pixels offset
+    this.updateExistingConnections();
   }
 
   /**
@@ -91,6 +93,7 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
       return new LeaderLine(startPointElement, endPointElement, {
         startSocket: 'bottom',
         endSocket: 'bottom',
+        endPlug: 'behind',
         size: 2,
       });
     }

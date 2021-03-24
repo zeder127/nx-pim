@@ -10,6 +10,7 @@ import {
   Renderer2,
 } from '@angular/core';
 import { ICard } from '@pim/data';
+import AnimEvent from 'anim-event';
 import { MenuItem } from 'primeng/api';
 import { SortableOptions } from 'sortablejs';
 import {
@@ -94,10 +95,12 @@ export class CardComponent implements OnInit, AfterViewInit {
     this.initDragAnchor(event.clientX, event.clientY);
   };
 
-  public onDrag = (event: DragEvent) => {
+  public onDrag = AnimEvent.add((event: DragEvent) => {
     if (this.draggingConnectionRef) {
       this.setDragAnchorPosition(event.clientX, event.clientY);
-      if (event.clientX + event.clientY) this.draggingConnectionRef.line.position();
+      if (event.clientX + event.clientY) {
+        this.draggingConnectionRef.line.position();
+      }
     } else {
       this.draggingConnectionRef = {
         line: this.connectionBuilder.drawLine(this.startElement, this.dragAnchor),
@@ -105,7 +108,7 @@ export class CardComponent implements OnInit, AfterViewInit {
         connection: undefined, // dummy,
       };
     }
-  };
+  });
 
   public onEnd = () => {
     if (this.draggingConnectionRef.line) {

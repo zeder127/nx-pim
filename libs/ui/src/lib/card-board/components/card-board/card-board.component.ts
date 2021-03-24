@@ -129,6 +129,8 @@ export class CardBoardComponent extends AutoUnsubscriber
         const newKey = `${newConnection.startPointId}-${newConnection.endPointId}`;
         if (!this.board.connections.has(newKey))
           this.board.connections.set(newKey, newConnection);
+        // Have to update connection, because sometimes new added connection get some pixels offset
+        this.connectionBuilder.update$.next();
       });
 
     this.board.connections.on('valueChanged', this.onConnectionValueChanged);
