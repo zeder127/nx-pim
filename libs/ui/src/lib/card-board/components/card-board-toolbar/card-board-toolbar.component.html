@@ -8,18 +8,37 @@
       iconPos="right"
       [label]="currentBoardName"
       class="p-button-text board-switcher"
-      (click)="switcher.toggle($event)"
+      (click)="boardSwitcher.toggle($event)"
+      title="Select a board"
     ></button>
     <p-menu
-      #switcher
+      #boardSwitcher
       [model]="boardItems"
       [popup]="true"
       appendTo="body"
-      styleClass="board-switcher-menu"
+      styleClass="switcher-menu"
     ></p-menu>
   </div>
   <div class="p-toolbar-group-right">
-    <div class="p-overlay-badge p-mr-2 coworker-badge" (click)="menu.toggle($event)">
+    <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-sliders-h"
+      class="p-button-text p-mr-2"
+      title="Board Settings"
+      (click)="settingMenu.toggle($event)"
+    ></button>
+    <p-menu
+      #settingMenu
+      [popup]="true"
+      [model]="settingMenuItems"
+      appendTo="body"
+    ></p-menu>
+    <div
+      class="p-overlay-badge p-mr-2 coworker-badge"
+      (click)="coworkerMenu.toggle($event)"
+    >
       <button
         pButton
         pRipple
@@ -33,7 +52,7 @@
       </span>
     </div>
     <p-menu
-      #menu
+      #coworkerMenu
       [popup]="true"
       [model]="coworkerMenuItems$ | async"
       appendTo="body"
