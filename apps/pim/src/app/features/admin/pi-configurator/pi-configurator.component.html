@@ -1,10 +1,4 @@
-<!-- <ul>
-  <li *ngFor="let pi of pis$ | async">
-    <a [routerLink]="['/planning/' + pi.name +'/programm-board']">{{pi.name}}</a>
-    <button (click)="removePi(pi.id)">X</button>
-  </li>
-</ul> -->
-<!--TODO configure rowHeaders and columnHeaders, accept unlinked row and column -->
+<div class="page-title">New PI</div>
 <div class="p-fluid">
   <div class="p-field">
     <label for="pi-name">PI Name</label>
@@ -69,8 +63,24 @@
   </div>
 </div>
 
+<p-button
+  *ngIf="!saved"
+  label="Save"
+  (click)="createPi(newPiName, selectedIterations, selectedTeams)"
+  title="Save a new PI"
+></p-button>
 <button
   pButton
-  label="Create"
-  (click)="createPi(newPiName, selectedIterations, selectedTeams)"
+  *ngIf="saved"
+  label="Open PI Board"
+  (click)="openPi(newPiName)"
+  class="p-mr-2"
+  title="Open Programm Board of this just created PI"
+></button>
+<button
+  pButton
+  *ngIf="saved"
+  label="Go back"
+  (click)="goBack()"
+  title="Navigate to previous page"
 ></button>
