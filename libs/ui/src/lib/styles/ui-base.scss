@@ -19,3 +19,13 @@
   margin-bottom: 1rem;
 }
 
+.p-menu,
+.p-slidemenu {
+  .p-menuitem-text {
+    line-height: 1;
+  }
+}
+
+.p-slidemenu {
+  width: 190px
+}

@@ -10,6 +10,7 @@ export class BoardService {
   public cardsLoad$ = new BehaviorSubject<number[]>([]);
   public cardsRemove$ = new Subject<number[]>();
   public connectionInsert$ = new Subject<IConnection>();
+  public connectionDelete$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
   public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
   public availableBoards$: Observable<ICardBoardBase[]>;

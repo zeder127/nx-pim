@@ -54,9 +54,9 @@ export class CardComponent implements OnInit, AfterViewInit {
     return getBorderLeftColor(this.card.type);
   }
 
-  public menuItems: MenuItem[] = [
-    { label: 'Open', icon: 'pi pi-fw pi-download' },
-    { label: 'Remove', icon: 'pi pi-fw pi-time' },
+  private readonly defaultMenuItems: MenuItem[] = [
+    { label: 'Open', icon: 'pi pi-reply' },
+    { label: 'Delete Card', icon: 'pi pi-times' },
   ];
 
   public containerOptions: SortableOptions;
@@ -66,6 +66,8 @@ export class CardComponent implements OnInit, AfterViewInit {
   private startElement: HTMLElement;
   private dragAnchor: HTMLElement;
   private draggingConnectionRef: ConnectionRef;
+  public menuItems: MenuItem[];
+  private connectionMenuItems: MenuItem[];
 
   constructor(
     private connectionBuilder: ConnectionBuilderService,
@@ -87,6 +89,23 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   public deleteCard() {
     this.delete.emit(this.card);
+  }
+
+  public initMenuItems() {
+    this.menuItems = [...this.defaultMenuItems];
+    const relatedConnRefs = this.connectionBuilder.getRelatedConnections(
+      `${this.card.linkedWitId}`
+    );
+    if (relatedConnRefs.length > 0) {
+      this.connectionMenuItems = [
+        {
+          label: 'Delete Line to...',
+          icon: 'pi pi-fw pi-times',
+          items: this.createConnectionSubmenuItems(relatedConnRefs),
+        },
+      ];
+      this.menuItems.push(...this.connectionMenuItems);
+    }
   }
 
   public onStart = (event: DragEvent) => {
@@ -134,5 +153,20 @@ export class CardComponent implements OnInit, AfterViewInit {
   private setDragAnchorPosition(x: number, y: number) {
     this.renderer.setStyle(this.dragAnchor, 'top', `${y}px`);
     this.renderer.setStyle(this.dragAnchor, 'left', `${x}px`);
+  }
+
+  private createConnectionSubmenuItems(connRefs: ConnectionRef[]): MenuItem[] {
+    return connRefs.map((ref) => {
+      const cardId =
+        ref.connection.startPointId === `${this.card.linkedWitId}`
+          ? ref.connection.endPointId
+          : ref.connection.startPointId;
+      return {
+        label: `Work Item ${cardId}`,
+        icon: 'pi pi-times',
+        title: `Click to delete the dependency on work item ${cardId}`,
+        command: () => this.boardService.connectionDelete$.next(ref.connection),
+      } as MenuItem;
+    });
   }
 }

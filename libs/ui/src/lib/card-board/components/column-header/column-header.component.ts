@@ -64,7 +64,7 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
         command: () => this.insertColRight.emit(),
       },
       {
-        label: 'Delete',
+        label: 'Delete column',
         icon: 'pi pi-times',
         command: () => this.deleteCol.emit(),
       },

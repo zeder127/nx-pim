@@ -100,6 +100,19 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   }
 
   /**
+   * Get all related ConnectionRefs of a given element. If elementId is undefined, get all ConnectionRefs.
+   * @param elementId
+   */
+  public getRelatedConnections(elementId?: string): ConnectionRef[] {
+    if (!elementId) return this.connectionStore;
+    return this.connectionStore.filter(
+      (ref) =>
+        ref.connection.startPointId === elementId ||
+        ref.connection.endPointId === elementId
+    );
+  }
+
+  /**
    * Remove all lines on board
    */
   public destroy() {

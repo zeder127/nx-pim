@@ -133,6 +133,14 @@ export class CardBoardComponent extends AutoUnsubscriber
         this.connectionBuilder.update$.next();
       });
 
+    this.boardService.connectionDelete$
+      .pipe(this.autoUnsubscribe())
+      .subscribe((connToDelete) => {
+        const keyToDelete = `${connToDelete.startPointId}-${connToDelete.endPointId}`;
+        if (this.board.connections.has(keyToDelete))
+          this.board.connections.delete(keyToDelete);
+      });
+
     this.board.connections.on('valueChanged', this.onConnectionValueChanged);
     this.board.coworkers.on('valueChanged', this.onCoworkerValueChanged);
     this.board.columnHeaders.on('sequenceDelta', this.onColumnHeaderSeqChanged);
@@ -300,9 +308,7 @@ export class CardBoardComponent extends AutoUnsubscriber
     // remove related connections from DDS, if really to delete a card
     if (!isMoving)
       ids.forEach((id) => {
-        [...this.board.connections.entries()].forEach((value) => {
-          const key = value[0];
-          const conn = value[1];
+        [...this.board.connections.entries()].forEach(([key, conn]) => {
           if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
             this.board.connections.delete(key);
           }
