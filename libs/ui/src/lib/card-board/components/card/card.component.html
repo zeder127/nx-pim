@@ -21,10 +21,12 @@
     #menu
     [popup]="true"
     appendTo="body"
+    styleClass="card-menu"
     [model]="menuItems"
     [viewportHeight]="200"
     [menuWidth]="200"
     (onShow)="initMenuItems()"
+    (onHide)="resetMenuItems()"
   ></p-slideMenu>
   <button
     draggable="true"

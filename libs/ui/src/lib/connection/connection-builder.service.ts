@@ -183,12 +183,17 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
       'px)';
   }
 
-  /**
-   *
-   */
   public executeLineRemove(ref: ConnectionRef) {
     // have to move the svg element back to body from line-wrapper
     document.body.appendChild(ref.svg);
     ref.line.remove();
+  }
+
+  public markConnection(connRef: ConnectionRef) {
+    connRef.line.setOptions({ dropShadow: true, size: 4 });
+  }
+
+  public unMarkConnection(connRef: ConnectionRef) {
+    connRef.line.setOptions({ dropShadow: false, size: 2 });
   }
 }

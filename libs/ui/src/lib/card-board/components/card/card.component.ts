@@ -12,6 +12,8 @@ import {
 import { ICard } from '@pim/data';
 import AnimEvent from 'anim-event';
 import { MenuItem } from 'primeng/api';
+import { fromEvent, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { SortableOptions } from 'sortablejs';
 import {
   ConnectionBuilderService,
@@ -62,12 +64,14 @@ export class CardComponent implements OnInit, AfterViewInit {
   public containerOptions: SortableOptions;
   public handleOptions: SortableOptions;
   public idPrefix = Connection_Drag_Handle_ID_Prefix;
+  public relatedConnRefs: ConnectionRef[];
 
   private startElement: HTMLElement;
   private dragAnchor: HTMLElement;
   private draggingConnectionRef: ConnectionRef;
   public menuItems: MenuItem[];
   private connectionMenuItems: MenuItem[];
+  private menuClose$: Subject<unknown>;
 
   constructor(
     private connectionBuilder: ConnectionBuilderService,
@@ -105,7 +109,20 @@ export class CardComponent implements OnInit, AfterViewInit {
         },
       ];
       this.menuItems.push(...this.connectionMenuItems);
+      // Use timeout to avoid overlapping two card menus. One is opening, another is closing,
+      // If it happened, the number of menu items would not match the number of related connections
+      // And lead to unexpected error
+      setTimeout(() => {
+        this.addSubmenuItemListner(relatedConnRefs);
+      }, 500);
     }
+  }
+
+  public resetMenuItems() {
+    this.menuItems = [...this.defaultMenuItems];
+    this.menuClose$.next();
+    this.menuClose$.complete();
+    this.menuClose$ = undefined;
   }
 
   public onStart = (event: DragEvent) => {
@@ -165,8 +182,37 @@ export class CardComponent implements OnInit, AfterViewInit {
         label: `Work Item ${cardId}`,
         icon: 'pi pi-times',
         title: `Click to delete the dependency on work item ${cardId}`,
+        styleClass: 'dependency-menu-item',
         command: () => this.boardService.connectionDelete$.next(ref.connection),
       } as MenuItem;
     });
+  }
+
+  private addSubmenuItemListner(connRefs: ConnectionRef[]) {
+    this.menuClose$ = new Subject();
+    const menuItemEles = document.querySelectorAll('.card-menu .dependency-menu-item');
+    if (menuItemEles.length === connRefs.length)
+      menuItemEles.forEach((ele, index) => {
+        fromEvent(ele, 'mouseenter')
+          .pipe(takeUntil(this.menuClose$))
+          .subscribe(() => {
+            const connRef = connRefs[index];
+            this.connectionBuilder.markConnection(connRef);
+            this.boardService.markCard(connRef.connection.startPointId);
+            this.boardService.markCard(connRef.connection.endPointId);
+          });
+        fromEvent(ele, 'mouseleave')
+          .pipe(takeUntil(this.menuClose$))
+          .subscribe(() => {
+            const connRef = connRefs[index];
+            this.connectionBuilder.unMarkConnection(connRef);
+            this.boardService.unMarkCard(connRef.connection.startPointId);
+            this.boardService.unMarkCard(connRef.connection.endPointId);
+          });
+      });
+    else
+      console.error(
+        `Connection menu items did not match with related connections! WorkItem: ${this.card.linkedWitId}, Related connection: ${connRefs.length}`
+      );
   }
 }

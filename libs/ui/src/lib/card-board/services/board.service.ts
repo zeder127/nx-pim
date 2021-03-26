@@ -120,4 +120,12 @@ export class BoardService {
   public openSourceUrl(id: number) {
     this.witService.open(id);
   }
+
+  public markCard(id: string) {
+    document.getElementById(id)?.classList.add('marked');
+  }
+
+  public unMarkCard(id: string) {
+    document.getElementById(id)?.classList.remove('marked');
+  }
 }
