@@ -32,14 +32,14 @@ export class BoardSyncService extends AutoUnsubscriber {
         const rowNumber = teamBoard.rowHeaders
           .getItems(0)
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
-        // NOTE Sync from ProgrammBoard to TeamBoard, ProgrammBoard doesn't know the new Item should be insert which column in TeamBoard
+        // NOTE Sync from ProgramBoard to TeamBoard, ProgramBoard doesn't know the new Item should be insert which column in TeamBoard
         // Just insert to the first column on TeamBoard, so colNumber is 0.
         const cardSequence = await teamBoard.grid.getCell(rowNumber, 0).get();
         this.insertCardInCell(cardSequence, event.cards);
       });
   }
 
-  public syncProgrammBoardRemoveEvent(event: SyncRemoveEvent, piName: string) {
+  public syncProgramBoardRemoveEvent(event: SyncRemoveEvent, piName: string) {
     this.teamService
       .getSingleByKey('id', event.linkedSourceId)
       .pipe(
@@ -65,7 +65,7 @@ export class BoardSyncService extends AutoUnsubscriber {
     piName: string,
     teamId: string
   ) {
-    this.piService.getProgrammBoardOfPI(piName).subscribe(async (board) => {
+    this.piService.getProgramBoardOfPI(piName).subscribe(async (board) => {
       const rowNumber = board.rowHeaders
         .getItems(0)
         .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
@@ -79,14 +79,14 @@ export class BoardSyncService extends AutoUnsubscriber {
 
   public syncTeamBoardRemoveEvent(event: SyncRemoveEvent, piName: string) {
     this.piService
-      .getProgrammBoardOfPI(piName)
+      .getProgramBoardOfPI(piName)
       .pipe(this.autoUnsubscribe())
-      .subscribe((programmBoard) => {
-        const rowNumber = programmBoard.rowHeaders
+      .subscribe((programBoard) => {
+        const rowNumber = programBoard.rowHeaders
           .getItems(0)
           .findIndex((r) => r.linkedIterationId === event.linkedIterationId);
         event.cards.forEach((c) => {
-          this.removeCardFromRow(c.linkedWitId, rowNumber, programmBoard);
+          this.removeCardFromRow(c.linkedWitId, rowNumber, programBoard);
         });
       });
   }

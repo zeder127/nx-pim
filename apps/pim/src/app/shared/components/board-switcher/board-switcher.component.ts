@@ -17,7 +17,7 @@ export class BoardSwitcherComponent implements OnInit {
     const boardName = this.activatedRoute.snapshot.paramMap.get('boardName');
     this.router.navigateByUrl(
       `/planning/${piName}/board${
-        !boardName || boardName === Constants.Default_Programm_Board_Name
+        !boardName || boardName === Constants.Default_Program_Board_Name
           ? ''
           : '/' + boardName
       }`

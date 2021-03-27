@@ -60,7 +60,7 @@ export interface RowData {
 export class CardBoardComponent extends AutoUnsubscriber
   implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   @Input('model') board: CardBoardDDS;
-  @Input() type: 'programm' | 'team' = 'programm';
+  @Input() type: 'program' | 'team' = 'program';
   @Input() typesAllowedToSync: CardType[];
   @Input('coworker') currentUser: Coworker;
   @Input('availableBoards') availableBoards$: Observable<ICardBoardBase[]>;
@@ -117,7 +117,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   ngOnInit(): void {
     if (!this.typesAllowedToSync)
       this.typesAllowedToSync = DataUtil.enumToArray(CardType);
-    this.colLinkSourceType = this.type === 'programm' ? 'team' : 'workitem';
+    this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
     this.boardService.availableBoards$ = this.availableBoards$;
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');

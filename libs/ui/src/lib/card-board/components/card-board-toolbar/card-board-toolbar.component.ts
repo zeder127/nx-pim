@@ -74,7 +74,7 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
   // It would be better to re-use CardBoardComponent
   private getRouterLink(boardName): string {
     return `${
-      this.currentBoardName === Constants.Default_Programm_Board_Name ? '' : `../`
+      this.currentBoardName === Constants.Default_Program_Board_Name ? '' : `../`
     }../switcher/${boardName}`;
   }
 

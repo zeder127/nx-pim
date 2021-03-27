@@ -53,10 +53,10 @@ export class PiService {
   }
 
   /**
-   * Get ProgrammBoard definition of the PI by a given PI name.
+   * Get ProgramBoard definition of the PI by a given PI name.
    * @param piName Name of a PI
    */
-  public getProgrammBoardOfPI(piName: string): Observable<CardBoardDDS> {
+  public getProgramBoardOfPI(piName: string): Observable<CardBoardDDS> {
     return this.getPiByName(piName).pipe(
       filter((pi) => !!pi),
       map((pi) => {
@@ -113,13 +113,13 @@ export class PiService {
       return;
     }
 
-    const newProgrammBoard: ICardBoard = createCardBoardModel(
-      Constants.Default_Programm_Board_Name,
+    const newProgramBoard: ICardBoard = createCardBoardModel(
+      Constants.Default_Program_Board_Name,
       rowHeaders,
       columnHeaders
     );
     // Every columnHeader represents a team, every team should have its own TeamBoard.
-    // A new TeamBoard has the same rows(iterations) as ProgrammBoard, but only has a placeholder column.
+    // A new TeamBoard has the same rows(iterations) as ProgramBoard, but only has a placeholder column.
     // Every team could add his own columns individually with UI.
     const newTeamBoards: ICardBoard[] = columnHeaders?.map((columnHeader) => {
       return createCardBoardModel(columnHeader.title, rowHeaders);
@@ -129,8 +129,8 @@ export class PiService {
       id: uuidv4(),
       name: name,
       teamBoardIds: newTeamBoards.map((board) => board.id),
-      programBoardId: newProgrammBoard.id,
-      programBoard: newProgrammBoard,
+      programBoardId: newProgramBoard.id,
+      programBoard: newProgramBoard,
       teamBoards: newTeamBoards,
     });
   }

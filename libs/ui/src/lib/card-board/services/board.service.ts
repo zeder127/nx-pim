@@ -20,7 +20,7 @@ export class BoardService {
   /** Current PI name, read from current url */
   public currentPiName: string;
 
-  /** Current team name, read from current url. Be null if it is a programm-board */
+  /** Current team name, read from current url. Be null if it is a program-board */
   public currentTeamName: string;
 
   /** Current board name, read from BoardDDS */

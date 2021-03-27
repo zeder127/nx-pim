@@ -6,7 +6,7 @@ import { CardType } from '@pim/data';
 })
 export class BoardSettingsService {
   /**
-   * Define the card types that should be synchronised between programm- and team-board.
+   * Define the card types that should be synchronised between program- and team-board.
    */
   public cardTypesAllowedToSync: CardType[] = [
     CardType.PBI, // TODO remove

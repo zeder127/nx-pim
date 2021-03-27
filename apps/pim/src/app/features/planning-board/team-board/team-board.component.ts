@@ -62,7 +62,7 @@ export class TeamBoardComponent extends AutoUnsubscriber implements OnInit {
       .subscribe((team) => (this.teamId = team.id));
   }
 
-  public syncWithProgrammBoard(event: SyncEvent) {
+  public syncWithProgramBoard(event: SyncEvent) {
     switch (event.type) {
       case SyncType.Insert:
         this.boardSyncService.syncTeamBoardInsertEvent(

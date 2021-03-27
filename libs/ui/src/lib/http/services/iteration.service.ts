@@ -18,4 +18,6 @@ export class IterationService extends Cacheable<Iteration> {
       .fetchAll('_apis/work/teamsettings/iterations')
       .pipe(map((response: { value: Iteration[] }) => response.value));
   }
+  // TODO iteration issue
+  // _apis/wit/classificationNodes/Iterations?$depth=15
 }
