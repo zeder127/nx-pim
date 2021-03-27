@@ -42,6 +42,7 @@ import { Observable } from 'rxjs';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
+import { CardContainerComponent } from '../card-container/card-container.component';
 export interface RowData {
   header: IRowHeader;
   data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
@@ -79,6 +80,8 @@ export class CardBoardComponent extends AutoUnsubscriber
   private bodyRowRefs!: QueryList<ElementRef>;
 
   @ViewChild('table', { read: ElementRef }) tableElementRef: ElementRef;
+
+  @ViewChildren(CardContainerComponent) cardContainers: QueryList<CardContainerComponent>;
 
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
@@ -271,7 +274,16 @@ export class CardBoardComponent extends AutoUnsubscriber
       this.load.emit();
       this.loaded = true;
       this.connectionBuilder.initConnections(this.connections);
+      this.loadWitsOnBoard();
     }
+  }
+  // In order to update wit-state
+  private loadWitsOnBoard() {
+    const cardsOnBoard: ICard[] = [];
+    this.cardContainers.forEach((cc: CardContainerComponent) =>
+      cardsOnBoard.push(...cc.cards)
+    );
+    this.boardService.loadWits(cardsOnBoard.map((c) => c.linkedWitId));
   }
 
   public onInsert(cards: ICard[], rowIndex: number, colIndex: number) {
@@ -302,6 +314,7 @@ export class CardBoardComponent extends AutoUnsubscriber
 
     const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
     if (cardsToSync.length > 0)
+      // if (!(this.type === 'team' && isMoving))
       this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
 
     // remove related connections from DDS, if really to delete a card

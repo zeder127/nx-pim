@@ -220,12 +220,6 @@ export class CardContainerComponent extends AutoUnsubscriber
     const updatedCards = cardIds.map((id) => toCard(this.witState.getWitById(id)));
     seq.insert(currentIndex, updatedCards);
     this.insert.emit(updatedCards);
-
-    // this.witState.getWorkItems(cardIds).subscribe((wits) => {
-    //   const updatedCards = wits.map((wit) => toCard(wit));
-    //   seq.insert(currentIndex, updatedCards);
-    //   this.insert.emit(updatedCards);
-    // });
   }
 
   // *******************************************************/

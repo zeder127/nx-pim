@@ -128,4 +128,8 @@ export class BoardService {
   public unMarkCard(id: string) {
     document.getElementById(id)?.classList.remove('marked');
   }
+
+  public loadWits(ids) {
+    this.witService.getWorkItems(ids).subscribe();
+  }
 }
