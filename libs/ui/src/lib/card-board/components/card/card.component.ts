@@ -57,8 +57,20 @@ export class CardComponent implements OnInit, AfterViewInit {
   }
 
   private readonly defaultMenuItems: MenuItem[] = [
-    { label: 'Open', icon: 'pi pi-reply' },
-    { label: 'Delete Card', icon: 'pi pi-times' },
+    {
+      label: 'Open',
+      icon: 'pi pi-reply',
+      command: () => this.openSourceUrl(this.card.linkedWitId),
+    },
+    {
+      label: 'Delete Card',
+      icon: 'pi pi-times',
+      command: () =>
+        // Have to use setTimeout, otherwise menu keeps opening after clicking delete menu-item
+        setTimeout(() => {
+          this.deleteCard();
+        }, 0),
+    },
   ];
 
   public containerOptions: SortableOptions;
@@ -120,8 +132,8 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   public resetMenuItems() {
     this.menuItems = [...this.defaultMenuItems];
-    this.menuClose$.next();
-    this.menuClose$.complete();
+    this.menuClose$?.next();
+    this.menuClose$?.complete();
     this.menuClose$ = undefined;
   }
 
