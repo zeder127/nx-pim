@@ -299,14 +299,14 @@ export class CardBoardComponent extends AutoUnsubscriber
     colIndex: number
   ) {
     const ids = cards.map((c) => c.linkedWitId);
-    this.boardService.cardsRemove$.next(ids);
 
     const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
     if (cardsToSync.length > 0)
       this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
 
     // remove related connections from DDS, if really to delete a card
-    if (!isMoving)
+    if (!isMoving) {
+      this.boardService.cardsRemove$.next(ids);
       ids.forEach((id) => {
         [...this.board.connections.entries()].forEach(([key, conn]) => {
           if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
@@ -314,6 +314,7 @@ export class CardBoardComponent extends AutoUnsubscriber
           }
         });
       });
+    }
   }
 
   // TODO only update deltaCards

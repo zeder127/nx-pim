@@ -19,7 +19,7 @@ import { toCard } from '@pim/data/util';
 import { SortableEvent, SortableOptions } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
-import { WitService } from '../../../http';
+import { WitStateService } from '../../../http/services/wit-state.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
@@ -49,7 +49,7 @@ export class CardContainerComponent extends AutoUnsubscriber
 
   constructor(
     private boardService: BoardService,
-    private witService: WitService,
+    private witState: WitStateService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
@@ -217,11 +217,15 @@ export class CardContainerComponent extends AutoUnsubscriber
     seq: SharedObjectSequence<ICard>,
     currentIndex: number
   ) {
-    this.witService.getWorkItems(cardIds).subscribe((wits) => {
-      const updatedCards = wits.map((wit) => toCard(wit));
-      seq.insert(currentIndex, updatedCards);
-      this.insert.emit(updatedCards);
-    });
+    const updatedCards = cardIds.map((id) => toCard(this.witState.getWitById(id)));
+    seq.insert(currentIndex, updatedCards);
+    this.insert.emit(updatedCards);
+
+    // this.witState.getWorkItems(cardIds).subscribe((wits) => {
+    //   const updatedCards = wits.map((wit) => toCard(wit));
+    //   seq.insert(currentIndex, updatedCards);
+    //   this.insert.emit(updatedCards);
+    // });
   }
 
   // *******************************************************/
