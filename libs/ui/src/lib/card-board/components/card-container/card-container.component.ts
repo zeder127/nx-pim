@@ -43,7 +43,7 @@ export class CardContainerComponent extends AutoUnsubscriber
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
-  @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
+  @Output() insert = new EventEmitter<[ICard[], boolean]>(); // the new cards inserted
   @Output() delete = new EventEmitter<[ICard[], boolean]>(); // the cards to remove, flag for isMoving
   @Output() update = new EventEmitter<number[]>();
 
@@ -168,7 +168,12 @@ export class CardContainerComponent extends AutoUnsubscriber
     // https://github.com/SortableJS/ngx-sortablejs#how-it-works
     setTimeout(() => {
       const newId = event.item.id.replace(Source_ID_Prefix, '');
-      this.insertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+      //this.insertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+      const insertedCards = [parseInt(newId)].map((id) =>
+        toCard(this.witState.getWitById(id))
+      );
+      this.cardsSeq.insert(event.newIndex, insertedCards);
+      this.insert.emit([insertedCards, event.from.classList.contains('card-container')]);
     }, 0);
   };
 
@@ -216,17 +221,6 @@ export class CardContainerComponent extends AutoUnsubscriber
     if (newIndex === seqLength + itemsToMove.length) newIndex = seqLength;
     this.cardsSeq.insert(newIndex, itemsToMove);
   }
-
-  private insertCard(
-    cardIds: number[],
-    seq: SharedObjectSequence<ICard>,
-    currentIndex: number
-  ) {
-    const insertedCards = cardIds.map((id) => toCard(this.witState.getWitById(id)));
-    seq.insert(currentIndex, insertedCards);
-    this.insert.emit(insertedCards);
-  }
-
   // *******************************************************/
   // ****************** End: Drag and Drop *****************/
   // *******************************************************/

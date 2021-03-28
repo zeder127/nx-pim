@@ -85,6 +85,7 @@ export interface SyncEvent {
   cards: ICard[];
   linkedIterationId: string;
   linkedSourceId: string | number;
+  isMoving: boolean;
 }
 
 export interface SyncInsertEvent extends SyncEvent {
@@ -93,4 +94,10 @@ export interface SyncInsertEvent extends SyncEvent {
 
 export interface SyncRemoveEvent extends SyncEvent {
   type: SyncType.Remove;
+}
+
+export interface SyncMoveEvent extends SyncEvent {
+  type: SyncType.Move;
+  oldLinkedIterationId: string;
+  oldLinkedSourceId: string | number;
 }

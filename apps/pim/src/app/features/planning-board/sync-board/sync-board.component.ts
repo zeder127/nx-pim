@@ -8,6 +8,7 @@ import {
   ICardBoardBase,
   SyncEvent,
   SyncInsertEvent,
+  SyncMoveEvent,
   SyncRemoveEvent,
   SyncType,
 } from '@pim/data';
@@ -71,6 +72,12 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
       case SyncType.Remove:
         this.boardSyncService.syncProgramBoardRemoveEvent(
           event as SyncRemoveEvent,
+          this.piName
+        );
+        break;
+      case SyncType.Move:
+        this.boardSyncService.syncProgramBoardMoveEvent(
+          event as SyncMoveEvent,
           this.piName
         );
         break;
