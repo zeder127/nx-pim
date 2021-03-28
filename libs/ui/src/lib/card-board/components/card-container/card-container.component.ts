@@ -16,7 +16,7 @@ import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequen
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
-import { SortableEvent, SortableOptions } from 'sortablejs';
+import { Options, SortableEvent } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { WitStateService } from '../../../http/services/wit-state.service';
@@ -39,7 +39,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
   public containerId: string;
-  public sortableOptions: SortableOptions;
+  public sortableOptions: Options;
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
@@ -163,8 +163,13 @@ export class CardContainerComponent extends AutoUnsubscriber
   // **************** Start: Drag and Drop *****************/
   // *******************************************************/
   private onAdd = (event: SortableEvent) => {
-    const newId = event.item.id.replace(Source_ID_Prefix, '');
-    this.updateAndInsertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+    // NOTE Using setTimeout to let onAdd triggered after onRemove
+    // As described in doc, onAdd should happen after onRemove, but it doesn't
+    // https://github.com/SortableJS/ngx-sortablejs#how-it-works
+    setTimeout(() => {
+      const newId = event.item.id.replace(Source_ID_Prefix, '');
+      this.insertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+    }, 0);
   };
 
   private onRemove = (event: SortableEvent) => {
@@ -212,14 +217,14 @@ export class CardContainerComponent extends AutoUnsubscriber
     this.cardsSeq.insert(newIndex, itemsToMove);
   }
 
-  private updateAndInsertCard(
+  private insertCard(
     cardIds: number[],
     seq: SharedObjectSequence<ICard>,
     currentIndex: number
   ) {
-    const updatedCards = cardIds.map((id) => toCard(this.witState.getWitById(id)));
-    seq.insert(currentIndex, updatedCards);
-    this.insert.emit(updatedCards);
+    const insertedCards = cardIds.map((id) => toCard(this.witState.getWitById(id)));
+    seq.insert(currentIndex, insertedCards);
+    this.insert.emit(insertedCards);
   }
 
   // *******************************************************/
