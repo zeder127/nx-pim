@@ -101,18 +101,21 @@ export class BoardSyncService extends AutoUnsubscriber {
     }
   }
 
-  private async removeCardFromRow(
-    witId: number,
-    rowNumber: number,
-    teamBoard: CardBoardDDS
-  ) {
-    teamBoard.columnHeaders.getItems(0).forEach(async (col, index) => {
-      const targetSequence = await teamBoard.grid.getCell(rowNumber, index).get();
+  private async removeCardFromRow(witId: number, rowNumber: number, board: CardBoardDDS) {
+    board.columnHeaders.getItems(0).forEach(async (col, index) => {
+      const targetSequence = await board.grid.getCell(rowNumber, index).get();
       const cardIndex = targetSequence
         .getItems(0)
         .findIndex((c) => c.linkedWitId === witId);
       if (cardIndex > -1) {
         targetSequence.remove(cardIndex, cardIndex + 1);
+
+        // remove related connections
+        [...board.connections.entries()].forEach(([key, conn]) => {
+          if (conn.startPointId === `${witId}` || conn.endPointId === `${witId}`) {
+            board.connections.delete(key);
+          }
+        });
         return;
       }
     });
