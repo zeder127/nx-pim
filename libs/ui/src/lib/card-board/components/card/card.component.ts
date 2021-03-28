@@ -195,7 +195,11 @@ export class CardComponent implements OnInit, AfterViewInit {
         icon: 'pi pi-times',
         title: `Click to delete the dependency on work item ${cardId}`,
         styleClass: 'dependency-menu-item',
-        command: () => this.boardService.connectionDelete$.next(ref.connection),
+        command: () => {
+          this.boardService.connectionDelete$.next(ref.connection);
+          this.boardService.unMarkCard(ref.connection.startPointId);
+          this.boardService.unMarkCard(ref.connection.endPointId);
+        },
       } as MenuItem;
     });
   }
