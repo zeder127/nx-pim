@@ -8,6 +8,7 @@ import {
   ICardBoardBase,
   SyncEvent,
   SyncInsertEvent,
+  SyncMoveEvent,
   SyncRemoveEvent,
   SyncType,
 } from '@pim/data';
@@ -48,7 +49,7 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
     this.piName = this.route.snapshot.paramMap.get('piName');
     this.piBoards$ = this.piService.getBoardBasesOfPI(this.piName);
     this.piService
-      .getProgrammBoardOfPI(this.piName)
+      .getProgramBoardOfPI(this.piName)
       .pipe(this.autoUnsubscribe())
       .subscribe((board) => {
         this.cardBoard = board;
@@ -69,8 +70,14 @@ export class SyncBoardComponent extends AutoUnsubscriber implements OnInit {
         );
         break;
       case SyncType.Remove:
-        this.boardSyncService.syncProgrammBoardRemoveEvent(
+        this.boardSyncService.syncProgramBoardRemoveEvent(
           event as SyncRemoveEvent,
+          this.piName
+        );
+        break;
+      case SyncType.Move:
+        this.boardSyncService.syncProgramBoardMoveEvent(
+          event as SyncMoveEvent,
           this.piName
         );
         break;

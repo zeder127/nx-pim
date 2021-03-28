@@ -15,6 +15,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MenuModule } from 'primeng/menu';
 import { PanelModule } from 'primeng/panel';
+import { SlideMenuModule } from 'primeng/slidemenu';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { UtilModule } from '../util/util.module';
@@ -49,6 +50,7 @@ import { SourcesListComponent } from './components/sources-list/sources-list.com
     InputTextareaModule,
     PanelModule,
     UtilModule,
+    SlideMenuModule,
   ],
   declarations: [
     CardBoardComponent,

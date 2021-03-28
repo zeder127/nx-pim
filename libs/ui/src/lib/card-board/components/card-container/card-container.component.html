@@ -1,4 +1,8 @@
-<div class="p-gird container" [sortablejs]="cards" [sortablejsOptions]="sortableOptions">
+<div
+  class="p-gird card-container"
+  [sortablejs]="cards"
+  [sortablejsOptions]="sortableOptions"
+>
   <pim-card
     class="p-col"
     *ngFor="let card of cards; let i=index"

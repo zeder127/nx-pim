@@ -1,6 +1,22 @@
 <p-toolbar>
   <div class="p-toolbar-group-left">
-    <a [routerLink]="['dashboard']"><i class="pi pi-home"></i></a>
+    <p-button [routerLink]="['dashboard']" icon="pi pi-home"></p-button>
+    <p-button
+      *ngIf="currentPiName"
+      [label]="currentPiName"
+      icon="pi pi-chevron-down"
+      iconPos="right"
+      class="pi-switcher"
+      (click)="piSwitcher.toggle($event)"
+      title="Click to switch between PIs"
+    ></p-button>
+    <p-menu
+      #piSwitcher
+      [popup]="true"
+      [model]="piMenuItems"
+      appendTo="body"
+      styleClass="switcher-menu"
+    ></p-menu>
   </div>
 
   <div class="p-toolbar-group-right">

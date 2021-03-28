@@ -12,18 +12,14 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { IFluidHandle } from '@fluidframework/core-interfaces';
-import {
-  SequenceDeltaEvent,
-  SequenceEvent,
-  SharedObjectSequence,
-} from '@fluidframework/sequence';
+import { SequenceDeltaEvent, SharedObjectSequence } from '@fluidframework/sequence';
 import { CardType, ICard } from '@pim/data';
 import { FluidLoaderService, PimDataObjectHelper } from '@pim/data/fluid';
 import { toCard } from '@pim/data/util';
-import { SortableEvent, SortableOptions } from 'sortablejs';
+import { Options, SortableEvent } from 'sortablejs';
 import { v4 as uuidv4 } from 'uuid';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
-import { WitService } from '../../../http';
+import { WitStateService } from '../../../http/services/wit-state.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
@@ -43,17 +39,17 @@ export class CardContainerComponent extends AutoUnsubscriber
   private loadedCardsCount = 0;
   public cards: ICard[] = [];
   public containerId: string;
-  public sortableOptions: SortableOptions;
+  public sortableOptions: Options;
 
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
-  @Output() insert = new EventEmitter<ICard[]>(); // the new cards inserted
-  @Output() delete = new EventEmitter<ICard[]>(); // linkedWitId of the cards to remove
+  @Output() insert = new EventEmitter<[ICard[], boolean]>(); // the new cards inserted
+  @Output() delete = new EventEmitter<[ICard[], boolean]>(); // the cards to remove, flag for isMoving
   @Output() update = new EventEmitter<number[]>();
 
   constructor(
     private boardService: BoardService,
-    private witService: WitService,
+    private witState: WitStateService,
     private connectionBuilder: ConnectionBuilderService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
@@ -75,9 +71,9 @@ export class CardContainerComponent extends AutoUnsubscriber
       onRemove: this.onRemove,
       onUpdate: this.onUpdate,
       onChange: this.updateConnection,
+      onStart: this.onDragStart,
     };
     if (!this.cardsSeqHandle) {
-      //this.cdr.markForCheck();
       return; // TODO remove, only for debug
     }
     await this.loadCardsSeq();
@@ -103,7 +99,6 @@ export class CardContainerComponent extends AutoUnsubscriber
       cardsSeqHandle.currentValue &&
       cardsSeqHandle.currentValue?.IFluidHandle
     ) {
-      console.log(`🚀 ~ loadCardsSeq in onChanges`);
       await this.loadCardsSeq();
       this.load.next();
       this.load.complete();
@@ -122,8 +117,8 @@ export class CardContainerComponent extends AutoUnsubscriber
     });
   };
 
+  // TODO
   public addCard() {
-    // this.witService.createWit();
     const DemoCard: ICard = {
       id: uuidv4(),
       text: `New card ${Math.floor(Math.random() * 10)}`,
@@ -147,7 +142,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   // TODO multi delete
   public deleteCard(card: ICard, index: number) {
     this.cardsSeq.removeRange(index, index + 1);
-    this.delete.emit([card]);
+    this.delete.emit([[card], false]);
   }
 
   public openSourceUrl(id: number) {
@@ -160,10 +155,7 @@ export class CardContainerComponent extends AutoUnsubscriber
     // makeForChange doesn't work here, there would be timing problem with drawing a line.
     this.cdr.detectChanges();
     this.update.emit(this.cards.map((c) => c.linkedWitId));
-  }
-
-  private isSelf(event: SequenceEvent) {
-    return this.fluidLoaderService.clientId === event.clientId;
+    this.connectionBuilder.update$.next();
   }
 
   // TODO move d&d code into a directive
@@ -171,14 +163,24 @@ export class CardContainerComponent extends AutoUnsubscriber
   // **************** Start: Drag and Drop *****************/
   // *******************************************************/
   private onAdd = (event: SortableEvent) => {
-    const newId = event.item.id.replace(Source_ID_Prefix, '');
-    this.updateAndInsertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+    // NOTE Using setTimeout to let onAdd triggered after onRemove
+    // As described in doc, onAdd should happen after onRemove, but it doesn't
+    // https://github.com/SortableJS/ngx-sortablejs#how-it-works
+    setTimeout(() => {
+      const newId = event.item.id.replace(Source_ID_Prefix, '');
+      //this.insertCard([parseInt(newId)], this.cardsSeq, event.newIndex);
+      const insertedCards = [parseInt(newId)].map((id) =>
+        toCard(this.witState.getWitById(id))
+      );
+      this.cardsSeq.insert(event.newIndex, insertedCards);
+      this.insert.emit([insertedCards, event.from.classList.contains('card-container')]);
+    }, 0);
   };
 
   private onRemove = (event: SortableEvent) => {
-    //const cardsToRemove = this.cardsSeq.getRange(event.oldIndex, event.oldIndex + 1);
+    const cardsToRemove = this.cardsSeq.getRange(event.oldIndex, event.oldIndex + 1);
     this.cardsSeq.removeRange(event.oldIndex, event.oldIndex + 1);
-    //this.delete.emit(cardsToRemove);
+    this.delete.emit([cardsToRemove, true]);
   };
 
   private onUpdate = (event: SortableEvent) => {
@@ -186,6 +188,13 @@ export class CardContainerComponent extends AutoUnsubscriber
     if (event.oldIndex === this.cards.length - 1 && event.newIndex === this.cards.length)
       return;
     this.moveItemInSequence(event.oldIndex, event.newIndex);
+  };
+
+  private onDragStart = (event: SortableEvent) => {
+    // dragged element get the same id as target element, have to set its id with a suffix
+    // in order to avoid drawing wrong lines while dragging
+    const draggedElement = document.querySelector('.sortable-chosen.sortable-drag');
+    draggedElement.id += '$';
   };
 
   // Make updateing connections smoother
@@ -212,19 +221,6 @@ export class CardContainerComponent extends AutoUnsubscriber
     if (newIndex === seqLength + itemsToMove.length) newIndex = seqLength;
     this.cardsSeq.insert(newIndex, itemsToMove);
   }
-
-  private updateAndInsertCard(
-    cardIds: number[],
-    seq: SharedObjectSequence<ICard>,
-    currentIndex: number
-  ) {
-    this.witService.getWorkItems(cardIds).subscribe((wits) => {
-      const updatedCards = wits.map((wit) => toCard(wit));
-      seq.insert(currentIndex, updatedCards);
-      this.insert.emit(updatedCards);
-    });
-  }
-
   // *******************************************************/
   // ****************** End: Drag and Drop *****************/
   // *******************************************************/

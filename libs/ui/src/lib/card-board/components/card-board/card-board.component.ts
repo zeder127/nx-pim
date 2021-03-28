@@ -38,10 +38,12 @@ import {
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
 import { MessageService } from 'primeng/api';
-import { Observable } from 'rxjs';
+import { Observable, Subject, zip } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { BoardService } from '../../services/board.service';
+import { CardContainerComponent } from '../card-container/card-container.component';
 export interface RowData {
   header: IRowHeader;
   data: { [key: string]: IFluidHandle<SharedObjectSequence<ICard>> };
@@ -60,7 +62,7 @@ export interface RowData {
 export class CardBoardComponent extends AutoUnsubscriber
   implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   @Input('model') board: CardBoardDDS;
-  @Input() type: 'programm' | 'team' = 'programm';
+  @Input() type: 'program' | 'team' = 'program';
   @Input() typesAllowedToSync: CardType[];
   @Input('coworker') currentUser: Coworker;
   @Input('availableBoards') availableBoards$: Observable<ICardBoardBase[]>;
@@ -80,9 +82,12 @@ export class CardBoardComponent extends AutoUnsubscriber
 
   @ViewChild('table', { read: ElementRef }) tableElementRef: ElementRef;
 
+  @ViewChildren(CardContainerComponent) cardContainers: QueryList<CardContainerComponent>;
+
   public sourceCards: ICard[];
   public colLinkSourceType: 'team' | 'workitem';
   public teamsOfSources: Team[];
+  public bodyRowHeights: number[] = [];
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -97,7 +102,8 @@ export class CardBoardComponent extends AutoUnsubscriber
   private loaded = false;
   private scrollableBoardBody: HTMLElement;
   private mappedSourceIds: number[] = [];
-  public bodyRowHeights: number[] = [];
+  private syncRemoveForMoving$ = new Subject<SyncEvent>();
+  private syncInsertForMoving$ = new Subject<SyncEvent>();
 
   constructor(
     private boardService: BoardService,
@@ -117,7 +123,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   ngOnInit(): void {
     if (!this.typesAllowedToSync)
       this.typesAllowedToSync = DataUtil.enumToArray(CardType);
-    this.colLinkSourceType = this.type === 'programm' ? 'team' : 'workitem';
+    this.colLinkSourceType = this.type === 'program' ? 'team' : 'workitem';
 
     this.boardService.availableBoards$ = this.availableBoards$;
     this.boardService.currentPiName = this.route.snapshot.paramMap.get('piName');
@@ -129,6 +135,40 @@ export class CardBoardComponent extends AutoUnsubscriber
         const newKey = `${newConnection.startPointId}-${newConnection.endPointId}`;
         if (!this.board.connections.has(newKey))
           this.board.connections.set(newKey, newConnection);
+        // Have to update connection, because sometimes new added connection get some pixels offset
+        this.connectionBuilder.update$.next();
+      });
+
+    this.boardService.connectionDelete$
+      .pipe(this.autoUnsubscribe())
+      .subscribe((connToDelete) => {
+        const keyToDelete = `${connToDelete.startPointId}-${connToDelete.endPointId}`;
+        if (this.board.connections.has(keyToDelete))
+          this.board.connections.delete(keyToDelete);
+      });
+
+    // merge move card event for sync between program and team boards
+    zip(this.syncRemoveForMoving$, this.syncInsertForMoving$)
+      .pipe(
+        this.autoUnsubscribe(),
+        filter(([removeEvent, insertEvent]) => {
+          return (
+            removeEvent.cards.map((c) => c.linkedWitId).join() ===
+            insertEvent.cards.map((c) => c.linkedWitId).join()
+          );
+        })
+      )
+      .subscribe(([removeEvent, insertEvent]) => {
+        removeEvent.cards === insertEvent.cards;
+        this.sync.emit({
+          type: SyncType.Move,
+          cards: removeEvent.cards,
+          linkedIterationId: insertEvent.linkedIterationId,
+          linkedSourceId: insertEvent.linkedSourceId,
+          oldLinkedIterationId: removeEvent.linkedIterationId,
+          oldLinkedSourceId: removeEvent.linkedSourceId,
+          isMoving: true,
+        } as SyncEvent);
       });
 
     this.board.connections.on('valueChanged', this.onConnectionValueChanged);
@@ -261,10 +301,23 @@ export class CardBoardComponent extends AutoUnsubscriber
       this.load.emit();
       this.loaded = true;
       this.connectionBuilder.initConnections(this.connections);
+      this.loadWitsOnBoard();
     }
   }
+  // In order to update wit-state
+  private loadWitsOnBoard() {
+    const cardsOnBoard: ICard[] = [];
+    this.cardContainers.forEach((cc: CardContainerComponent) =>
+      cardsOnBoard.push(...cc.cards)
+    );
+    this.boardService.loadWits(cardsOnBoard.map((c) => c.linkedWitId));
+  }
 
-  public onInsert(cards: ICard[], rowIndex: number, colIndex: number) {
+  public onInsert(
+    [cards, isMoving]: [ICard[], boolean],
+    rowIndex: number,
+    colIndex: number
+  ) {
     const cardIds = cards.map((c) => c.linkedWitId);
     const iterationId = this.rows[rowIndex].linkedIterationId;
     const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
@@ -279,49 +332,56 @@ export class CardBoardComponent extends AutoUnsubscriber
     this.boardService.cardsInsert$.next(cardIds);
 
     const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
-    if (cardsToSync.length > 0)
-      this.emitSyncEvent(cardsToSync, SyncType.Insert, rowIndex, colIndex);
+    if (cardsToSync.length > 0) {
+      const syncInsertEvent = {
+        type: SyncType.Insert,
+        cards: cardsToSync,
+        linkedIterationId: this.rows[rowIndex].linkedIterationId,
+        linkedSourceId: this.columns[colIndex].linkedSourceId,
+        isMoving,
+      } as SyncEvent;
+      if (this.type === 'program' && isMoving)
+        this.syncInsertForMoving$.next(syncInsertEvent);
+      else this.sync.emit(syncInsertEvent);
+    }
   }
 
-  public onRemove(cards: ICard[], rowIndex: number, colIndex: number) {
-    const ids = cards.map((c) => c.linkedWitId);
-    this.boardService.cardsRemove$.next(ids);
-
-    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
-    if (cardsToSync.length > 0)
-      this.emitSyncEvent(cardsToSync, SyncType.Remove, rowIndex, colIndex);
-
-    // remove related connections from DDS
-    ids.forEach((id) => {
-      [...this.board.connections.entries()].forEach((value) => {
-        const key = value[0];
-        const conn = value[1];
-        if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
-          this.board.connections.delete(key);
-        }
-      });
-    });
-  }
-
-  // TODO only update deltaCards
-  public onUpdate(cardIds: number[]) {
-    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next(true);
-  }
-
-  private emitSyncEvent(
-    cardsToSync: ICard[],
-    syncType: SyncType,
+  public onRemove(
+    [cards, isMoving]: [ICard[], boolean],
     rowIndex: number,
     colIndex: number
   ) {
-    const iterationId = this.rows[rowIndex].linkedIterationId;
-    const colLinkedSourceId = this.columns[colIndex].linkedSourceId;
-    this.sync.emit({
-      type: syncType,
-      cards: cardsToSync,
-      linkedIterationId: iterationId,
-      linkedSourceId: colLinkedSourceId,
-    });
+    const ids = cards.map((c) => c.linkedWitId);
+
+    const cardsToSync = cards.filter((c) => this.typesAllowedToSync.includes(c.type));
+    if (cardsToSync.length > 0) {
+      const syncRemoveEvent = {
+        type: SyncType.Remove,
+        cards: cardsToSync,
+        linkedIterationId: this.rows[rowIndex].linkedIterationId,
+        linkedSourceId: this.columns[colIndex].linkedSourceId,
+        isMoving,
+      };
+      if (this.type === 'program' && isMoving)
+        this.syncRemoveForMoving$.next(syncRemoveEvent);
+      else this.sync.emit(syncRemoveEvent);
+    }
+
+    // remove related connections from DDS, if really to delete a card
+    if (!isMoving) {
+      this.boardService.cardsRemove$.next(ids);
+      ids.forEach((id) => {
+        [...this.board.connections.entries()].forEach(([key, conn]) => {
+          if (conn.endPointId === `${id}` || conn.startPointId === `${id}`) {
+            this.board.connections.delete(key);
+          }
+        });
+      });
+    }
+  }
+
+  public onUpdate(cardIds: number[]) {
+    if (this.loaded && cardIds.length > 0) this.connectionBuilder.update$.next();
   }
 
   public insertColumnAt(position: number) {

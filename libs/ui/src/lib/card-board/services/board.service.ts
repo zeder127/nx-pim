@@ -10,6 +10,7 @@ export class BoardService {
   public cardsLoad$ = new BehaviorSubject<number[]>([]);
   public cardsRemove$ = new Subject<number[]>();
   public connectionInsert$ = new Subject<IConnection>();
+  public connectionDelete$ = new Subject<IConnection>();
   public sync$ = new Subject<ICard[]>();
   public coworkers$ = new BehaviorSubject<Coworker[]>(undefined);
   public availableBoards$: Observable<ICardBoardBase[]>;
@@ -19,7 +20,7 @@ export class BoardService {
   /** Current PI name, read from current url */
   public currentPiName: string;
 
-  /** Current team name, read from current url. Be null if it is a programm-board */
+  /** Current team name, read from current url. Be null if it is a program-board */
   public currentTeamName: string;
 
   /** Current board name, read from BoardDDS */
@@ -118,5 +119,17 @@ export class BoardService {
 
   public openSourceUrl(id: number) {
     this.witService.open(id);
+  }
+
+  public markCard(id: string) {
+    document.getElementById(id)?.classList.add('marked');
+  }
+
+  public unMarkCard(id: string) {
+    document.getElementById(id)?.classList.remove('marked');
+  }
+
+  public loadWits(ids) {
+    this.witService.getWorkItems(ids).subscribe();
   }
 }

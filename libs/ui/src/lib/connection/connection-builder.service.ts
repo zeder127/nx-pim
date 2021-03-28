@@ -18,16 +18,14 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Handle to update positions of all connections
    */
-  public update$ = new Subject<boolean>();
+  public update$ = new Subject();
 
   constructor(private render: Renderer2) {
     super();
 
     this.update$
       .pipe(this.autoUnsubscribe())
-      .subscribe((withUpdatingAnchorPoints) =>
-        this.updateExistingConnections(withUpdatingAnchorPoints)
-      );
+      .subscribe(() => this.updateExistingConnections());
   }
   ngOnDestroy(): void {
     super.ngOnDestroy();
@@ -45,6 +43,8 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
     connections.forEach((connection) => {
       this.drawConnection(connection);
     });
+    // Have to update connection, because sometimes new added connection get some pixels offset
+    this.updateExistingConnections();
   }
 
   /**
@@ -93,9 +93,23 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
       return new LeaderLine(startPointElement, endPointElement, {
         startSocket: 'bottom',
         endSocket: 'bottom',
+        endPlug: 'behind',
         size: 2,
       });
     }
+  }
+
+  /**
+   * Get all related ConnectionRefs of a given element. If elementId is undefined, get all ConnectionRefs.
+   * @param elementId
+   */
+  public getRelatedConnections(elementId?: string): ConnectionRef[] {
+    if (!elementId) return this.connectionStore;
+    return this.connectionStore.filter(
+      (ref) =>
+        ref.connection.startPointId === elementId ||
+        ref.connection.endPointId === elementId
+    );
   }
 
   /**
@@ -130,17 +144,13 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   /**
    * Update position of all existing connections
    */
-  private updateExistingConnections(withUpdatingAnchorPoints = false) {
+  private updateExistingConnections() {
     this.wrapperPosition();
     this.connectionStore.forEach((ref) => {
-      if (withUpdatingAnchorPoints) {
-        const start = document.getElementById(ref.connection.startPointId);
-        const end = document.getElementById(ref.connection.endPointId);
-        if (start && end) {
-          ref.line.setOptions({ start, end });
-          ref.line.position();
-        }
-      } else {
+      const start = document.getElementById(ref.connection.startPointId);
+      const end = document.getElementById(ref.connection.endPointId);
+      if (start && end) {
+        ref.line.setOptions({ start, end });
         ref.line.position();
       }
     });
@@ -173,12 +183,17 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
       'px)';
   }
 
-  /**
-   *
-   */
   public executeLineRemove(ref: ConnectionRef) {
     // have to move the svg element back to body from line-wrapper
     document.body.appendChild(ref.svg);
     ref.line.remove();
+  }
+
+  public markConnection(connRef: ConnectionRef) {
+    connRef.line.setOptions({ dropShadow: true, size: 4 });
+  }
+
+  public unMarkConnection(connRef: ConnectionRef) {
+    connRef.line.setOptions({ dropShadow: false, size: 2 });
   }
 }

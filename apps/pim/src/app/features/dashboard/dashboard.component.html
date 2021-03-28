@@ -6,7 +6,7 @@
     <button [routerLink]="['/admin/' + pi.name +'/edit']">edit</button>
     <ul>
       <li>
-        <a [routerLink]="['/planning/' + pi.name +'/board']">Programm Board</a>
+        <a [routerLink]="['/planning/' + pi.name +'/board']">Program Board</a>
       </li>
       <li *ngFor="let teamBoard of getBoards(pi.teamBoardIds)">
         <a [routerLink]="['/planning/' + pi.name + '/board/' + teamBoard.name]">
@@ -17,11 +17,6 @@
   </li>
 </ul>
 
-<span class="p-float-label">
-  <input id="float-input" type="text" [(ngModel)]="newPiName" pInputText />
-  <label for="float-input">PI Name</label>
-</span>
-<div>
-  <button (click)="createPi(newPiName); newPiName=undefined">New PI(old)</button>
+<p>
   <button [routerLink]="['/admin/pi/new']">New PI</button>
-</div>
+</p>

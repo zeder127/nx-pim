@@ -22,9 +22,17 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
   @Output() toggleSidebar = new EventEmitter();
   public boardItems: MenuItem[];
   public sidenavOpened = false;
-
+  public settingMenuItems: MenuItem[];
   constructor(private boardService: BoardService) {
     super();
+    this.settingMenuItems = [
+      {
+        label: 'Show lines',
+      },
+      {
+        label: 'Show last editor',
+      },
+    ];
   }
 
   get currentBoardName() {
@@ -44,9 +52,10 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
   }
 
   ngOnInit(): void {
-    this.boardService.availableBoards$.pipe(this.autoUnsubscribe()).subscribe(
-      (boardBases) =>
-        (this.boardItems = boardBases.map((base) => {
+    this.boardService.availableBoards$
+      .pipe(this.autoUnsubscribe())
+      .subscribe((boardBases) => {
+        this.boardItems = boardBases.map((base) => {
           const shouldDisabled = base.name === this.currentBoardName;
           if (shouldDisabled)
             return {
@@ -58,15 +67,15 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
               label: base.name,
               routerLink: this.getRouterLink(base.name),
             };
-        }))
-    );
+        });
+      });
   }
   // FIXME Workaround to force reload a CardBoardComponent
   // It would be better to re-use CardBoardComponent
   private getRouterLink(boardName): string {
     return `${
-      this.currentBoardName === Constants.Default_Programm_Board_Name ? '' : `../`
-    }../board-switcher/${boardName}`;
+      this.currentBoardName === Constants.Default_Program_Board_Name ? '' : `../`
+    }../switcher/${boardName}`;
   }
 
   public toggleWitSidebar() {

@@ -14,7 +14,11 @@ const routes: Routes = [
     component: TeamBoardComponent,
   },
   {
-    path: `:piName/board-switcher/:boardName`,
+    path: `:piName/switcher/:boardName`,
+    component: BoardSwitcherComponent,
+  },
+  {
+    path: `:piName/switcher`,
     component: BoardSwitcherComponent,
   },
   {

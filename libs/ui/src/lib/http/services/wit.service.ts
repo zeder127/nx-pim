@@ -6,6 +6,7 @@ import {
   AzureDevopsClientService,
   JsonPatchDocument,
 } from './azure-devops-client.service';
+import { WitStateService } from './wit-state.service';
 
 interface AzureWorkItem {
   id: number;
@@ -23,7 +24,10 @@ interface WitQueryFilter {
   providedIn: 'root',
 })
 export class WitService {
-  constructor(private devOpsClient: AzureDevopsClientService) {}
+  constructor(
+    private devOpsClient: AzureDevopsClientService,
+    private state: WitStateService
+  ) {}
 
   public getWorkItems(ids: number[]): Observable<WorkItem[]> {
     return this.devOpsClient
@@ -162,7 +166,7 @@ export class WitService {
   }
 
   private toWorkItem(awi: AzureWorkItem): WorkItem {
-    return {
+    const wit = {
       id: awi.id,
       title: awi.fields['System.Title'] as string,
       type: awi.fields['System.WorkItemType'] as WitType,
@@ -170,5 +174,8 @@ export class WitService {
       url: awi.url,
       rev: awi.rev,
     };
+
+    this.state.insertAndUpdateWit(wit.id, wit);
+    return wit;
   }
 }

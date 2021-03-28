@@ -10,15 +10,24 @@
     <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
   </div>
   <button
-    #anchor
     pimShowOnHover
+    [additionalShowOn]="menu.visible"
     pButton
     class="btn-menu p-button-outlined"
-    icon="pi pi-times"
-    iconPos="left"
-    (click)="deleteCard()"
+    icon="pi pi-ellipsis-h"
+    (click)="menu.toggle($event)"
   ></button>
-
+  <p-slideMenu
+    #menu
+    [popup]="true"
+    appendTo="body"
+    styleClass="card-menu"
+    [model]="menuItems"
+    [viewportHeight]="200"
+    [menuWidth]="200"
+    (onShow)="initMenuItems()"
+    (onHide)="resetMenuItems()"
+  ></p-slideMenu>
   <button
     draggable="true"
     (dragstart)="onStart($event)"
