@@ -8,8 +8,12 @@
 .toolbar ::ng-deep .p-toolbar{
   padding: 0 1rem!important;
   border: none;
-  height: 2rem;
+  height: 40px;
   background-color: white;
+}
+
+.title {
+  font-size: 1.2rem;
 }
 
 .filter {
