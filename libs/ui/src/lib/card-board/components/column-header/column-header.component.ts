@@ -36,6 +36,8 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
   @ViewChild('menu') menuComp: Menu;
   public menuItems: MenuItem[];
   public selectedSource: WorkItem;
+  public show: boolean;
+  public showItemPreview: boolean;
   private editorDialogRef: DynamicDialogRef;
   constructor(
     private cdr: ChangeDetectorRef,
@@ -69,6 +71,15 @@ export class ColumnHeaderComponent extends AutoUnsubscriber implements OnInit, O
         command: () => this.deleteCol.emit(),
       },
     ];
+
+    this.boardService.zoom$
+      .asObservable()
+      .pipe(this.autoUnsubscribe())
+      .subscribe((zoomLevel) => {
+        this.show = zoomLevel >= 0.6;
+        this.showItemPreview = zoomLevel >= 0.9;
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy() {

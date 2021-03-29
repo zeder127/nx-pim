@@ -2,6 +2,7 @@
   class="p-gird card-container"
   [sortablejs]="cards"
   [sortablejsOptions]="sortableOptions"
+  [style.minHeight]="containerMinHeight"
 >
   <pim-card
     class="p-col"
@@ -13,4 +14,4 @@
     (open)="openSourceUrl($event)"
   ></pim-card>
 </div>
-<button class="btn-new" (click)="addCard()">+</button>
+<!-- <button class="btn-new" (click)="addCard()">+</button> -->

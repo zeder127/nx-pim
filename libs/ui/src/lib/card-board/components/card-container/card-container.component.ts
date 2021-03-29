@@ -40,7 +40,7 @@ export class CardContainerComponent extends AutoUnsubscriber
   public cards: ICard[] = [];
   public containerId: string;
   public sortableOptions: Options;
-
+  public containerMinHeight: string;
   @Input('cards') cardsSeqHandle: IFluidHandle<SharedObjectSequence<ICard>>;
   @Output() load = new EventEmitter<number[]>(); // linkedWitIds of the cards loaded in this card-container
   @Output() insert = new EventEmitter<[ICard[], boolean]>(); // the new cards inserted
@@ -83,6 +83,16 @@ export class CardContainerComponent extends AutoUnsubscriber
       this.load.next();
       this.load.complete();
     }
+
+    this.boardService.zoom$
+      .asObservable()
+      .pipe(this.autoUnsubscribe())
+      .subscribe((zoomLevel) => {
+        this.containerMinHeight = `calc(${
+          this.boardService.cardHeightBase * zoomLevel
+        }em + 0.5em)`;
+        this.cdr.markForCheck();
+      });
   }
 
   private async loadCardsSeq() {
@@ -193,23 +203,14 @@ export class CardContainerComponent extends AutoUnsubscriber
   private onDragStart = (event: SortableEvent) => {
     // dragged element get the same id as target element, have to set its id with a suffix
     // in order to avoid drawing wrong lines while dragging
-    const draggedElement = document.querySelector('.sortable-chosen.sortable-drag');
+    const draggedElement: HTMLElement = document.querySelector(
+      '.sortable-chosen.sortable-drag'
+    );
     draggedElement.id += '$';
   };
 
-  // Make updateing connections smoother
-  // Tried to move code to ConnectionBuilder,
-  // but there is a side-effect on drag&drop
-  private iterationCount = 0;
-  private repeater;
   private updateConnection = () => {
-    this.connectionBuilder.update$.next();
-    if (this.iterationCount++ > 20) {
-      cancelAnimationFrame(this.repeater);
-      this.iterationCount = 0;
-    } else {
-      this.repeater = requestAnimationFrame(this.updateConnection);
-    }
+    this.connectionBuilder.updateConnectionWithAnimation();
   };
 
   private moveItemInSequence(oldIndex: number, newIndex: number) {

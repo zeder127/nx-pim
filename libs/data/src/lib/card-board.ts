@@ -54,6 +54,14 @@ export enum CardType {
   PBI = 'pbi',
 }
 
+export enum CardColor {
+  Feature = '#773b93',
+  Enabler = '#7ace64',
+  Delivery = '#fbbc3d',
+  Milestone = '#ec001d',
+  PBI = '#009ccc',
+}
+
 /**
  * Interface for SpecMap
  */

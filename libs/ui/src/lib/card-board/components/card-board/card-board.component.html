@@ -14,15 +14,17 @@
       #table
       [value]="rows"
       [columns]="columns"
-      frozenWidth="200px"
+      [frozenWidth]="frozenWidth"
       styleClass="p-datatable-gridlines"
       [scrollable]="true"
       scrollHeight="flex"
       [autoLayout]="true"
     >
       <ng-template pTemplate="frozenheader">
-        <tr height="100px">
-          <th style="width: 200px;"></th>
+        <tr [style.height]="colHeaderHeight">
+          <th [style.width]="frozenWidth">
+            <div class="dummy" [style.minHeight.px]="20"></div>
+          </th>
         </tr>
       </ng-template>
       <ng-template pTemplate="frozenbody" let-row let-rowIndex="rowIndex">
@@ -32,11 +34,15 @@
       </ng-template>
       <ng-template pTemplate="colgroup" let-columns>
         <colgroup>
-          <col *ngFor="let col of columns" style="width: 300px;" />
+          <col
+            class="board-column"
+            *ngFor="let col of columns"
+            [style.width]="columnWidth"
+          />
         </colgroup>
       </ng-template>
       <ng-template pTemplate="header" let-columns>
-        <tr height="100px">
+        <tr [style.height]="colHeaderHeight">
           <th
             height="1px"
             id="column-header-{{columnIndex}}"

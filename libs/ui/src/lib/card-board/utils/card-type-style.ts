@@ -11,15 +11,14 @@ export function getWitTypeClass(wit: WorkItem): string {
   }
 }
 
-export function getBorderLeftColor(type: CardType) {
-  // TODO Setting: CardType Color
+export function getColorByType(type: CardType) {
   switch (type) {
     case CardType.Delivery:
       return '#fbbc3d';
     case CardType.Enabler:
       return '#7ace64';
     case CardType.Feature:
-      return '#602f70';
+      return '#773b93';
     case CardType.Milestone:
       return '#ec001d';
     default:

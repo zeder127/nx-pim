@@ -38,7 +38,7 @@ import {
 import * as DataUtil from '@pim/data/util';
 import AnimEvent from 'anim-event';
 import { MessageService } from 'primeng/api';
-import { Observable, Subject, zip } from 'rxjs';
+import { merge, Observable, Subject, zip } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ConnectionBuilderService } from '../../../connection/connection-builder.service';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
@@ -88,6 +88,9 @@ export class CardBoardComponent extends AutoUnsubscriber
   public colLinkSourceType: 'team' | 'workitem';
   public teamsOfSources: Team[];
   public bodyRowHeights: number[] = [];
+  public columnWidth: string;
+  public frozenWidth: string;
+  public colHeaderHeight: string;
 
   public get rows(): IRowHeader[] {
     return this.board.rowHeaders.getItems(0) ?? [];
@@ -147,6 +150,15 @@ export class CardBoardComponent extends AutoUnsubscriber
           this.board.connections.delete(keyToDelete);
       });
 
+    this.boardService.zoom$
+      .asObservable()
+      .pipe(this.autoUnsubscribe())
+      .subscribe((zoomLevel) => {
+        this.columnWidth = `calc(${this.boardService.cardWidthBase}px * 2 * ${zoomLevel} + 8px*2 + 8px + 2px)`;
+        this.frozenWidth = `calc(200px * ${zoomLevel})`;
+        this.colHeaderHeight = `calc(100px * ${zoomLevel})`;
+      });
+
     // merge move card event for sync between program and team boards
     zip(this.syncRemoveForMoving$, this.syncInsertForMoving$)
       .pipe(
@@ -181,10 +193,14 @@ export class CardBoardComponent extends AutoUnsubscriber
   }
 
   ngAfterViewInit(): void {
-    // insert a row
-    this.bodyRowRefs.changes.pipe(this.autoUnsubscribe()).subscribe(() => {
-      this.setBodyRowHeights(this.bodyRowRefs);
-    });
+    // update a row height after inserting a row or zoom
+    merge(this.bodyRowRefs.changes, this.boardService.zoom$.asObservable())
+      .pipe(this.autoUnsubscribe())
+      .subscribe(() => {
+        setTimeout(() => {
+          this.setBodyRowHeights(this.bodyRowRefs);
+        }, 0);
+      });
 
     this.scrollableBoardBody = (this.tableElementRef
       .nativeElement as HTMLElement).querySelector(
@@ -210,13 +226,7 @@ export class CardBoardComponent extends AutoUnsubscriber
   private iterationCount = 0;
   private repeater;
   public updateConnection = () => {
-    this.connectionBuilder.update$.next();
-    if (this.iterationCount++ > 20) {
-      cancelAnimationFrame(this.repeater);
-      this.iterationCount = 0;
-    } else {
-      this.repeater = requestAnimationFrame(this.updateConnection);
-    }
+    this.connectionBuilder.updateConnectionWithAnimation();
   };
 
   ngOnDestroy() {

@@ -1,6 +1,6 @@
 <p-toolbar class="toolbar">
   <div class="p-toolbar-group-left">
-    <b>Backlog Explorer</b>
+    <span class="title">Backlog Explorer</span>
   </div>
 </p-toolbar>
 <div class="filter">
@@ -32,6 +32,7 @@
       icon="pi pi-{{newItemEditorOpened? 'times' :'plus'}}"
       (click)="newItemEditorOpened = !newItemEditorOpened"
       [ngClass]="{'editor-opened': newItemEditorOpened}"
+      title="{{newItemEditorOpened ? 'Close':'Click to add a new work item'}}"
     ></button>
   </div>
 

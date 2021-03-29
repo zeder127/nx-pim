@@ -1,6 +1,8 @@
 <div class="header">
-  <div class="title">{{colHeader.title}}</div>
+  <div class="title" *ngIf="show">{{colHeader.title}}</div>
+  <a class="title" *ngIf="!show" (click)="toggle($event)">{{colHeader.title}}</a>
   <button
+    *ngIf="show"
     pButton
     pRipple
     pimShowOnHover
@@ -9,11 +11,15 @@
     type="button"
     icon="pi pi-ellipsis-h"
     class="p-button-text"
-    (click)="toggle($event);"
+    (click)="toggle($event)"
   ></button>
   <p-menu #menu [popup]="true" [model]="menuItems" appendTo="body"></p-menu>
 </div>
-<div class="item-preview" [style.visibilty]="selectedSource ?  'visible' : 'hidden'">
+<div
+  class="item-preview"
+  *ngIf="showItemPreview"
+  [style.visibilty]="selectedSource ?  'visible' : 'hidden'"
+>
   <a
     *ngIf="selectedSource"
     title="{{selectedSource.title}}"
