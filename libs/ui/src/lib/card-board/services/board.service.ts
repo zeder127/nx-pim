@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Coworker, ICard, ICardBoardBase, IConnection, Iteration, Team } from '@pim/data';
 import * as DataUtil from '@pim/data/util';
 import { BehaviorSubject, forkJoin, Observable, Subject, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { ConnectionBuilderService } from '../../connection/connection-builder.service';
 import { IterationService, TeamService, WitService } from '../../http';
 @Injectable()
 export class BoardService {
@@ -16,6 +17,10 @@ export class BoardService {
   public availableBoards$: Observable<ICardBoardBase[]>;
   public dragStartPointId: string;
   public dragEndPointId: string;
+  public colWidthBase = 20;
+  public cardWidthBase = 160;
+  public cardHeightBase = 6;
+  public zoom$ = new BehaviorSubject<number>(1);
 
   /** Current PI name, read from current url */
   public currentPiName: string;
@@ -29,7 +34,9 @@ export class BoardService {
   constructor(
     private iterationService: IterationService,
     private teamService: TeamService,
-    private witService: WitService
+    private witService: WitService,
+    private connectionBuilder: ConnectionBuilderService,
+    private zone: NgZone
   ) {}
 
   public getIterationById(id: string): Observable<Iteration> {
@@ -131,5 +138,20 @@ export class BoardService {
 
   public loadWits(ids) {
     this.witService.getWorkItems(ids).subscribe();
+  }
+
+  public zoomOut() {
+    if (this.zoom$.value > 0.3) this.zoom$.next(this.zoom$.value - 0.05);
+    this.connectionBuilder.updateConnectionWithAnimation();
+  }
+
+  public zoomIn() {
+    if (this.zoom$.value < 1) this.zoom$.next(this.zoom$.value + 0.05);
+    this.connectionBuilder.updateConnectionWithAnimation();
+  }
+
+  public resetZoom() {
+    this.zoom$.next(1);
+    this.connectionBuilder.updateConnectionWithAnimation();
   }
 }

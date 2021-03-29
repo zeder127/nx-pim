@@ -1,14 +1,12 @@
 @import '../../../styles/variables';
 
+$space-base: 4px;
 :host {
   border-left: solid 3px;
   height: 100%;
   width: 100%;
-  min-height: 6em;
-  max-height: 6em;
-  min-width: 10em;
-  max-width: calc(50% - 0.5em);
-  margin: 0.25em;
+  min-height: 2em;
+  margin: $space-base;
   display: flex;
 
   &.marked {
@@ -60,10 +58,12 @@
 }
 .header {
   width: calc(100% - 1.2rem);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .id {
-  margin-right: 5px;
+  margin-right: $space-base;
 }
 
 .title {
@@ -73,7 +73,7 @@
 .btn-drag-handle,
 .btn-menu {
   position: absolute;
-  right: 5px;
+  right: $space-base;
   width: 1.2rem;
   height: 1.2rem;
   padding: 0;
@@ -87,9 +87,9 @@
 }
 
 .btn-menu {
-  top: 5px;
+  top: $space-base;
 }
 
 .btn-drag-handle {
-  top: calc(5px + 1.2rem + 5px);
+  top: calc(#{$space-base} + 1.2rem + #{$space-base});
 }

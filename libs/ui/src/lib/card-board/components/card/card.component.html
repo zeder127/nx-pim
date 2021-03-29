@@ -5,10 +5,12 @@
   [sortablejsOptions]="containerOptions"
   (drop)="onDrop()"
 >
-  <div class="header">
+  <a class="header" (click)="openSourceUrl(card.linkedWitId)">
     <b class="id">{{card.linkedWitId}}</b>
-    <a class="title" (click)="openSourceUrl(card.linkedWitId)">{{card.text}}</a>
-  </div>
+    <span class="title" *ngIf="zoomLevel >= 0.4">
+      {{card.text}}
+    </span>
+  </a>
   <button
     pimShowOnHover
     [additionalShowOn]="menu.visible"

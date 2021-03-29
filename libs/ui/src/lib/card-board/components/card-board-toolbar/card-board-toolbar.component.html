@@ -20,7 +20,35 @@
     ></p-menu>
   </div>
   <div class="p-toolbar-group-right">
+    <span class="p-mr-2">Zoom level: {{zoom$ | async | percent}}</span>
     <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-search-minus"
+      class="p-button-text p-mr-2"
+      title="Zoom out"
+      (click)="zoomOut()"
+    ></button>
+    <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-search-plus"
+      class="p-button-text p-mr-2"
+      title="Zoom in"
+      (click)="zoomIn()"
+    ></button>
+    <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-replay"
+      class="p-button-text p-mr-2"
+      title="Reset Zoom to 100%"
+      (click)="resetZoom()"
+    ></button>
+    <!-- <button
       pButton
       pRipple
       type="button"
@@ -34,7 +62,7 @@
       [popup]="true"
       [model]="settingMenuItems"
       appendTo="body"
-    ></p-menu>
+    ></p-menu> -->
     <div
       class="p-overlay-badge p-mr-2 coworker-badge"
       (click)="coworkerMenu.toggle($event)"

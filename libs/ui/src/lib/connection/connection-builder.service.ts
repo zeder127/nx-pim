@@ -196,4 +196,16 @@ export class ConnectionBuilderService extends AutoUnsubscriber implements OnDest
   public unMarkConnection(connRef: ConnectionRef) {
     connRef.line.setOptions({ dropShadow: false, size: 2 });
   }
+
+  private iterationCount = 0;
+  private repeater;
+  public updateConnectionWithAnimation = () => {
+    this.update$.next();
+    if (this.iterationCount++ > 20) {
+      cancelAnimationFrame(this.repeater);
+      this.iterationCount = 0;
+    } else {
+      this.repeater = requestAnimationFrame(this.updateConnectionWithAnimation);
+    }
+  };
 }

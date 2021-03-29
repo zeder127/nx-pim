@@ -35,6 +35,10 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
     ];
   }
 
+  get zoom$() {
+    return this.boardService.zoom$.asObservable();
+  }
+
   get currentBoardName() {
     return this.boardService.currentBoardName;
   }
@@ -81,5 +85,17 @@ export class CardBoardToolbarComponent extends AutoUnsubscriber implements OnIni
   public toggleWitSidebar() {
     this.toggleSidebar.emit();
     this.sidenavOpened = !this.sidenavOpened;
+  }
+
+  public zoomIn() {
+    this.boardService.zoomIn();
+  }
+
+  public zoomOut() {
+    this.boardService.zoomOut();
+  }
+
+  public resetZoom() {
+    this.boardService.resetZoom();
   }
 }

@@ -1,6 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   HostBinding,
@@ -19,6 +20,7 @@ import {
   ConnectionBuilderService,
   ConnectionRef,
 } from '../../../connection/connection-builder.service';
+import { AutoUnsubscriber } from '../../../util';
 import { Connection_Drag_Handle_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
 
@@ -36,7 +38,7 @@ import { BoardService } from '../../services/board.service';
     ]),
   ],
 })
-export class CardComponent implements OnInit, AfterViewInit {
+export class CardComponent extends AutoUnsubscriber implements OnInit, AfterViewInit {
   @Input() card: ICard;
   /**
    * Event will be triggered, when this card has been loaded.
@@ -71,6 +73,7 @@ export class CardComponent implements OnInit, AfterViewInit {
   public handleOptions: SortableOptions;
   public idPrefix = Connection_Drag_Handle_ID_Prefix;
   public relatedConnRefs: ConnectionRef[];
+  public zoomLevel: number;
 
   private startElement: HTMLElement;
   private dragAnchor: HTMLElement;
@@ -79,14 +82,31 @@ export class CardComponent implements OnInit, AfterViewInit {
   private connectionMenuItems: MenuItem[];
   private menuClose$: Subject<unknown>;
 
+  @HostBinding('style.height')
+  private cardHeight: string;
+
+  @HostBinding('style.width')
+  @HostBinding('style.maxWidth')
+  @HostBinding('style.minWidth')
+  private cardWidth: string;
+
   constructor(
     private connectionBuilder: ConnectionBuilderService,
     private renderer: Renderer2,
-    private boardService: BoardService
-  ) {}
+    private boardService: BoardService,
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.containerOptions = { draggable: '.btn-drag-handle' };
+    this.zoom.pipe(this.autoUnsubscribe()).subscribe((zoomLevel) => {
+      this.zoomLevel = zoomLevel;
+      this.cardHeight = `${this.boardService.cardHeightBase * zoomLevel}em`;
+      this.cardWidth = `${this.boardService.cardWidthBase * zoomLevel}px`;
+      this.cdr.markForCheck();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -164,6 +184,10 @@ export class CardComponent implements OnInit, AfterViewInit {
     this.boardService.dragEndPointId = `${this.card.linkedWitId}`;
     this.boardService.insertNewConnection();
   };
+
+  public get zoom() {
+    return this.boardService.zoom$.asObservable();
+  }
 
   private initDragAnchor(x: number, y: number) {
     this.dragAnchor = this.renderer.createElement('div');
