@@ -200,12 +200,14 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   private addSubmenuItemListner(connRefs: ConnectionRef[]) {
     this.menuClose$ = new Subject();
+    const menuEle: HTMLElement = document.querySelector('.card-menu');
     const menuItemEles = document.querySelectorAll('.card-menu .dependency-menu-item');
     if (menuItemEles.length === connRefs.length)
       menuItemEles.forEach((ele, index) => {
         fromEvent(ele, 'mouseenter')
           .pipe(takeUntil(this.menuClose$))
           .subscribe(() => {
+            menuEle.style.opacity = '0.8';
             const connRef = connRefs[index];
             this.connectionBuilder.markConnection(connRef);
             this.boardService.markCard(connRef.connection.startPointId);
@@ -214,6 +216,7 @@ export class CardComponent implements OnInit, AfterViewInit {
         fromEvent(ele, 'mouseleave')
           .pipe(takeUntil(this.menuClose$))
           .subscribe(() => {
+            menuEle.style.opacity = '1';
             const connRef = connRefs[index];
             this.connectionBuilder.unMarkConnection(connRef);
             this.boardService.unMarkCard(connRef.connection.startPointId);
