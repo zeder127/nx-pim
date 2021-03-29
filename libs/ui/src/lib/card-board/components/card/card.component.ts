@@ -21,7 +21,6 @@ import {
 } from '../../../connection/connection-builder.service';
 import { Connection_Drag_Handle_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
-import { getBorderLeftColor } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-card',
@@ -48,12 +47,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   @HostBinding('class')
   get typeClass() {
-    return 'card-type-class';
-  }
-
-  @HostBinding('style.border-left-color')
-  get borderLeftColor() {
-    return getBorderLeftColor(this.card.type);
+    return `card-${this.card.type}`;
   }
 
   private readonly defaultMenuItems: MenuItem[] = [
