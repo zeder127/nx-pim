@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { getDefaultObjectFromContainer } from '@fluidframework/aqueduct';
+import { IContainer } from '@fluidframework/container-definitions';
 import { getTinyliciousContainer } from '@fluidframework/get-tinylicious-container';
 
 @Injectable({ providedIn: 'root' })
@@ -15,6 +16,6 @@ export class FluidLoaderService {
     const container = await getTinyliciousContainer(documentId, factory, createNew);
     this.clientId = container.clientId;
     // Get the Default Object from the Container
-    return await getDefaultObjectFromContainer<T>(container);
+    return await getDefaultObjectFromContainer<T>((container as unknown) as IContainer);
   }
 }
