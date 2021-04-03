@@ -8,6 +8,7 @@ PI Manager is a research project for digitizing and automating of [SAFe PI-Plann
 - Run `npm run start:ui` to start the app.
 - Run `npm run start:fluid` to start backend service for data synchronisation
 
+  > [Fluid](https://fluidframework.com/start/quick-start/#set-up-your-development-environment) supports Node.js LTS versions 12.17 and greater.
   > Please contact [me](xuesong.wen@gmail.com) to assign you access to Arzue DevOps. It is also possible to connect with other Azure DevOps project.
 
 ## Features
