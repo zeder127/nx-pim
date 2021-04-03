@@ -14,7 +14,7 @@ import { TeamService, WitService } from '../../../http';
 import { AutoUnsubscriber } from '../../../util/base/auto-unsubscriber';
 import { Sortable_Group_Name, Source_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
-import { getBorderLeftColor } from '../../utils/card-type-style';
+import { getColorByType } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-sources-list',
@@ -112,7 +112,7 @@ export class SourcesListComponent extends AutoUnsubscriber implements OnInit {
   }
 
   public getBorderLeftColorOf(card: ICard) {
-    return getBorderLeftColor(card.type);
+    return getColorByType(card.type);
   }
 
   public onAddNewItem(wit: WorkItem) {

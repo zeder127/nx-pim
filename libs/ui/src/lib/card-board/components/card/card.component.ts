@@ -1,6 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   HostBinding,
@@ -19,9 +20,9 @@ import {
   ConnectionBuilderService,
   ConnectionRef,
 } from '../../../connection/connection-builder.service';
+import { AutoUnsubscriber } from '../../../util';
 import { Connection_Drag_Handle_ID_Prefix } from '../../constants';
 import { BoardService } from '../../services/board.service';
-import { getBorderLeftColor } from '../../utils/card-type-style';
 
 @Component({
   selector: 'pim-card',
@@ -37,7 +38,7 @@ import { getBorderLeftColor } from '../../utils/card-type-style';
     ]),
   ],
 })
-export class CardComponent implements OnInit, AfterViewInit {
+export class CardComponent extends AutoUnsubscriber implements OnInit, AfterViewInit {
   @Input() card: ICard;
   /**
    * Event will be triggered, when this card has been loaded.
@@ -48,12 +49,7 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   @HostBinding('class')
   get typeClass() {
-    return 'card-type-class';
-  }
-
-  @HostBinding('style.border-left-color')
-  get borderLeftColor() {
-    return getBorderLeftColor(this.card.type);
+    return `card-${this.card.type}`;
   }
 
   private readonly defaultMenuItems: MenuItem[] = [
@@ -77,6 +73,7 @@ export class CardComponent implements OnInit, AfterViewInit {
   public handleOptions: SortableOptions;
   public idPrefix = Connection_Drag_Handle_ID_Prefix;
   public relatedConnRefs: ConnectionRef[];
+  public zoomLevel: number;
 
   private startElement: HTMLElement;
   private dragAnchor: HTMLElement;
@@ -85,14 +82,31 @@ export class CardComponent implements OnInit, AfterViewInit {
   private connectionMenuItems: MenuItem[];
   private menuClose$: Subject<unknown>;
 
+  @HostBinding('style.height')
+  private cardHeight: string;
+
+  @HostBinding('style.width')
+  @HostBinding('style.maxWidth')
+  @HostBinding('style.minWidth')
+  private cardWidth: string;
+
   constructor(
     private connectionBuilder: ConnectionBuilderService,
     private renderer: Renderer2,
-    private boardService: BoardService
-  ) {}
+    private boardService: BoardService,
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
+  }
 
   ngOnInit(): void {
     this.containerOptions = { draggable: '.btn-drag-handle' };
+    this.zoom.pipe(this.autoUnsubscribe()).subscribe((zoomLevel) => {
+      this.zoomLevel = zoomLevel;
+      this.cardHeight = `${this.boardService.cardHeightBase * zoomLevel}em`;
+      this.cardWidth = `${this.boardService.cardWidthBase * zoomLevel}px`;
+      this.cdr.markForCheck();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -171,6 +185,10 @@ export class CardComponent implements OnInit, AfterViewInit {
     this.boardService.insertNewConnection();
   };
 
+  public get zoom() {
+    return this.boardService.zoom$.asObservable();
+  }
+
   private initDragAnchor(x: number, y: number) {
     this.dragAnchor = this.renderer.createElement('div');
     this.renderer.setProperty(this.dragAnchor, 'draggable', true);
@@ -206,12 +224,14 @@ export class CardComponent implements OnInit, AfterViewInit {
 
   private addSubmenuItemListner(connRefs: ConnectionRef[]) {
     this.menuClose$ = new Subject();
+    const menuEle: HTMLElement = document.querySelector('.card-menu');
     const menuItemEles = document.querySelectorAll('.card-menu .dependency-menu-item');
     if (menuItemEles.length === connRefs.length)
       menuItemEles.forEach((ele, index) => {
         fromEvent(ele, 'mouseenter')
           .pipe(takeUntil(this.menuClose$))
           .subscribe(() => {
+            menuEle.style.opacity = '0.8';
             const connRef = connRefs[index];
             this.connectionBuilder.markConnection(connRef);
             this.boardService.markCard(connRef.connection.startPointId);
@@ -220,6 +240,7 @@ export class CardComponent implements OnInit, AfterViewInit {
         fromEvent(ele, 'mouseleave')
           .pipe(takeUntil(this.menuClose$))
           .subscribe(() => {
+            menuEle.style.opacity = '1';
             const connRef = connRefs[index];
             this.connectionBuilder.unMarkConnection(connRef);
             this.boardService.unMarkCard(connRef.connection.startPointId);

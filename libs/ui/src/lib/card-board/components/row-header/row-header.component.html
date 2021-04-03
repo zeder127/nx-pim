@@ -1,5 +1,8 @@
 <div class="title"><b>{{rowHeader.title}}</b></div>
-<div class="date" *ngIf="linkedIteration?.attributes?.startDate">
+<div
+  class="date"
+  *ngIf="linkedIteration?.attributes?.startDate && (zoomLevel | async) >= 0.4"
+>
   {{linkedIteration.attributes.startDate | date}} -
   {{linkedIteration.attributes.finishDate |date}}
 </div>
