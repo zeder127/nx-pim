@@ -62,7 +62,5 @@
       "behavior": "link"
     }
   ],
-  "javascript.validate.enable": false,
-  "typescript.validate.enable": false,
   "angular.experimental-ivy": true
 }
