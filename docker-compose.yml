@@ -1,0 +1,10 @@
+version: "2"
+services:
+  pim-app:
+    build: .
+    ports:
+      - "4200:4200"
+      - "3000:3000"
+    volumes:
+      - "/pim/node_modules"
+      - ".:/pim"
