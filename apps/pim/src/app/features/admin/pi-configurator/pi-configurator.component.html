@@ -35,8 +35,8 @@
         </div>
       </ng-template>
       <ng-template let-iteration pTemplate="item">
-        {{iteration.value.path}} ({{iteration.value.attributes.startDate | date}} -
-        {{iteration.value.attributes.finishDate | date}})
+        {{iteration.path}} ({{iteration.attributes.startDate | date}} -
+        {{iteration.attributes.finishDate | date}})
       </ng-template>
     </p-multiSelect>
   </div>
